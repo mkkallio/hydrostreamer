@@ -4,18 +4,25 @@ library(raster)
 library(tidyverse)
 library(RQGIS)
 library(sf)
+library(geosphere)
 
-source("sf_functions.R")
+source("R/compute_flow.R")
+source("R/diagnosis.R")
+source("R/create_river_voronoi.R")
+source("R/compute_weights.R")
+source("R/process_river.R")
+source("R/raster2grid.R")
+source("R/delineate_watershed.R")
 
 #polygon_file <- "grids/3S polygon intersect basin WGS84.gpkg"
-raster <- "runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
-river <- "river/Hydrosheds 3S rivers.gpkg"
-basin <- "grids/HS 3S basin.gpkg"
+raster <- "../Sub-pixel hydrology/runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
+river <- "../Sub-pixel hydrology/river/Hydrosheds 3S rivers.gpkg"
+basin <- "../Sub-pixel hydrology/grids/HS 3S basin.gpkg"
 
 # read and transform coordinates
 river <- st_read(river)
-basin <- st_read(basin) 
-raster <- brick(raster) 
+basin <- st_read(basin)
+raster <- brick(raster)
 
 # # year and month of timesteps (ISIMIP)
 # start <- 1860
@@ -34,21 +41,40 @@ raster <- crop_raster_to_watershed(raster, basin)
 # polygonize raster
 grid <- create_polygon_grid(raster, basin)
 
-# transform 
+# transform
 #river <- st_transform(river, 32647)
 #grid <- st_transform(grid, 32647)
 #basin <- st_transform(basin, 32647)
 
+# compute hydrosheds watersheds ## SLOW ##
+# drdir <- "../Sub-pixel hydrology/grids/3S drdir.tif" %>%
+#     raster() %>%
+#     mask(as(basin, "Spatial"))
+#
+# # points from which basins are delineated
+# basin_points <- process_junctions(drdir, river)
+# # delineate
+# HS_basins <- delineate_basin(drdir, basin_points, ID = "ARCID")
+# HS_basins_p <- rasterToPolygons(HS_basins, dissolve=TRUE)
+
 
 # If wanted/needed, densify geometries BEFORE creating voronoi. function uses QGIS algorithm, which means writing file to disk,
-# which means that list columns do not carry over because they are not supported. 
+# which means that list columns do not carry over because they are not supported.
 # densification may be needed if there are long segments of rivers without nodes -> voronoi will not be adequate in such case
-river <- densify_geometry(river, 0.005)
+#river <- densify_geometry(river, 0.005)
+river <- st_segmentize(river, 250)
 
 # Create voronoi network
-voronoi <- river_voronoi(river, grid, basin, ID="ARCID")
+river <- st_transform(river, 32648)
+grid <- st_transform(grid, 32648)
+basin <- st_transform(basin, 32648)
+voronoi <- river_voronoi(dense_river, grid, basin, ID="ARCID")
+river <- st_transform(river, 4326)
+grid <- st_transform(grid, 4326)
+basin <- st_transform(basin, 4326)
 
-# Split river segments at polygon borders. This is needed for weights which are based on line segments, 
+
+# Split river segments at polygon borders. This is needed for weights which are based on line segments,
 # but unnecessary for voronoi/watershed based weights
 splitriver <- split_river_with_grid(river,grid)
 
@@ -131,7 +157,7 @@ grid <- create_polygon_grid(raster)
 
 
 # If wanted/needed, densify geometries BEFORE creating the from-to lists. function uses QGIS algorithm, which means writing file to disk,
-# which means that list columns do not carry over because they are not supported. 
+# which means that list columns do not carry over because they are not supported.
 # densification may be needed if there are long segments of rivers without nodes -> voronoi will not be adequate in such case
 river <- densify_geometry(river, 0.005)
 
@@ -140,7 +166,7 @@ river <- densify_geometry(river, 0.005)
 voronoi <- river_voronoi(river, grid, basin, ID="ARCID")
 
 
-# Split river segments at polygon borders. This is needed for weights which are based on line segments, 
+# Split river segments at polygon borders. This is needed for weights which are based on line segments,
 # but unnecessary for voronoi/watershed based weights
 splitriver <- split_river_with_grid(river,grid)
 
@@ -175,7 +201,7 @@ flow.eq.6min.PCRGLOBWB <- compute_flow_using_line(splitriver, grid, timesteps=28
 ##################
 
 
- 
+
 
 # # read all .asc files (VMOD output) and combine, write down
 # raster <- list.files(path="runoff/3S model/subsurface", full.names = TRUE)
@@ -198,21 +224,21 @@ raster <- brick(raster)
 # polygonize raster
 grid <- create_polygon_grid(raster, basin)
 
-# transform 
+# transform
 #river <- st_transform(river, 32647)
 #grid <- st_transform(grid, 32647)
 #basin <- st_transform(basin, 32647)
 
 
 # If wanted/needed, densify geometries BEFORE creating voronoi. function uses QGIS algorithm, which means writing file to disk,
-# which means that list columns do not carry over because they are not supported. 
+# which means that list columns do not carry over because they are not supported.
 # densification may be needed if there are long segments of rivers without nodes -> voronoi will not be adequate in such case
 river <- densify_geometry(river, 0.005)
 
 # Create voronoi network
 voronoi <- river_voronoi(river, grid, basin, ID="ARCID")
 
-# Split river segments at polygon borders. This is needed for weights which are based on line segments, 
+# Split river segments at polygon borders. This is needed for weights which are based on line segments,
 # but unnecessary for voronoi/watershed based weights
 splitriver <- split_river_with_grid(river,grid)
 

@@ -35,7 +35,7 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
   message(paste0("Cleaned away ", table(short)[2], " segments shorter than ", min, " meter(s). These will not take part in Voronoi polygon creation."))
 
 
-  message("Processing line segment end points...")
+  message("Extracting line segment end points...")
   n <- NROW(river)
   coords <- st_coordinates(river)
   #data <- st_set_geometry(river, NULL)
@@ -44,36 +44,46 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
   p4s <- st_crs(river)
 
   #extract end nodes
-  for (i in 1:n) {
-    segcoords <- coords[coords[,3] == i,]
-    node <- st_point(segcoords[NROW(segcoords),1:2]) %>%
-      st_sfc()
-    if(i==1) {
-      end <- node
-    } else {
-      end <- rbind(end, node)
-    }
-  }
-  end <- st_sfc(end)
+  # for (i in 1:n) {
+  #   segcoords <- coords[coords[,3] == i,]
+  #   node <- st_point(segcoords[NROW(segcoords),1:2]) %>%
+  #     st_sfc()
+  #   if(i==1) {
+  #     end <- node
+  #   } else {
+  #     end <- rbind(end, node)
+  #   }
+  # }
+  # end <- st_sfc(end)
+
+  end <- st_line_sample(river, sample=1)
 
 
-
+  message("Creating buffers...")
   # take buffers
   buffer <- st_buffer(end, dist = tolerance) %>%
-    #st_combine() %>%
+    st_union() %>%
     st_set_crs(p4s)
 
 
-
-  # take difference between buffer and river
+  message("Taking difference")
+  #take difference between buffer and river
+  total <- n
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
   for(i in 1:n) {
-    vorLine <- suppressWarnings(suppressMessages(st_difference(river[i,], buffer[i])))
+    vorLine <- suppressWarnings(suppressMessages(st_difference(river[i,], buffer)))
     if (i == 1) {
       vorRiv <- vorLine
     } else {
       vorRiv <- rbind(vorRiv, vorLine)
     }
+    setTxtProgressBar(pb, i)
   }
+  close(pb)
+
+
+
+  #vorLine <- st_difference(river, buffer)
 
   #end <- st_set_geometry(river, end)
   #end <- st_set_crs(end, p4s)

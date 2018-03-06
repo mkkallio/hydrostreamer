@@ -2,4 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+.gpkg
+.gpkg-shm
+.gpkg-wal
+devdata
 inst/doc
