@@ -8,7 +8,7 @@ crop_raster_to_watershed <- function(raster, area) {
     st_as_sf() %>%
     st_set_crs(p4s)
   grid <- st_make_grid(ext, n = c(raster@ncols, raster@nrows), what="polygons")
-  intsc <- st_intersects(grid, area, sparse=FALSE)
+  intsc <- st_intersects(grid, basin, sparse=FALSE)
   grid <- grid[intsc]
   bbox <- as.vector(st_bbox(grid))
   raster <- crop(raster, bbox[c(1,3,2,4)])
@@ -24,12 +24,9 @@ create_polygon_grid <- function(raster, basin, timesteps = NULL) {
   }
 
   #cells <- cellFromPolygon(raster, grid) %>% unlist()
-  grid <- as(grid, "sf") #%>% st_set_crs(as.character(crs(raster)))
+  grid <- as(grid, "sf") %>% st_set_crs(as.character(crs(raster)))
   intersects <- suppressWarnings(suppressMessages(st_intersects(grid, basin, sparse=FALSE)))
-  grid <- st_buffer(grid, dist=0)
-  int.area <- suppressWarnings(suppressMessages(st_intersection(grid, st_geometry(basin)))) %>%
-      st_area() %>%
-      unclass()
+  int.area <- suppressWarnings(suppressMessages(st_intersection(grid, st_geometry(basin)))) %>% st_area() %>% unclass()
   areas <- vector("numeric", length(intersects))
   areas[intersects] <- int.area
 

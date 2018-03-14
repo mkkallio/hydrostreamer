@@ -1,6 +1,29 @@
 
 
+# MONTHLY AVERAGE
 
+get_monthly_runoff <- function(grid) {
+  ts <- dplyr::select(grid, -ID, -area_m2) %>% sf::st_set_geometry(NULL)
+  n_ts <- NCOL(ts)
+  n_year <- NCOL(ts)/12
+
+  for (month in 1:12) {
+    mts <- seq(month, (n_ts-12+month), by=12)
+    mts <- ts[,mts]
+
+    if (month == 1) {
+      monthly_runoff <- apply(mts, 1, mean)
+    } else {
+      mrro <- apply(mts, 1, mean)
+      monthly_runoff <- cbind(monthly_runoff, mrro)
+    }
+  }
+  colnames(monthly_runoff) <- c("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
+
+  grid <- dplyr::select(grid, ID, area_m2)
+  grid <- cbind(grid, monthly_runoff)
+  return(grid)
+}
 
 
 
@@ -49,5 +72,12 @@ plot_flow <- function(station, rID, Q, obs, timeseries=NULL, ARCID = FALSE) {
 
 
 
+#testi <- lapply(splitriver$DOWNSTREAM, FUN=function(x) {any(x == 1577)})
+#testi <- which(unlist(testi))
 
+#testi_riv <- splitriver[testi,]
+#plot(testi_riv[,1])
 
+#testitulos <- filter(flow.l.30min,)
+
+##

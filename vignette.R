@@ -4,25 +4,18 @@ library(raster)
 library(tidyverse)
 library(RQGIS)
 library(sf)
-library(geosphere)
 
-source("R/compute_flow.R")
-source("R/diagnosis.R")
-source("R/create_river_voronoi.R")
-source("R/compute_weights.R")
-source("R/process_river.R")
-source("R/raster2grid.R")
-source("R/delineate_watershed.R")
+source("sf_functions.R")
 
 #polygon_file <- "grids/3S polygon intersect basin WGS84.gpkg"
-raster <- "../Sub-pixel hydrology/runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
-river <- "../Sub-pixel hydrology/river/Hydrosheds 3S rivers.gpkg"
-basin <- "../Sub-pixel hydrology/grids/HS 3S basin.gpkg"
+raster <- "runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
+river <- "river/Hydrosheds 3S rivers.gpkg"
+basin <- "grids/HS 3S basin.gpkg"
 
 # read and transform coordinates
 river <- st_read(river)
-basin <- st_read(basin)
-raster <- brick(raster)
+basin <- st_read(basin) 
+raster <- brick(raster) 
 
 # # year and month of timesteps (ISIMIP)
 # start <- 1860
@@ -41,42 +34,21 @@ raster <- crop_raster_to_watershed(raster, basin)
 # polygonize raster
 grid <- create_polygon_grid(raster, basin)
 
-# transform
+# transform 
 #river <- st_transform(river, 32647)
 #grid <- st_transform(grid, 32647)
 #basin <- st_transform(basin, 32647)
 
-# compute hydrosheds watersheds ## SLOW ##
-# drdir <- "../Sub-pixel hydrology/grids/3S drdir.tif" %>%
-#     raster() %>%
-#     mask(as(basin, "Spatial"))
-#
-# # points from which basins are delineated
-# basin_points <- process_junctions(drdir, river)
-# # delineate
-# HS_basins <- delineate_basin(drdir, basin_points, ID = "ARCID")
-# HS_basins_p <- rasterToPolygons(HS_basins, dissolve=TRUE)
-# HS_basins <- st_as_sf(HS_basins_p)
-
 
 # If wanted/needed, densify geometries BEFORE creating voronoi. function uses QGIS algorithm, which means writing file to disk,
-# which means that list columns do not carry over because they are not supported.
+# which means that list columns do not carry over because they are not supported. 
 # densification may be needed if there are long segments of rivers without nodes -> voronoi will not be adequate in such case
-#river <- densify_geometry(river, 0.005)
-river <- st_segmentize(river, 250)
+river <- densify_geometry(river, 0.005)
 
 # Create voronoi network
-river <- st_transform(river, 32648)
-grid <- st_transform(grid, 32648)
-basin <- st_transform(basin, 32648)
 voronoi <- river_voronoi(river, grid, basin, ID="ARCID")
-river <- st_transform(river, 4326)
-grid <- st_transform(grid, 4326)
-basin <- st_transform(basin, 4326)
-voronoi <- st_transform(voronoi, 4326)
 
-
-# Split river segments at polygon borders. This is needed for weights which are based on line segments,
+# Split river segments at polygon borders. This is needed for weights which are based on line segments, 
 # but unnecessary for voronoi/watershed based weights
 splitriver <- split_river_with_grid(river,grid)
 
@@ -91,25 +63,22 @@ river <- from_to_network(river, ID = "ARCID")
 ## 1971 --> 157:420
 # compute weights and accumulate voronoi flow
 voronoi <- compute_area_weights(voronoi, grid)
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, timesteps=157:420, unit="mm/s")
-
-HS_basins <- compute_area_weights(HS_basins, grid)
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, timesteps=157:420, unit="mm/s")
+flow.v.30min <- compute_flow_using_area(river, voronoi, grid, timesteps=157:200)
 
 # compute weights and accumulate length flow
 splitriver <- compute_river_weights(splitriver, grid, type = "length")
 
-#no_cores <- detectCores()-1
-#cl <- makePSOCKcluster(no_cores)
-#registerDoParallel(cl, cores=3)
+no_cores <- detectCores()-1
+cl <- makePSOCKcluster(no_cores)
+registerDoParallel(cl, cores=3)
 start <- Sys.time()
 flow.len.30min <- par_compute_flow_using_line(splitriver, grid, timesteps=157:420, unit="mm/s")
 end <- Sys.time()
 (end-start)
-#stopCluster(cl)
+stopCluster(cl)
 
 start <- Sys.time()
-flow.len.30min <- compute_flow_using_line(splitriver, grid, timesteps=157:420, unit="mm/s")
+flow.len.30min.2 <- compute_flow_using_line(splitriver, grid, timesteps=157:420, unit="mm/s")
 end <- Sys.time()
 (end-start)
 
@@ -162,7 +131,7 @@ grid <- create_polygon_grid(raster)
 
 
 # If wanted/needed, densify geometries BEFORE creating the from-to lists. function uses QGIS algorithm, which means writing file to disk,
-# which means that list columns do not carry over because they are not supported.
+# which means that list columns do not carry over because they are not supported. 
 # densification may be needed if there are long segments of rivers without nodes -> voronoi will not be adequate in such case
 river <- densify_geometry(river, 0.005)
 
@@ -171,7 +140,7 @@ river <- densify_geometry(river, 0.005)
 voronoi <- river_voronoi(river, grid, basin, ID="ARCID")
 
 
-# Split river segments at polygon borders. This is needed for weights which are based on line segments,
+# Split river segments at polygon borders. This is needed for weights which are based on line segments, 
 # but unnecessary for voronoi/watershed based weights
 splitriver <- split_river_with_grid(river,grid)
 
@@ -206,7 +175,7 @@ flow.eq.6min.PCRGLOBWB <- compute_flow_using_line(splitriver, grid, timesteps=28
 ##################
 
 
-
+ 
 
 # # read all .asc files (VMOD output) and combine, write down
 # raster <- list.files(path="runoff/3S model/subsurface", full.names = TRUE)
@@ -229,21 +198,21 @@ raster <- brick(raster)
 # polygonize raster
 grid <- create_polygon_grid(raster, basin)
 
-# transform
+# transform 
 #river <- st_transform(river, 32647)
 #grid <- st_transform(grid, 32647)
 #basin <- st_transform(basin, 32647)
 
 
 # If wanted/needed, densify geometries BEFORE creating voronoi. function uses QGIS algorithm, which means writing file to disk,
-# which means that list columns do not carry over because they are not supported.
+# which means that list columns do not carry over because they are not supported. 
 # densification may be needed if there are long segments of rivers without nodes -> voronoi will not be adequate in such case
 river <- densify_geometry(river, 0.005)
 
 # Create voronoi network
 voronoi <- river_voronoi(river, grid, basin, ID="ARCID")
 
-# Split river segments at polygon borders. This is needed for weights which are based on line segments,
+# Split river segments at polygon borders. This is needed for weights which are based on line segments, 
 # but unnecessary for voronoi/watershed based weights
 splitriver <- split_river_with_grid(river,grid)
 
@@ -310,11 +279,11 @@ library(readr)
 # load
 
 # load observations
-obs <- "../Sub-pixel hydrology/obs/3S_monthly_Q.csv"
+obs <- "obs/3S_monthly_Q.csv"
 obs <- read_csv(obs)
 
 # load station data
-HYMOS <- "../Sub-pixel hydrology/obs/HYMOS stations.gpkg"
+HYMOS <- "obs/HYMOS stations.gpkg"
 HYMOS <- st_read(HYMOS)
 
 # explore hymos station locations and rivers using mapview()
@@ -323,81 +292,13 @@ HYMOS <- st_read(HYMOS)
 #map <- mapview(splitriver)
 #(map <- mapview(HYMOS, map=map))
 
-obs_na <- obs == 0
-obs_mon <- obs
-obs_mon[obs_na] <- NA
-obs_mon <- group_by(obs, Month) %>% summarise(s450701 = mean(s450701, na.rm=TRUE),
-                                              s451305 = mean(s451305, na.rm=TRUE),
-                                              s450101 = mean(s450101, na.rm=TRUE),
-                                              s440601 = mean(s440601, na.rm=TRUE),
-                                              s440201 = mean(s440201, na.rm=TRUE),
-                                              s440103 = mean(s440103, na.rm=TRUE),
-                                              s440102 = mean(s440102, na.rm=TRUE),
-                                              s430106 = mean(s430106, na.rm=TRUE),
-                                              s430105 = mean(s430105, na.rm=TRUE),
-                                              s430103 = mean(s430103, na.rm=TRUE),
-                                              s430101 = mean(s430101, na.rm=TRUE))
-
-
-obs_mon <- obs_mon[c(5,4,8,1,9,7,6,2,12,11,10,3), ]
 
 
 
 
-station <- "s440601"
-
-rID <- 1157
-Q <- flow.h.30min
-plot_flow(station, rID, Q, obs_mon, ARCID=FALSE, timeseries=NULL)
 
 
+station <- "s440201"
 rID <- 848656
-Q <- flow.b.30min
-plot_flow(station, rID, Q, obs_mon, ARCID=FALSE, timeseries=NULL)
-
-
-
-
-# compare two
-ts1 <- filter(flow.v.30min, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
-ts2 <- filter(flow.b.30min, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
-ts3 <- filter(flow.l.30min, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-ts4 <- filter(flow.e.30min, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-ts5 <- filter(flow.h.30min, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-
-plot(ts1, type='l')
-lines(ts2, col='blue', lty=2)
-lines(ts3, col='red')
-lines(ts4, col='pink')
-lines(ts5, col='orange')
-
-cor(cbind(ts1,ts2,ts3,ts4,ts5))
-
-
-
-###
-writepath <- "../Sub-pixel hydrology/results/"
-model <- "PCR_GLOBWB"
-resolution <- "30min"
-period <- "1971-2005"
-v <- st_read(paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
-b <- st_read(paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
-l <- st_read(paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
-e <- st_read(paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
-h <- st_read(paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
-
-
-station <- "451301"
-aid <- HYMOS %>% filter(Code == station)
-id <- aid$rID_30min
-aid <- aid$ARCID
-
-station <- paste0("s",station)
-obs.ts <- select_(obs_mon, station) %>% unlist()
-ts1 <- filter(e, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts2 <- filter(h, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts3 <- filter(l, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts4 <- filter(v, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts5 <- filter(b, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-
-View(cor(cbind(obs.ts,ts1,ts2,ts3,ts4,ts5)))
+Q <- flow.v.30min
+plotFlow(station, rID, Q, obs, ARCID=TRUE, timeseries=NULL)

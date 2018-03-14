@@ -2,32 +2,32 @@
 process_junctions <- function(drdir,river) {
 
   # shorten rivers
-  p4s <- st_crs(river)
+  p4s <- sf::st_crs(river)
   for(line in 1:NROW(river)) {
-    coords <- st_coordinates(river[line,])
+    coords <- sf::st_coordinates(river[line,])
     len <- NROW(coords)
     coords <- coords[(len-1):len,1:2]
     if(line == 1) {
-      p <- st_point(coords[2,]) %>% st_sfc()
-      b <- bearing(coords)
+      p <- sf::st_point(coords[2,]) %>% sf::st_sfc()
+      b <- geosphere::bearing(coords)
     } else {
-      p2 <- st_point(coords[2,]) %>% st_sfc()
+      p2 <- sf::st_point(coords[2,]) %>% sf::st_sfc()
       p <- c(p, p2)
-      b2 <- bearing(coords)
+      b2 <- geosphere::bearing(coords)
       b <- c(b, b2)
     }
   }
   b <- b[!is.na(b)]
   b <- b+180
-  p <- st_set_crs(p, p4s)
+  p <- sf::st_set_crs(p, p4s)
 
   # cells of interest
-  rp <- cellFromXY(drdir, st_coordinates(p))
+  rp <- raster::cellFromXY(drdir, sf::st_coordinates(p))
   nc <- ncol(drdir)
 
   pointcoords <- data.frame(row = NULL, col = NULL)
   for (point in 1:length(rp)) {
-    prc <- rowColFromCell(drdir, rp[point]) %>% as.data.frame()
+    prc <- raster::rowColFromCell(drdir, rp[point]) %>% as.data.frame()
 
     cell <- rp[point]
     if(!is.na(cell)) {
@@ -37,48 +37,48 @@ process_junctions <- function(drdir,river) {
         if (bearing > -5 && bearing < 5) {
           prep$row <- prc$row-1
           prep$col <- prc$col
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 350 && bearing < 370) {
           prep$row <- prc$row-1
           prep$col <- prc$col
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 40 && bearing < 50) {
           prep$row <- prc$row-1
           prep$col <- prc$col+1
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 80 && bearing < 100) {
           prep$row <- prc$row
           prep$col <- prc$col+1
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 125 && bearing < 145) {
           prep$row <- prc$row+1
           prep$col <- prc$col+1
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 170 && bearing < 190) {
           prep$row <- prc$row+1
           prep$col <- prc$col
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
@@ -86,24 +86,24 @@ process_junctions <- function(drdir,river) {
         if (bearing > 215 && bearing < 235) {
           prep$row <- prc$row+1
           prep$col <- prc$col-1
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 260 && bearing < 280) {
           prep$row <- prc$row
           prep$col <- prc$col-1
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 305 && bearing < 325) {
           prep$row <- prc$row-1
           prep$col <- prc$col-1
-          cell <- cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drdir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
       } else {
@@ -114,13 +114,13 @@ process_junctions <- function(drdir,river) {
   }
 
   #pointcoords <- matrix(pointcoords, ncol=2)
-  points <- st_multipoint(as.matrix(pointcoords)) %>%
-      st_sfc() %>%
-      st_cast("POINT") %>%
-      st_set_crs(p4s)
+  points <- sf::st_multipoint(as.matrix(pointcoords)) %>%
+      sf::st_sfc() %>%
+      sf::st_cast("POINT") %>%
+      sf::st_set_crs(p4s)
 
-  st_geometry(river) <- points
-  empty <- st_dimension(river)
+  sf::st_geometry(river) <- points
+  empty <- sf::st_dimension(river)
   river <- river[!is.na(empty),]
 
   return(river)
@@ -137,13 +137,13 @@ process_junctions <- function(drdir,river) {
 # delineate basin
 delineate_basin <- function(drdir, points, ID = "ID") {
     # cells of interest
-    rp <- cellFromXY(drdir, st_coordinates(points))
+    rp <- raster::cellFromXY(drdir, sf::st_coordinates(points))
     points$cell <- rp
     points <- points[!is.na(points$cell),]
 
     # extract ids
-    ID <- select_(points, ID) %>%
-      st_set_geometry(NULL) %>%
+    ID <- dplyr::select_(points, ID) %>%
+      sf::st_set_geometry(NULL) %>%
       unlist()
 
 
@@ -171,7 +171,7 @@ delineate_basin <- function(drdir, points, ID = "ID") {
         cv <- logical(length = ncell(drdir))
         curvisit <- visited[cell]
         current <- cell
-        crcell <- rowColFromCell(drdir,cell)
+        crcell <- raster::rowColFromCell(drdir,cell)
 
         # IF the current cell has NOT been visited
         if(!curvisit) {
@@ -189,7 +189,7 @@ delineate_basin <- function(drdir, points, ID = "ID") {
                 if(check == TRUE) {
                     out <- FALSE
                     crcell <- next_cell(crcell, direction)
-                    current <- cellFromRowCol(drdir, crcell[1], crcell[2])
+                    current <- raster::cellFromRowCol(drdir, crcell[1], crcell[2])
                     curvisit <- visited[current]
                 } else {
                   out <- TRUE
@@ -279,4 +279,4 @@ next_cell <- function(crcell, direction) {
 }
 
 
-#rowColFromCell()
+

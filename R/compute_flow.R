@@ -8,45 +8,51 @@ compute_flow_using_line <- function(river, grid, ID = "ID", type = "length", pol
     timesteps <- 1:(NCOL(grid)-3)
   }
 
-  runoff <- select(grid, -c(ID, area_m2)) %>%
-    st_set_geometry(NULL)
+  runoff <- dplyr::select(grid, -c(ID, area_m2)) %>%
+    sf::st_set_geometry(NULL)
 
   #all downstream river segments
   downstream <- river$DOWNSTREAM
   #collect time series in a table
-  Q_ts <- select_(river, ID)
+  Q_ts <- dplyr::select_(river, ID)
 
 
   #process every timestep
+  total <- length(timesteps)
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
+
   for (ts in timesteps) {
     p <- 0
 
-    if (verbose == TRUE) {
-      # print progress first
-      tsp <- ts-min(timesteps)
-      tsp <- tsp/length(timesteps)
-      cat("\14")
-      cat("Processing: assigning runoff to river segments and accumulating flow.\n")
-      cat("Processing a total of", nSegments , "river segments on", nCells, "raster cells and ", length(timesteps) ," timesteps.\n\n")
-      cat(paste0("Overall progress: ", round(tsp*100,1),"% \n\n"))
-      cat("Current timestep (",ts,") processing progress: \n")
-    }
+    # if (verbose == TRUE) {
+    #   # print progress first
+    #   tsp <- ts-min(timesteps)
+    #   tsp <- tsp/length(timesteps)
+    #   cat("\14")
+    #   cat("Processing: assigning runoff to river segments and accumulating flow.\n")
+    #   cat("Processing a total of", nSegments , "river segments on", nCells, "raster cells and ", length(timesteps) ," timesteps.\n\n")
+    #   cat(paste0("Overall progress: ", round(tsp*100,1),"% \n\n"))
+    #   cat("Current timestep (",ts,") processing progress: \n")
+    # }
 
     #initiate discharge of the current timestep
     Q <- vector("numeric", nSegments)
     #process every segment
+
+    #progress bar
+
     for (seg in 1:nSegments) {
 
-      if (verbose == TRUE) {
-        fivePercent <- round(nSegments/20,0)
-        onePercent <- round(nSegments/100,0)
-        if (seg %% fivePercent == 0) {
-          p <- p+5
-          cat(paste0(p,"%"))
-        } else if (seg %% onePercent == 0) {
-          cat(".")
-        }
-      }
+      # if (verbose == TRUE) {
+      #   fivePercent <- round(nSegments/20,0)
+      #   onePercent <- round(nSegments/100,0)
+      #   if (seg %% fivePercent == 0) {
+      #     p <- p+5
+      #     cat(paste0(p,"%"))
+      #   } else if (seg %% onePercent == 0) {
+      #     cat(".")
+      #   }
+      # }
 
 
       #compute discharge of the segment at timestep
@@ -80,12 +86,14 @@ compute_flow_using_line <- function(river, grid, ID = "ID", type = "length", pol
 
 
     }
+
     #Q <- unlist(Q)
     Q_ts <- cbind(Q_ts, Q)
     col <- length(names(Q_ts))-1
     names(Q_ts)[col] <- paste0("TS",ts)
+    setTxtProgressBar(pb, ts)
   }
-  cat("\n\n Computation completed")
+  close(pb)
   return(Q_ts)
 }
 
@@ -103,52 +111,55 @@ compute_flow_using_area <- function(river, voronoi, grid, rID = "ARCID", vID = "
     timesteps <- 1:(NCOL(grid)-3)
   }
 
-  runoff <- select(grid, -c(ID, area_m2)) %>%
-    st_set_geometry(NULL)
+  runoff <- dplyr::select(grid, -c(ID, area_m2)) %>%
+    sf::st_set_geometry(NULL)
 
   #all downstream river segments
   downstream <- river$DOWNSTREAM
-  #collect time series in a table
-  Q_ts <- select_(river, rID)
+  #prepare a table to collect time series
+  Q_ts <- dplyr::select_(river, rID) %>% rename_("ID" = rID)
 
   #voronoi id's corresponding river ids
-  vID <- select_(voronoi, vID) %>%
-    st_set_geometry(NULL) %>%
+  vID <- dplyr::select_(voronoi, vID) %>%
+    sf::st_set_geometry(NULL) %>%
     unlist()
-  rID <- select_(river, rID) %>%
-    st_set_geometry(NULL) %>%
+  rID <- dplyr::select_(river, rID) %>%
+    sf::st_set_geometry(NULL) %>%
     unlist()
 
   #process every timestep
+  total <- length(timesteps)
+  pb <- txtProgressBar(min = 0, max = total, style = 3)
+
   for (ts in timesteps) {
     p <- 0
 
-    if (verbose == TRUE) {
-      # print progress first
-      tsp <- ts-min(timesteps)
-      tsp <- tsp/length(timesteps)
-      cat("\14")
-      cat("Processing: assigning runoff to river segments and accumulating flow.\n")
-      cat("Processing a total of", nVoronoi , "Voronoi polygons on", nCells, "raster cells and ", length(timesteps) ," timesteps.\n\n")
-      cat(paste0("Overall progress: ", round(tsp*100,1),"% \n\n"))
-      cat("Current timestep (",ts,") processing progress: \n")
-    }
+    # if (verbose == TRUE) {
+    #   # print progress first
+    #   tsp <- ts-min(timesteps)
+    #   tsp <- tsp/length(timesteps)
+    #   cat("\14")
+    #   cat("Processing: assigning runoff to river segments and accumulating flow.\n")
+    #   cat("Processing a total of", nVoronoi , "Voronoi polygons on", nCells, "raster cells and ", length(timesteps) ," timesteps.\n\n")
+    #   cat(paste0("Overall progress: ", round(tsp*100,1),"% \n\n"))
+    #   cat("Current timestep (",ts,") processing progress: \n")
+    # }
 
     #initiate discharge of the current timestep
     Q <- vector("numeric", NROW(river))
     #process every segment
     for (seg in 1:nVoronoi) {
 
-      if (verbose == TRUE) {
-        fivePercent <- round(nVoronoi/20,0)
-        onePercent <- round(nVoronoi/100,0)
-        if (seg %% fivePercent == 0) {
-          p <- p+5
-          cat(paste0(p,"%"))
-        } else if (seg %% onePercent == 0) {
-          cat(".")
-        }
-      }
+      # if (verbose == TRUE) {
+      #   fivePercent <- round(nVoronoi/20,0)
+      #   onePercent <- round(nVoronoi/100,0)
+      #   if (seg %% fivePercent == 0) {
+      #     p <- p+5
+      #     cat(paste0(p,"%"))
+      #   } else if (seg %% onePercent == 0) {
+      #     cat(".")
+      #   }
+      # }
 
 
       #compute discharge of the segment at timestep
@@ -179,15 +190,13 @@ compute_flow_using_area <- function(river, voronoi, grid, rID = "ARCID", vID = "
           Q[rows] <- Q[rows] + unclass(discharge)
         }
       }
-
-
     }
-    #Q <- unlist(Q)
     Q_ts <- cbind(Q_ts, Q)
     col <- length(names(Q_ts))-1
     names(Q_ts)[col] <- paste0("TS",ts)
+    setTxtProgressBar(pb, ts)
   }
-  cat("\n\n Computation completed")
+  close(pb)
   return(Q_ts)
 }
 

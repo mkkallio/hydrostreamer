@@ -1,5 +1,5 @@
 
-#### CHANGE TO USE st_segmentize() and dissolve with ID
+#### CHANGE TO USE sf::st_segmentize() and dissolve with ID
 densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
   #densify if TRUE
   if (!require(RQGIS)) {
@@ -13,7 +13,7 @@ densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
     params$INPUT <- geom; params$INTERVAL <- interval; params$OUTPUT <- file;
     densified <- run_qgis(alg = "qgis:densifygeometriesgivenaninterval",
                           params = params)
-    densified <- st_read(file)
+    densified <- sf::st_read(file)
   }
   return(densified)
 }
@@ -22,14 +22,14 @@ densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
 
 
 
-##### CREATE RIVER VORONOI Also problems with st_difference - does not make difference in tail node. Fix!
+##### CREATE RIVER VORONOI
 # default is we get rid of any segment under 10m long, and buffer radius is approximately 10m (11.3m at equator).
 #### BREAK DOWN IN TO SMALLER CHUNKS
 river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.001) {
   #get rid of extremely small segments
   # set units for the minimum length
   units(min) <- with(units::ud_units, m)
-  len <- st_length(river)
+  len <- sf::st_length(river)
   short <- len < min
   river <- river[!short,]
   message(paste0("Cleaned away ", table(short)[2], " segments shorter than ", min, " meter(s). These will not take part in Voronoi polygon creation."))
@@ -37,33 +37,33 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
 
   message("Extracting line segment end points...")
   n <- NROW(river)
-  coords <- st_coordinates(river)
-  #data <- st_set_geometry(river, NULL)
+  coords <- sf::st_coordinates(river)
+  #data <- sf::st_set_geometry(river, NULL)
   #remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM")
   #data <- data[ , !(names(data) %in% remove)]
-  p4s <- st_crs(river)
+  p4s <- sf::st_crs(river)
 
   #extract end nodes
   # for (i in 1:n) {
   #   segcoords <- coords[coords[,3] == i,]
-  #   node <- st_point(segcoords[NROW(segcoords),1:2]) %>%
-  #     st_sfc()
+  #   node <- sf::st_point(segcoords[NROW(segcoords),1:2]) %>%
+  #     sf::st_sfc()
   #   if(i==1) {
   #     end <- node
   #   } else {
   #     end <- rbind(end, node)
   #   }
   # }
-  # end <- st_sfc(end)
+  # end <- sf::st_sfc(end)
 
-  end <- st_line_sample(river, sample=1)
+  end <- sf::st_line_sample(river, sample=1)
 
 
   message("Creating buffers...")
   # take buffers
-  buffer <- st_buffer(end, dist = tolerance) %>%
-    st_union() %>%
-    st_set_crs(p4s)
+  buffer <- sf::st_buffer(end, dist = tolerance) %>%
+    sf::st_union() %>%
+    sf::st_set_crs(p4s)
 
 
   message("Taking difference")
@@ -71,7 +71,7 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
   total <- n
   pb <- txtProgressBar(min = 0, max = total, style = 3)
   for(i in 1:n) {
-    vorLine <- suppressWarnings(suppressMessages(st_difference(river[i,], buffer)))
+    vorLine <- suppressWarnings(suppressMessages(sf::st_difference(river[i,], buffer)))
     if (i == 1) {
       vorRiv <- vorLine
     } else {
@@ -83,71 +83,71 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
 
 
 
-  #vorLine <- st_difference(river, buffer)
+  #vorLine <- sf::st_difference(river, buffer)
 
-  #end <- st_set_geometry(river, end)
-  #end <- st_set_crs(end, p4s)
+  #end <- sf::st_set_geometry(river, end)
+  #end <- sf::st_set_crs(end, p4s)
 
   #create voronoi, spatially join attributes
   # needs also densification of points!
   message("Processing Voronoi tesselation")
-  #vorPoints <- st_line_sample(river, density = 0.001)
-  vorPoints <- suppressWarnings(st_cast(vorRiv, "POINT"))
+  #vorPoints <- sf::st_line_sample(river, density = 0.001)
+  vorPoints <- suppressWarnings(sf::st_cast(vorRiv, "POINT"))
   remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","gridID")
   vorPoints <- vorPoints[ , !(names(vorPoints) %in% remove)]
-  bbox <- st_as_sfc(st_bbox(grid))
-  voronoi <- suppressWarnings(st_voronoi(st_union(vorPoints), bbox)) %>%
-    st_cast() %>%
-    st_cast("POLYGON") %>%
-    st_sf() %>%
-    st_join(vorPoints) %>%
+  bbox <- sf::st_as_sfc(sf::st_bbox(grid))
+  voronoi <- suppressWarnings(sf::st_voronoi(sf::st_union(vorPoints), bbox)) %>%
+    sf::st_cast() %>%
+    sf::st_cast("POLYGON") %>%
+    sf::st_sf() %>%
+    sf::st_join(vorPoints) %>%
     lwgeom::st_make_valid() %>% # fix any broken geometries
-    group_by_(.dots = list(ID)) %>% # dissolve by ARCID (this only works with hydrosheds rivers -> support others later)
-    summarise() %>%
-    st_intersection(st_geometry(basin)) # only geometry so that basin attributes are not carried over
+    dplyr::group_by_(.dots = list(ID)) %>%
+    dplyr::summarise() %>%
+    sf::st_intersection(sf::st_geometry(basin))
 
   # the process may generate geometrycollections instead of polygons --> this will work on them
-  v.gc <- st_is(voronoi, "GEOMETRYCOLLECTION")
+  v.gc <- sf::st_is(voronoi, "GEOMETRYCOLLECTION")
 
   if (any(v.gc)) {
     message("Fixing bad polygons (GEOMETRYCOLLECTION)")
     p.geom <- voronoi[v.gc,]
-    p.geom <- st_collection_extract(p.geom, "POLYGON")
+    p.geom <- sf::st_collection_extract(p.geom, "POLYGON")
     voronoi[v.gc,] <- p.geom
   }
 
   # sometimes there are voronoi areas left which were not assigned any ID (why??). The following code merges them to the neighbouring polygon
   # with which it shares the longest border segment.
   IDs <- voronoi[, names(voronoi) %in% ID] %>%
-    st_set_geometry(NULL) %>%
+    sf::st_set_geometry(NULL) %>%
     unlist()
   v.na <- is.na(IDs)
 
   if (any(v.na)) {
     message("Fixing bad polygons (missing ID)")
-    pp <- st_cast(voronoi[v.na,], "POLYGON")
+    pp <- sf::st_cast(voronoi[v.na,], "POLYGON")
     for (i in 1:NROW(pp)) {
       #find which polygons touch the problem polygon
-      touching <- suppressMessages(st_touches(pp[i,], voronoi, sparse=FALSE))
+      touching <- suppressMessages(sf::st_touches(pp[i,], voronoi, sparse=FALSE))
       tv <- voronoi[touching,]
 
       #compute the lenghts of border line for every touching polygon and find which one is longest
       len <- list()
       n <- table(touching)[2]
       for (tp in 1:n) {
-        line <- suppressMessages(st_intersection(pp[i,], tv[tp,]))
-        l_len <- st_length(line)
+        line <- suppressMessages(sf::st_intersection(pp[i,], tv[tp,]))
+        l_len <- sf::st_length(line)
         len[[tp]] <- l_len
       }
       len <- unlist(len)
       longest <- which(len == max(len))
 
       #union the two polygons
-      v.union <- suppressMessages(suppressWarnings(st_union(pp[i,], tv[longest,])))
+      v.union <- suppressMessages(suppressWarnings(sf::st_union(pp[i,], tv[longest,])))
 
       #replace geometry in voronoi
       row <- which(IDs == IDs[touching][longest])
-      v.union <- st_set_geometry(voronoi[row,], st_geometry(v.union))
+      v.union <- sf::st_set_geometry(voronoi[row,], sf::st_geometry(v.union))
       voronoi[row,] <- v.union
     }
     #remove geometries with NA id
