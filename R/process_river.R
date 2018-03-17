@@ -3,7 +3,9 @@
 # split lines using polygons and sf::st_intersection. minimum length in meters
 ## INVESTIGATE why did i use iterative intersections????? --> no need for iterations
 split_river_with_grid <- function(river, grid) {
-  river <- suppressMessages(suppressWarnings(sf::st_intersection(river, select(grid, ID))))
+  grid <- select(grid, ID)
+  names(grid)[names(grid)=="ID"] <- "gridID"
+  river <- suppressMessages(suppressWarnings(sf::st_intersection(river, grid)))
 
   names(river)[names(river)=="ID"] <- "gridID"
   #river <- select(river, -area_m2)
@@ -11,35 +13,42 @@ split_river_with_grid <- function(river, grid) {
   #get rid of multilinestrings
   p4s <- sf::st_crs(river)
   isMLS <- sf::st_is(river, "MULTILINESTRING")
-  MLS <- river[isMLS,]
-  data <- sf::st_set_geometry(MLS, NULL)
+  if (any(isMLS)) {
+      MLS <- river[isMLS,]
+      data <- sf::st_set_geometry(MLS, NULL)
 
-  for (i in 1:NROW(MLS)) {
-    coords <- sf::st_coordinates(MLS[i,])
-    nLines <- unique(coords[,3])
-    for (j in nLines) {
-      l <- sf::st_linestring(coords[coords[,3] == j,1:2]) %>%
-          sf::st_sfc() %>%
-          sf::st_set_crs(p4s)
+      for (i in 1:NROW(MLS)) {
+        coords <- sf::st_coordinates(MLS[i,])
+        nLines <- unique(coords[,3])
+        for (j in nLines) {
+          l <- sf::st_linestring(coords[coords[,3] == j,1:2]) %>%
+            sf::st_sfc() %>%
+            sf::st_set_crs(p4s)
 
-      l <- cbind(data[i,],l)
+          l <- cbind(data[i,],l)
 
-      if(i == 1) {
-          LS <- l
-      } else {
-          LS <- rbind(LS,l)
+          if(i == 1) {
+            LS <- l
+          } else {
+            LS <- rbind(LS,l)
+          }
+        }
       }
-    }
-  }
-  if (any(names(LS) %in% "geometry")){
-    names(LS)[names(LS) %in% "geometry"] <- "geom"
+      if (any(names(LS) %in% "geometry")){
+        names(LS)[names(LS) %in% "geometry"] <- "geom"
+      }
+
+      LS <- sf::st_sf(LS)
+      river <- river[!isMLS,]
+      river <- rbind(river, LS)
   }
 
-  LS <- sf::st_sf(LS)
-  river <- river[!isMLS,]
-  river <- rbind(river, LS)
 
   #add unique IDs
+  testi <- any(names(river) == "ID")
+  if(testi) {
+    names(river)[names(river)=="ID"] <- "ID_original"
+  }
   river <- tibble::add_column(river, ID = 1:NROW(river), .before=1)
 
   return(river)
@@ -50,8 +59,8 @@ split_river_with_grid <- function(river, grid) {
 
 # TAKE A CLEAN RIVER NETWORK AND CREATE FROM-TO LISTS.
 
-from_to_network <- function(river, ID = "ID") {
-  ID <- select_(river, ID) %>% #river[, names(river) %in% ID] %>%
+flow_network <- function(river, ID = "ID") {
+  IDs <- select_(river, ID) %>% #river[, names(river) %in% ID] %>%
     sf::st_set_geometry(NULL) %>%
     unlist()
   nSegments <- NROW(river)
@@ -88,7 +97,7 @@ from_to_network <- function(river, ID = "ID") {
     if (length(source)==0) {
       TO[[i]] <- -9999
     } else {
-      TO[[i]] <- as.numeric(ID[source])
+      TO[[i]] <- as.numeric(IDs[source])
     }
 
     # from which river segments river flows to
@@ -98,7 +107,7 @@ from_to_network <- function(river, ID = "ID") {
     if (length(source)==0) {
       FROM[[i]] <- -9999
     } else {
-      FROM[[i]] <- as.numeric(ID[source])
+      FROM[[i]] <- as.numeric(IDs[source])
     }
     # fivePercent <- round(nSegments/20,0)
     # onePercent <- round(nSegments/100,0)
@@ -124,8 +133,8 @@ from_to_network <- function(river, ID = "ID") {
     while(to != -9999) {
       n <- n+1
 
-      nextID <- which(ID == to)
-      all[[n]] <- ID[nextID]
+      nextID <- which(IDs == to)
+      all[[n]] <- IDs[nextID]
       to <- TO[[nextID]]
       if(to == -9999){
         break
@@ -159,9 +168,12 @@ from_to_network <- function(river, ID = "ID") {
   #  process output
   #cat("\n")
   message("Processing part 3: output")
-  river$PREVIOUS <- FROM
-  river$NEXT <- TO
-  river$DOWNSTREAM <- TO_ALL
+  remove <- c(ID, "NEXT", "PREVIOUS", "DOWNSTREAM")
+  remove <- names(river) %in% remove
+  river <- river[, !remove]
+  river <- add_column(river, ID = IDs, PREVIOUS = FROM, NEXT = TO, DOWNSTREAM = TO_ALL, .before = 1)
+  class(river) <- append(class(river), "HS_river_network")
+
   return(river)
 }
 
@@ -236,7 +248,14 @@ river_hierarchy <- function(river, ID = "ID", type="strahler") {
     #print(table(strahler))
 
   }
-  river$STRAHLER <- strahler
+  test <- any(names(river) == "STRAHLER")
+  if(test) {
+    river <- river[,-"STRAHLER"]
+    river <- tibble::add_column(river, STRAHLER = strahler, .before=length(names(river)))
+  } else {
+    river <- tibble::add_column(river, STRAHLER = strahler, .before=length(names(river)))
+  }
+
   return(river)
 
 }

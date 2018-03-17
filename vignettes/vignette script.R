@@ -17,12 +17,32 @@ source("R/delineate_watershed.R")
 #polygon_file <- "grids/3S polygon intersect basin WGS84.gpkg"
 raster <- "../Sub-pixel hydrology/runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
 river <- "../Sub-pixel hydrology/river/Hydrosheds 3S rivers.gpkg"
-basin <- "../Sub-pixel hydrology/grids/HS 3S basin.gpkg"
+#basin <- "../Sub-pixel hydrology/grids/HS 3S basin.gpkg"
+basin <- "devdata/testibasin.gpkg"
+voronoi <- "devdata/HS voronoi.gpkg"
+HS_basins <- "devdata/HS_basins.gpkg"
 
 # read and transform coordinates
 river <- st_read(river)
 basin <- st_read(basin)
 raster <- brick(raster)
+voronoi <- st_read(voronoi)
+HS_basins <- st_read(HS_basins)
+HS_basins <- rename(HS_basins, ID = X3S_drdir)
+
+
+drdir <- "../Sub-pixel hydrology/grids/3S drdir.tif" %>%
+     raster() %>%
+     mask(as(basin, "Spatial"))
+
+grid <- polygrid_timeseries(raster, aoi=basin)
+area <- compute_weights(river, grid, "area", aoi=basin,drain.dir = drdir, riverID="ID")
+line <- compute_weights(river, grid, "strahler", aoi=basin, ID="ARCID")
+
+river <- compute_segment_runoff()
+river
+
+river <- flow_network(river, ID="ARCID")
 
 # # year and month of timesteps (ISIMIP)
 # start <- 1860
@@ -359,11 +379,11 @@ plot_flow(station, rID, Q, obs_mon, ARCID=FALSE, timeseries=NULL)
 
 
 # compare two
-ts1 <- filter(flow.v.30min, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
-ts2 <- filter(flow.b.30min, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
-ts3 <- filter(flow.l.30min, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-ts4 <- filter(flow.e.30min, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-ts5 <- filter(flow.h.30min, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
+ts1 <- filter(flow.v, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
+ts2 <- filter(flow.b, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
+ts3 <- filter(flow.l, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
+ts4 <- filter(flow.e, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
+ts5 <- filter(flow.h, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
 
 plot(ts1, type='l')
 lines(ts2, col='blue', lty=2)
@@ -377,9 +397,9 @@ cor(cbind(ts1,ts2,ts3,ts4,ts5))
 
 ###
 writepath <- "../Sub-pixel hydrology/results/"
-model <- "PCR_GLOBWB"
+model <- "CARAIB"
 resolution <- "30min"
-period <- "1971-2005"
+period <- "1861-2005"
 v <- st_read(paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
 b <- st_read(paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
 l <- st_read(paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
@@ -387,17 +407,25 @@ e <- st_read(paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"
 h <- st_read(paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
 
 
-station <- "451301"
+station <- "440201"
 aid <- HYMOS %>% filter(Code == station)
 id <- aid$rID_30min
 aid <- aid$ARCID
 
 station <- paste0("s",station)
-obs.ts <- select_(obs_mon, station) %>% unlist()
-ts1 <- filter(e, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts2 <- filter(h, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts3 <- filter(l, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts4 <- filter(v, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
-ts5 <- filter(b, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist()
+obs.ts <- select_(obs_mon, station) %>% unlist() %>% unname()
+ts1 <- filter(e, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+ts2 <- filter(h, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+ts3 <- filter(l, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+ts4 <- filter(v, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+ts5 <- filter(b, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
 
-View(cor(cbind(obs.ts,ts1,ts2,ts3,ts4,ts5)))
+cor(cbind(obs.ts,ts1,ts2,ts3,ts4,ts5))
+max <- max(cbind(obs.ts,ts1,ts2,ts3,ts4,ts5))
+
+plot(ts1,type='l', ylim=c(0,max))
+lines(ts2, col='blue')
+lines(ts3, col='red')
+lines(ts4, col='darkgreen')
+lines(ts5, col='purple')
+points(obs.ts)

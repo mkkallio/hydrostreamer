@@ -30,18 +30,12 @@ HS_basins <- "devdata/HS_basins.gpkg"
 
 # read and transform coordinates
 river <- st_read(river)
-splitriver <- st_read(splitriver)
+#splitriver <- st_read(splitriver)
 basin <- st_read(basin)
-voronoi <- st_read(voronoi)
+voronoi <- st_read(voronoi) %>% st_transform(4326)
+voronoi <- rename(voronoi, ID = ARCID)
 HS_basins <- st_read(HS_basins)
-HS_basins <- rename(HS_basins, ARCID = X3S_drdir)
-
-## PROCESS ##
-splitriver <- from_to_network(splitriver)
-river <- from_to_network(river, ID = "ARCID")
-
-splitriver <- river_hierarchy(splitriver)
-river <- river_hierarchy(river, ID = "ARCID")
+HS_basins <- rename(HS_basins, ID = X3S_drdir)
 
 writepath <- "../Sub-pixel hydrology/results/"
 
@@ -49,40 +43,45 @@ writepath <- "../Sub-pixel hydrology/results/"
 #####################
 ## PCR-GLOBWB 30min##
 #####################
-model <- "PCR_GLOBWB"
+model <- "PCRGLOBWB"
 resolution <- "30min"
 period <- "1971-2005"
 raster <- "../Sub-pixel hydrology/runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
 
+v.weights <- compute_weights(river, grid, "area", aoi=basin, basins = voronoi, riverID="ARCID")
+b.weights <- compute_weights(river, grid, "area", aoi=basin, basins = HS_basins, riverID="ARCID")
+e.weights <- compute_weights(river, grid, "equal", aoi=basin, riverID="ARCID")
+l.weights <- compute_weights(river, grid, "length", aoi=basin, riverID="ARCID")
+h.weights <- compute_weights(river, grid, "strahler", aoi=basin, riverID="ARCID")
 
 
 # VORONOI
-voronoi <- compute_area_weights(voronoi, grid)
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-HS_basins <- compute_area_weights(HS_basins, grid)
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
 
 
 
@@ -94,31 +93,44 @@ resolution <- "30min"
 period <- "1861-2005"
 raster <- "../Sub-pixel hydrology/runoff/caraib_gfdl-esm2m_historical_histsoc_co2_qtot_global_monthly_1861_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights[[3]] <- grid
+b.weights[[3]] <- grid
+e.weights[[2]] <- grid
+l.weights[[2]] <- grid
+h.weights[[2]] <- grid
+
 
 # VORONOI
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+
+
+
+
 
 
 
@@ -130,31 +142,42 @@ resolution <- "30min"
 period <- "1971-2005"
 raster <- "../Sub-pixel hydrology/runoff/h08_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights[[3]] <- grid
+b.weights[[3]] <- grid
+e.weights[[2]] <- grid
+l.weights[[2]] <- grid
+h.weights[[2]] <- grid
+
 
 # VORONOI
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+
+
 
 
 
@@ -167,31 +190,41 @@ resolution <- "30min"
 period <- "1961-2005"
 raster <- "../Sub-pixel hydrology/runoff/lpj-guess_gfdl-esm2m_historical_histsoc_co2_qs_global_monthly_1861_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights[[3]] <- grid
+b.weights[[3]] <- grid
+e.weights[[2]] <- grid
+l.weights[[2]] <- grid
+h.weights[[2]] <- grid
+
 
 # VORONOI
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+
 
 
 
@@ -205,32 +238,40 @@ resolution <- "30min"
 period <- "1861-2005"
 raster <- "../Sub-pixel hydrology/runoff/lpjml_gfdl-esm2m_historical_histsoc_co2_qs_global_monthly_1861_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights[[3]] <- grid
+b.weights[[3]] <- grid
+e.weights[[2]] <- grid
+l.weights[[2]] <- grid
+h.weights[[2]] <- grid
+
 
 # VORONOI
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
-
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
 
 
 
@@ -243,31 +284,40 @@ resolution <- "30min"
 period <- "1861-2005"
 raster <- "../Sub-pixel hydrology/runoff/visit_miroc5_historical_histsoc_co2_qtot_global_monthly_1861_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights[[3]] <- grid
+b.weights[[3]] <- grid
+e.weights[[2]] <- grid
+l.weights[[2]] <- grid
+h.weights[[2]] <- grid
+
 
 # VORONOI
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
 
 
 
@@ -281,28 +331,131 @@ resolution <- "30min"
 period <- "1861-2005"
 raster <- "../Sub-pixel hydrology/runoff/watergap2_gfdl-esm2m_historical_histsoc_co2_qs_global_monthly_1861_2005.nc"
 raster <- brick(raster)
-raster <- crop_raster_to_watershed(raster, basin)
-grid <- create_polygon_grid(raster, basin)
-grid <- get_monthly_runoff(grid)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights[[3]] <- grid
+b.weights[[3]] <- grid
+e.weights[[2]] <- grid
+l.weights[[2]] <- grid
+h.weights[[2]] <- grid
+
 
 # VORONOI
-flow.v.30min <- compute_flow_using_area(river, voronoi, grid, unit="mm/s")
-st_write(flow.v.30min, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
 # HS_BASINS
-flow.b.30min <- compute_flow_using_area(river, HS_basins, grid, unit="mm/s")
-st_write(flow.b.30min, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
 
 # SEGMENT LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "length")
-flow.l.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.l.30min, paste0(writepath, "l.", resolution, ".", model,".", period,".gpkg"))
-
-# EQUAL LENGTH
-splitriver <- compute_river_weights(splitriver, grid, type = "equal")
-flow.e.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.e.30min, paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"))
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
 
 # STREAM ORDER
-splitriver <- compute_river_weights(splitriver, grid, type = "strahler")
-flow.h.30min <- compute_flow_using_line(splitriver, grid, unit="mm/s")
-st_write(flow.h.30min, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+
+
+
+
+
+
+
+#####################
+## PCR-GLOBWB 6min ##
+#####################
+model <- "PCRGLOBWB"
+resolution <- "6min"
+period <- "1960-2011"
+raster <- "../Sub-pixel hydrology/runoff/3S 6min runoff.tif"
+raster <- brick(raster)
+crs(raster) <- CRS("+init=epsg:4326")
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights <- compute_weights(river, grid, "area", aoi=basin, basins = voronoi, riverID="ARCID")
+b.weights <- compute_weights(river, grid, "area", aoi=basin, basins = HS_basins, riverID="ARCID")
+e.weights <- compute_weights(river, grid, "equal", aoi=basin, riverID="ARCID")
+l.weights <- compute_weights(river, grid, "length", aoi=basin, riverID="ARCID")
+h.weights <- compute_weights(river, grid, "strahler", aoi=basin, riverID="ARCID")
+
+
+# VORONOI
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
+# HS_BASINS
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
+
+# SEGMENT LENGTH
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
+
+# STREAM ORDER
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
+
+
+#####################
+## VMOD 3km ##
+#####################
+model <- "VMOD"
+resolution <- "3km"
+period <- "1985-2005"
+raster <- "../Sub-pixel hydrology/runoff/vmod_3km_runoff.tif"
+raster <- brick(raster)
+grid <- polygrid_timeseries(raster, aoi=basin)
+grid <- average_monthly_runoff(grid)
+
+v.weights <- compute_weights(river, grid, "area", aoi=basin, basins = voronoi, riverID="ARCID")
+b.weights <- compute_weights(river, grid, "area", aoi=basin, basins = HS_basins, riverID="ARCID")
+e.weights <- compute_weights(river, grid, "equal", aoi=basin, riverID="ARCID")
+l.weights <- compute_weights(river, grid, "length", aoi=basin, riverID="ARCID")
+h.weights <- compute_weights(river, grid, "strahler", aoi=basin, riverID="ARCID")
+
+
+# VORONOI
+flow.v <- compute_segment_runoff(v.weights)
+flow.v <- accumulate_flow(flow.v)
+st_write(flow.v, paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
+
+# HS_BASINS
+flow.b <- compute_segment_runoff(b.weights)
+flow.b <- accumulate_flow(flow.b)
+st_write(flow.b, paste0(writepath, "b.", resolution, ".", model,".", period, ".gpkg"))
+
+# EQUAL WEIGHT
+flow.e <- compute_segment_runoff(e.weights)
+flow.e <- accumulate_flow(flow.e)
+st_write(flow.e, paste0(writepath, "e.", resolution, ".", model,".", period,".gpkg"))
+
+# SEGMENT LENGTH
+flow.l <- compute_segment_runoff(l.weights)
+flow.l <- accumulate_flow(flow.l)
+st_write(flow.l, paste0(writepath, "l.", resolution, ".", model,".", period, ".gpkg"))
+
+# STREAM ORDER
+flow.h <- compute_segment_runoff(h.weights)
+flow.h <- accumulate_flow(flow.h)
+st_write(flow.h, paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))

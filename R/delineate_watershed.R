@@ -1,5 +1,5 @@
 # get points
-process_junctions <- function(drdir,river) {
+river_outlets <- function(drdir,river) {
 
   # shorten rivers
   p4s <- sf::st_crs(river)

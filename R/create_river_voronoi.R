@@ -1,22 +1,22 @@
 
 #### CHANGE TO USE sf::st_segmentize() and dissolve with ID
-densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
-  #densify if TRUE
-  if (!require(RQGIS)) {
-    message("Densification requires package 'RQGIS' and an installation of QGIS.")
-    stop()
-  }
-  if (require(RQGIS)) { ## add class check. needs an sp object, not sf
-    message("Densifying geometries")
-    RQGIS::set_env()
-    params <- RQGIS::get_args_man(alg = "qgis:densifygeometriesgivenaninterval")
-    params$INPUT <- geom; params$INTERVAL <- interval; params$OUTPUT <- file;
-    densified <- run_qgis(alg = "qgis:densifygeometriesgivenaninterval",
-                          params = params)
-    densified <- sf::st_read(file)
-  }
-  return(densified)
-}
+# densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
+#   #densify if TRUE
+#   if (!require(RQGIS)) {
+#     message("Densification requires package 'RQGIS' and an installation of QGIS.")
+#     stop()
+#   }
+#   if (require(RQGIS)) { ## add class check. needs an sp object, not sf
+#     message("Densifying geometries")
+#     RQGIS::set_env()
+#     params <- RQGIS::get_args_man(alg = "qgis:densifygeometriesgivenaninterval")
+#     params$INPUT <- geom; params$INTERVAL <- interval; params$OUTPUT <- file;
+#     densified <- run_qgis(alg = "qgis:densifygeometriesgivenaninterval",
+#                           params = params)
+#     densified <- sf::st_read(file)
+#   }
+#   return(densified)
+# }
 
 
 
@@ -25,7 +25,7 @@ densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
 ##### CREATE RIVER VORONOI
 # default is we get rid of any segment under 10m long, and buffer radius is approximately 10m (11.3m at equator).
 #### BREAK DOWN IN TO SMALLER CHUNKS
-river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.001) {
+river_voronoi <- function(river, aoi, ID = "ID", min=10, tolerance = 0.001) {
   #get rid of extremely small segments
   # set units for the minimum length
   units(min) <- with(units::ud_units, m)
@@ -43,21 +43,23 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
   #data <- data[ , !(names(data) %in% remove)]
   p4s <- sf::st_crs(river)
 
-  #extract end nodes
-  # for (i in 1:n) {
-  #   segcoords <- coords[coords[,3] == i,]
-  #   node <- sf::st_point(segcoords[NROW(segcoords),1:2]) %>%
-  #     sf::st_sfc()
-  #   if(i==1) {
-  #     end <- node
-  #   } else {
-  #     end <- rbind(end, node)
-  #   }
-  # }
-  # end <- sf::st_sfc(end)
-
-  end <- sf::st_line_sample(river, sample=1)
-
+  # extract end nodes
+  p4s <- st_crs(river)[[2]]
+  if( grepl("longlat", p4s, fixed=TRUE) ) {
+      for (i in 1:n) {
+        segcoords <- coords[coords[,3] == i,]
+        node <- sf::st_point(segcoords[NROW(segcoords),1:2]) %>%
+          sf::st_sfc()
+        if(i==1) {
+          end <- node
+        } else {
+          end <- rbind(end, node)
+        }
+      }
+      end <- sf::st_sfc(end)
+  } else {
+    end <- sf::st_line_sample(river, sample=1)
+  }
 
   message("Creating buffers...")
   # take buffers
@@ -95,7 +97,7 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
   vorPoints <- suppressWarnings(sf::st_cast(vorRiv, "POINT"))
   remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","gridID")
   vorPoints <- vorPoints[ , !(names(vorPoints) %in% remove)]
-  bbox <- sf::st_as_sfc(sf::st_bbox(grid))
+  bbox <- sf::st_as_sfc(sf::st_bbox(aoi))
   voronoi <- suppressWarnings(sf::st_voronoi(sf::st_union(vorPoints), bbox)) %>%
     sf::st_cast() %>%
     sf::st_cast("POLYGON") %>%
@@ -104,7 +106,7 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
     lwgeom::st_make_valid() %>% # fix any broken geometries
     dplyr::group_by_(.dots = list(ID)) %>%
     dplyr::summarise() %>%
-    sf::st_intersection(sf::st_geometry(basin))
+    sf::st_intersection(sf::st_geometry(aoi))
 
   # the process may generate geometrycollections instead of polygons --> this will work on them
   v.gc <- sf::st_is(voronoi, "GEOMETRYCOLLECTION")
@@ -153,6 +155,16 @@ river_voronoi <- function(river, grid, basin, ID = "ID", min=10, tolerance = 0.0
     #remove geometries with NA id
     voronoi <- voronoi[!v.na,]
   }
+
+  # process IDs
+  voronoi <- rename_(voronoi, riverID = ID)
+
+  if (any(names(voronoi) == "ID")) {
+      voronoi$ID <- 1:NROW(voronoi)
+  } else {
+      voronoi <- add_column(voronoi, ID = 1:NROW(voronoi), .before=1)
+  }
+
 
   return(voronoi)
 }
