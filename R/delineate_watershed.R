@@ -1,7 +1,26 @@
-# get points
-river_outlets <- function(drdir,river) {
+#' Identify locations of raster cells which flow in to a river confluence point.
+#'
+#' The function identifies the coordinates of raster cells which are just upstream from river confluence
+#' points, identified from a river network layer.
+#'
+#' @param drain.dir A RasterLayer object of drainage directions.
+#' @inheritParams compute_weights
+#'
+#' @section Details:
+#' The logic is such that it looks at the last node-pair of each segment in the river network. The angle
+#' of the last node pair is computed, and the raster cell in the direction of the river segment is
+#' identified.
+#'
+#' Note that the logic of the function requires that the river network is derived from the same (or at least
+#' the same resolution) raster than the given drainage directions.
+#'
+#' @return Returns an 'sf' point layer of identified raster cell centers.
+#' @export
+#'
+#'
+river_outlets <- function(drain.dir,river) {
 
-  # shorten rivers
+  # shorten rivers the last node pair.
   p4s <- sf::st_crs(river)
   for(line in 1:NROW(river)) {
     coords <- sf::st_coordinates(river[line,])
@@ -22,12 +41,12 @@ river_outlets <- function(drdir,river) {
   p <- sf::st_set_crs(p, p4s)
 
   # cells of interest
-  rp <- raster::cellFromXY(drdir, sf::st_coordinates(p))
-  nc <- ncol(drdir)
+  rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(p))
+  nc <- ncol(drain.dir)
 
   pointcoords <- data.frame(row = NULL, col = NULL)
   for (point in 1:length(rp)) {
-    prc <- raster::rowColFromCell(drdir, rp[point]) %>% as.data.frame()
+    prc <- raster::rowColFromCell(drain.dir, rp[point]) %>% as.data.frame()
 
     cell <- rp[point]
     if(!is.na(cell)) {
@@ -37,48 +56,48 @@ river_outlets <- function(drdir,river) {
         if (bearing > -5 && bearing < 5) {
           prep$row <- prc$row-1
           prep$col <- prc$col
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 350 && bearing < 370) {
           prep$row <- prc$row-1
           prep$col <- prc$col
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 40 && bearing < 50) {
           prep$row <- prc$row-1
           prep$col <- prc$col+1
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 80 && bearing < 100) {
           prep$row <- prc$row
           prep$col <- prc$col+1
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 125 && bearing < 145) {
           prep$row <- prc$row+1
           prep$col <- prc$col+1
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 170 && bearing < 190) {
           prep$row <- prc$row+1
           prep$col <- prc$col
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
@@ -86,24 +105,24 @@ river_outlets <- function(drdir,river) {
         if (bearing > 215 && bearing < 235) {
           prep$row <- prc$row+1
           prep$col <- prc$col-1
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 260 && bearing < 280) {
           prep$row <- prc$row
           prep$col <- prc$col-1
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
 
         if (bearing > 305 && bearing < 325) {
           prep$row <- prc$row-1
           prep$col <- prc$col-1
-          cell <- raster::cellFromRowCol(drdir, prep$row, prep$col)
-          coords <- raster::xyFromCell(drdir, cell)
+          cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+          coords <- raster::xyFromCell(drain.dir, cell)
           pointcoords <- rbind(pointcoords, coords)
         }
       } else {
@@ -134,10 +153,22 @@ river_outlets <- function(drdir,river) {
 
 
 
-# delineate basin
-delineate_basin <- function(drdir, points, ID = "ID") {
+#' Delineate basin areas from multiple input points
+#'
+#'
+#' @param points An 'sf' point object, with locations of the basins to be delineated.
+#' @param ID Name of the column in points with unique identifiers.
+#' @inheritParams river_outlets
+#'
+#' @return Returns basins specific to the points given, so that downstream basins are cut when point location
+#'   is met uptstream.
+#'
+#' @export
+#'
+#'
+delineate_basin <- function(drain.dir, points, ID = "ID") {
     # cells of interest
-    rp <- raster::cellFromXY(drdir, sf::st_coordinates(points))
+    rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(points))
     points$cell <- rp
     points <- points[!is.na(points$cell),]
 
@@ -148,30 +179,30 @@ delineate_basin <- function(drdir, points, ID = "ID") {
 
 
     # initiate logical vector (visitation)
-    visited <- logical(length=ncell(drdir))
+    visited <- logical(length=ncell(drain.dir))
     visited[points$cell] <- TRUE
     #create empty raster
-    basins <- drdir
+    basins <- drain.dir
     values(basins) <- 0
     values(basins)[points$cell] <- ID
 
     # number of columns and cells
-    rdims <- dim(drdir)
+    rdims <- dim(drain.dir)
 
 
-    total <- ncell(drdir)
+    total <- ncell(drain.dir)
     # create progress bar
     pb <- txtProgressBar(min = 0, max = total, style = 3)
 
     prcells <- 1:total
-    prcells <- prcells[!is.na(values(drdir))]
+    prcells <- prcells[!is.na(values(drain.dir))]
     # go through every cell
     for (cell in prcells) {
 
-        cv <- logical(length = ncell(drdir))
+        cv <- logical(length = ncell(drain.dir))
         curvisit <- visited[cell]
         current <- cell
-        crcell <- raster::rowColFromCell(drdir,cell)
+        crcell <- raster::rowColFromCell(drain.dir,cell)
 
         # IF the current cell has NOT been visited
         if(!curvisit) {
@@ -179,7 +210,7 @@ delineate_basin <- function(drdir, points, ID = "ID") {
             while(curvisit == FALSE) {
                 #information on current cell
                 cv[current] <- TRUE
-                direction <- drdir[current]
+                direction <- drain.dir[current]
 
 
 
@@ -189,7 +220,7 @@ delineate_basin <- function(drdir, points, ID = "ID") {
                 if(check == TRUE) {
                     out <- FALSE
                     crcell <- next_cell(crcell, direction)
-                    current <- raster::cellFromRowCol(drdir, crcell[1], crcell[2])
+                    current <- raster::cellFromRowCol(drain.dir, crcell[1], crcell[2])
                     curvisit <- visited[current]
                 } else {
                   out <- TRUE
@@ -214,8 +245,9 @@ delineate_basin <- function(drdir, points, ID = "ID") {
     return(basins)
 }
 
-#checks that drdirection does not go out. If it does, return FALSE, if it doesnt, return TRUE
-# HELPER FOR delineate_basin()
+
+
+# helper function which checks that drain.direction does not go out of bounds of the raster. If it does, return FALSE, if it doesnt, return TRUE
 check_bounds <- function(curcell, rdims, direction) {
   if (is.na(direction)) {
     return(FALSE)
@@ -243,8 +275,7 @@ check_bounds <- function(curcell, rdims, direction) {
 }
 
 
-#checks that drdirection does not go out. If it does, return FALSE, if it doesnt, return TRUE
-# HELPER FOR delineate_basin()
+# helper function which identifies next cell from drainage direction
 next_cell <- function(crcell, direction) {
   newcell <- crcell
   if (direction == 1) {

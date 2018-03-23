@@ -1,7 +1,13 @@
-## split/process river lines
-
-# split lines using polygons and sf::st_intersection. minimum length in meters
-## INVESTIGATE why did i use iterative intersections????? --> no need for iterations
+#' Split a linestrings at polygon boundaries.
+#'
+#' @inheritParams compute_weights
+#'
+#' @return Returns an 'sf' linestring object which has been split at the polygon (grid) boundaries,
+#'   which has an added attribute column 'gridID' specifying the ID of the grid that contains the
+#'   line segment.
+#' @export
+#'
+#'
 split_river_with_grid <- function(river, grid) {
   grid <- select(grid, ID)
   names(grid)[names(grid)=="ID"] <- "gridID"
@@ -49,7 +55,7 @@ split_river_with_grid <- function(river, grid) {
   if(testi) {
     names(river)[names(river)=="ID"] <- "ID_original"
   }
-  river <- tibble::add_column(river, ID = 1:NROW(river), .before=1)
+  river$ID <- 1:NROW(river)
 
   return(river)
 }
@@ -57,8 +63,20 @@ split_river_with_grid <- function(river, grid) {
 
 
 
-# TAKE A CLEAN RIVER NETWORK AND CREATE FROM-TO LISTS.
-
+#' Generates neighbour information from a connected, directed graph without loops.
+#'
+#' @param ID Name of the column containing unique segment ID's.
+#' @inheritParams compute_weights
+#'
+#' @return Returns the river network with class 'HSrnet' with added columns:
+#' \itemize {
+#'   \item PREVIOUS: ID(s) of the previous river segment(s) as a list
+#'   \item NEXT: ID of the segment where the river flows to
+#'   \item DOWNSTREAM: ID(s) of all the river segments downstream for the current segment, as a list.
+#' }
+#' @export
+#'
+#'
 flow_network <- function(river, ID = "ID") {
   IDs <- select_(river, ID) %>% #river[, names(river) %in% ID] %>%
     sf::st_set_geometry(NULL) %>%
@@ -109,14 +127,7 @@ flow_network <- function(river, ID = "ID") {
     } else {
       FROM[[i]] <- as.numeric(IDs[source])
     }
-    # fivePercent <- round(nSegments/20,0)
-    # onePercent <- round(nSegments/100,0)
-    # if (i %% fivePercent == 0) {
-    #   p <- p+5
-    #   cat(paste0(p,"%"))
-    # } else if (i %% onePercent == 0) {
-    #   cat(".")
-    # }
+
     setTxtProgressBar(pb, i)
   }
   close(pb)
@@ -142,23 +153,7 @@ flow_network <- function(river, ID = "ID") {
     }
     all <- unlist(all)
     TO_ALL[[i]] <- all
-    #
-    # if(length(all) != 0) {
-    #   for (j in 1:length(all)) {
-    #     row <- which(ID == all[j])
-    #     fromall <- FROM_ALL[[row]]
-    #     fromall <- c(fromall, all[j])
-    #     FROM_ALL[[row]] <- fromall
-    #   }
-    # }
-    # fivePercent <- round(nSegments/20,0)
-    # onePercent <- round(nSegments/100,0)
-    # if (i %% fivePercent == 0) {
-    #   p <- p+5
-    #   cat(paste0(p,"%"))
-    # } else if (i %% onePercent == 0) {
-    #   cat(".")
-    # }
+
     setTxtProgressBar(pb, i)
   }
   close(pb)
@@ -171,8 +166,12 @@ flow_network <- function(river, ID = "ID") {
   remove <- c(ID, "NEXT", "PREVIOUS", "DOWNSTREAM")
   remove <- names(river) %in% remove
   river <- river[, !remove]
-  river <- add_column(river, ID = IDs, PREVIOUS = FROM, NEXT = TO, DOWNSTREAM = TO_ALL, .before = 1)
-  class(river) <- append(class(river), "HS_river_network")
+  river$ID <- IDs
+  river$PREVIOUS <- FROM
+  river$NEXT <- TO
+  river$DOWNSTREAM <- TO_ALL
+  #river <- add_column(river, ID = IDs, PREVIOUS = FROM, NEXT = TO, DOWNSTREAM = TO_ALL, .before = 1)
+  class(river) <- append(class(river), "HSrnet")
 
   return(river)
 }
@@ -181,6 +180,16 @@ flow_network <- function(river, ID = "ID") {
 
 
 
+#' Computes different river hierarchies
+#'
+#' @param ID Name of the column with unique river segment identifiers. Defaults to "ID".
+#' @param type Type hierarchy to compute. Currently only "strahler" stream order implemented.
+#' @inheritParams compute_weights
+#'
+#' @return Returns the river network with added column with the selected river hierarchy.
+#' @export
+#'
+#'
 river_hierarchy <- function(river, ID = "ID", type="strahler") {
 
   from <- river$PREVIOUS
@@ -252,6 +261,7 @@ river_hierarchy <- function(river, ID = "ID", type="strahler") {
   if(test) {
     river <- river[,-"STRAHLER"]
     river <- tibble::add_column(river, STRAHLER = strahler, .before=length(names(river)))
+    message("Replacing the existing column 'STRAHLER'.")
   } else {
     river <- tibble::add_column(river, STRAHLER = strahler, .before=length(names(river)))
   }

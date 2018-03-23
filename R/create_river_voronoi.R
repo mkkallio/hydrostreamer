@@ -1,31 +1,33 @@
 
-#### CHANGE TO USE sf::st_segmentize() and dissolve with ID
-# densify_geometry <- function(geom, interval, file = "densified_geom.shp") {
-#   #densify if TRUE
-#   if (!require(RQGIS)) {
-#     message("Densification requires package 'RQGIS' and an installation of QGIS.")
-#     stop()
-#   }
-#   if (require(RQGIS)) { ## add class check. needs an sp object, not sf
-#     message("Densifying geometries")
-#     RQGIS::set_env()
-#     params <- RQGIS::get_args_man(alg = "qgis:densifygeometriesgivenaninterval")
-#     params$INPUT <- geom; params$INTERVAL <- interval; params$OUTPUT <- file;
-#     densified <- run_qgis(alg = "qgis:densifygeometriesgivenaninterval",
-#                           params = params)
-#     densified <- sf::st_read(file)
-#   }
-#   return(densified)
-# }
-
-
-
-
-
-##### CREATE RIVER VORONOI
-# default is we get rid of any segment under 10m long, and buffer radius is approximately 10m (11.3m at equator).
-#### BREAK DOWN IN TO SMALLER CHUNKS
-river_voronoi <- function(river, aoi, ID = "ID", min=10, tolerance = 0.001) {
+#' Create segment-specific Voronoi polygons from a network.
+#'
+#' The function creates Voronoi polygons for each segment in a directed connected network, where the Voronoi polygons
+#' join together at network segment intersections.
+#'
+#' @param min A numeric value. Removes segments which are shorter than the value in meters, in order to remove unnecessarily
+#'   short river segments. Defaults to 10 meters.
+#' @param tolerance The radius, in meters, of the buffer used to take difference. Defaults to 5 meters.
+#' @inheritParams compute_weights
+#'
+#' @section Details:
+#' Creating the segment Voronoi polygons is done in the following steps:
+#' \enumerate{
+#'   \item Extract segment end nodes.
+#'   \item Create a buffer of the end nodes, and take difference between the river network and the buffer layer.
+#'   \item Extract all nodes of the river network, and create Voronoi polygons for all nodes.
+#'   \item Dissolve the individual Voronoi using river segment ID.
+#'   \item Clip the polygons to the area of interest.
+#' }
+#'
+#' Thus, the accuracy of the final segment Voronoi diagram is depending on the resolution of nodes in the river network.
+#' Consider densifying geometry e.g. with sf::st_segmentize function for higher accuracy.
+#'
+#'
+#' @return Returns an 'sf' polygon object, with a column "ID" corresponding to the river segment IDs.
+#' @export
+#'
+#'
+river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
   #get rid of extremely small segments
   # set units for the minimum length
   units(min) <- with(units::ud_units, m)
@@ -34,6 +36,8 @@ river_voronoi <- function(river, aoi, ID = "ID", min=10, tolerance = 0.001) {
   river <- river[!short,]
   message(paste0("Cleaned away ", table(short)[2], " segments shorter than ", min, " meter(s). These will not take part in Voronoi polygon creation."))
 
+  # set units for tolerance
+  units(tolerance) <- with(units::ud_units, m)
 
   message("Extracting line segment end points...")
   n <- NROW(river)
@@ -164,7 +168,6 @@ river_voronoi <- function(river, aoi, ID = "ID", min=10, tolerance = 0.001) {
   } else {
       voronoi <- add_column(voronoi, ID = 1:NROW(voronoi), .before=1)
   }
-
 
   return(voronoi)
 }

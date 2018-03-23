@@ -1,12 +1,60 @@
-# SF FUNCTIONS
-
+#' Computes the weights used for each river segment when assigning values of an arbitrarily shaped polygon
+#'   network. The function computes the weights either based on catchment areas(polygons), or line segments
+#'   which intersect a grid cell. Weights are assigned so that the sum of weights for area or line features
+#'   within a grid cell equals to 1.
+#'
+#' @param river An 'sf' linestring feature representing a river network. Required.
+#' @param grid  A 'HSgrid' object. Required.
+#' @param weights A character vector specifying type of weights, or a vector of user-specified weights. See
+#'   Details section. Required.
+#' @param aoi An 'sf' polygon object, or an object which can be converted to 'sf' using st_as_sf(). Optional.
+#' @param basins If weights are set to "area", providing basins skips the polygon generation process.
+#'   See Details section. Optional.
+#' @param drain.dir If weights are set to "area", providing a drainage direction raster enables delineation
+#'   of drainage basins from the provided river network. See Details. Optional.
+#' @param riverID A character string which specifies the name of the column containing unique identifier in
+#'   river network. Defaults to "ID".
+#'
+#' @section Details:
+#'   The river network needs to be connected, so that neighbouring river segments share a node, and all
+#'   linestrings are cut at segment intersections (a "clean" network).
+#'
+#'   Weights should be one of the following: "equal", "length", "strahler", "area", or a numeric vector
+#'   which specifies the weight for each river segment. Equal, length, Strahler or user-defined weights are
+#'   based on line segments. "equal" assigned grid cell value to all river segments within the cell, equally.
+#'   "length" does the same, but weights are based on the length of river segment within the cell, so that
+#'   longer segments get higher weights. "strahler" computes the strahler stream order for the river network
+#'   and weights are based on that.
+#'
+#'   If line-based weights are used, the river network is split at grid cell boundaries.
+#'
+#'   "area" weights is used when catchment-based weighting is desired. It assigns cell value based on the area
+#'   of catchment inside the grid cell. If no predefined basins or drainage directions are given, the function
+#'   computes Voronoi polygons based on the river network input. If drainage direction raster is given the
+#'   function computes catchment areas for each river segment in the input (however, at this stage the algorithm
+#'   is implemented in R and is slow).
+#'
+#'   Area of interest is optional. If provided, the river network will be clipped using it.
+#'
+#' @return Returns a list object with class 'HSrgrid' or 'HSragrid', depending on the method of weighting.
+#'   A 'HSrgrid' object includes the split, routed and weighted river network as first list element, and the
+#'   'HSgrid' object  as the second list element. In A 'HSragrid' object, the first list element is the routed
+#'   river network, the second element is a weighted area feature (catchment areas split at grid cell boundaries),
+#'   and the third list element is the 'HSgrid' object.
+#' @export
+#'
+#'
 compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.dir=NULL, riverID = "ID") {
 
     # Convert river and aoi to sf
-    river <- st_as_sf(river)
+    # check if 'sf'
+    test <- any(class(river) == 'sf')
+    if(!test) river <- st_as_sf(river)
+
 
     if(!is.null(aoi)) {
-        aoi <- st_as_sf(aoi)
+        test <- any(class(aoi) == 'sf')
+        if(!test) aoi <- st_as_sf(aoi)
     }
 
     # check the weights input to determine which track to take (area or line)
@@ -58,7 +106,7 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
         basins <- compute_area_weights(basins, grid)
 
         # create output list and class it
-        river_area_grid <- list(river, basins, grid)
+        river_area_grid <- list(river = river, basins = basins, grid = grid)
         class(river_area_grid) <- append(class(river_area_grid),"HSragrid")
 
         #return
@@ -83,7 +131,7 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
         river <- compute_river_weights(river, grid, segment.weights = weights)
 
         # create output list and class it
-        river_grid <- list(river, grid)
+        river_grid <- list(river = river, grid = grid)
         class(river_grid) <- append(class(river_grid),"HSrgrid")
 
         #return
@@ -97,6 +145,17 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
 
 
 
+#' Assign weights to area features within grid cells.
+#'
+#' @param basins An 'sf' polygon feature.
+#' @inheritParams compute_weights
+#'
+#' @return Returns an 'sf' polygon feature (which is a union of basins, and grid) with an attribute column
+#'   'weights', which is the area of the polygon feature inside a grid cell, divided by the total area
+#'   of the grid cell.
+#' @export
+#'
+#'
 compute_area_weights <- function(basins, grid) {
   keep <- c("ID", "area_m2")
 
@@ -137,7 +196,25 @@ compute_area_weights <- function(basins, grid) {
 
 
 
-##
+
+#' Assign weights to area features within grid cells.
+#'
+#' @param segment.weights A character vector specifying type of weights, or a vector of user-specified
+#'   weights. See Details section. Defaults to "length".
+#' @inheritParams compute_weights
+#'
+#' @section Details:
+#'   segment.weights should be one of the following: "equal", "length", "strahler", or a numeric vector
+#'   which specifies the weight for each river segment. "equal" assigned grid cell value to all river
+#'   segments within the cell, equally."length" does the same, but weights are based on the length of
+#'   river segment within the cell, so that longer segments get higher weights. "strahler" computes the
+#'   strahler stream order for the river network and weights are based on that.
+#'
+#' @return Returns an 'sf' linestring feature (which is a union of basins, and grid) with an attribute
+#'   column 'weights'.
+#' @export
+#'
+#'
 compute_river_weights <- function(river, grid, segment.weights = "length") {
   #get elements of rivers intersecting polygons
   riverIntsc <- sf::st_contains(grid,river, sparse=FALSE)
