@@ -42,7 +42,7 @@ river_outlets <- function(drain.dir,river) {
 
   # cells of interest
   rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(p))
-  nc <- ncol(drain.dir)
+  nc <- raster::ncol(drain.dir)
 
   pointcoords <- data.frame(row = NULL, col = NULL)
   for (point in 1:length(rp)) {
@@ -179,27 +179,27 @@ delineate_basin <- function(drain.dir, points, ID = "ID") {
 
 
     # initiate logical vector (visitation)
-    visited <- logical(length=ncell(drain.dir))
+    visited <- logical(length=raster::ncell(drain.dir))
     visited[points$cell] <- TRUE
     #create empty raster
     basins <- drain.dir
-    values(basins) <- 0
-    values(basins)[points$cell] <- ID
+    raster::values(basins) <- 0
+    raster::values(basins)[points$cell] <- ID
 
     # number of columns and cells
     rdims <- dim(drain.dir)
 
 
-    total <- ncell(drain.dir)
+    total <- raster::ncell(drain.dir)
     # create progress bar
     pb <- txtProgressBar(min = 0, max = total, style = 3)
 
     prcells <- 1:total
-    prcells <- prcells[!is.na(values(drain.dir))]
+    prcells <- prcells[!is.na(raster::values(drain.dir))]
     # go through every cell
     for (cell in prcells) {
 
-        cv <- logical(length = ncell(drain.dir))
+        cv <- logical(length = raster::ncell(drain.dir))
         curvisit <- visited[cell]
         current <- cell
         crcell <- raster::rowColFromCell(drain.dir,cell)
@@ -236,7 +236,7 @@ delineate_basin <- function(drain.dir, points, ID = "ID") {
         } else {
           basin_id <- basins[current]
         }
-        values(basins)[cv] <- basin_id
+        raster::values(basins)[cv] <- basin_id
         visited[cv] <- TRUE
         setTxtProgressBar(pb, cell)
     }

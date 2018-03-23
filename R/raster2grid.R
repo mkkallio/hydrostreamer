@@ -21,10 +21,10 @@ polygrid_timeseries <- function(brick, aoi=NULL, timesteps = NULL) {
         if( any(class(aoi) %in% accepted) ) {
             aoi <- as(aoi, "Spatial")
             brick <- raster::crop(brick, aoi, snap="out")
-            aoi <- st_as_sf(aoi)
+            aoi <- sf::st_as_sf(aoi)
         } else if ( grepl("Spatial", class(aoi), fixed=TRUE) ) {
             brick <- raster::crop(brick, aoi)
-            aoi <- st_as_sf(aoi)
+            aoi <- sf::st_as_sf(aoi)
         } else {
             stop("Input area of interest should be an object of class from either 'sf' or 'sp' packages")
         }
@@ -40,7 +40,7 @@ polygrid_timeseries <- function(brick, aoi=NULL, timesteps = NULL) {
     # change class to 'sf', intersect grid to aoi, if exists
     if(!is.null(aoi)) {
         grid <- as(grid, "sf") %>%
-            sf::st_intersection(st_union(aoi))
+            sf::st_intersection(sf::st_union(aoi))
     }
 
 
@@ -114,10 +114,10 @@ average_monthly_runoff.RasterBrick <- function(raster) {
       monthly_runoff <- raster::calc(raster[[mts]], mean)
     } else {
       mrro <- raster::calc(raster[[mts]], mean)
-      monthly_runoff <- addLayer(monthly_runoff, mrro)
+      monthly_runoff <- raster::addLayer(monthly_runoff, mrro)
     }
   }
-  raster <- brick(monthly_runoff)
+  raster <- raster::brick(monthly_runoff)
   return(raster)
 }
 
@@ -135,9 +135,9 @@ average_monthly_runoff.RasterStack <- function(raster) {
       monthly_runoff <- raster::calc(raster[[mts]], mean)
     } else {
       mrro <- raster::calc(raster[[mts]], mean)
-      monthly_runoff <- addLayer(monthly_runoff, mrro)
+      monthly_runoff <- raster::addLayer(monthly_runoff, mrro)
     }
   }
-  raster <- brick(monthly_runoff)
+  raster <- raster::brick(monthly_runoff)
   return(raster)
 }

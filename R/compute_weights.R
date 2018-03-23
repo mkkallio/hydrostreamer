@@ -1,5 +1,7 @@
 #' Computes the weights used for each river segment when assigning values of an arbitrarily shaped polygon
-#'   network. The function computes the weights either based on catchment areas(polygons), or line segments
+#'   network. 
+#'   
+#'   The function computes the weights either based on catchment areas(polygons), or line segments
 #'   which intersect a grid cell. Weights are assigned so that the sum of weights for area or line features
 #'   within a grid cell equals to 1.
 #'
@@ -49,12 +51,12 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
     # Convert river and aoi to sf
     # check if 'sf'
     test <- any(class(river) == 'sf')
-    if(!test) river <- st_as_sf(river)
+    if(!test) river <- sf::st_as_sf(river)
 
 
     if(!is.null(aoi)) {
         test <- any(class(aoi) == 'sf')
-        if(!test) aoi <- st_as_sf(aoi)
+        if(!test) aoi <- sf::st_as_sf(aoi)
     }
 
     # check the weights input to determine which track to take (area or line)
@@ -86,7 +88,7 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
 
         # IF aoi is given, intersect river network to aoi
         if(!is.null(aoi)) {
-            river <- st_intersection(river, st_geometry(aoi))
+            river <- sf::st_intersection(river, sf::st_geometry(aoi))
         }
 
         # 1. create flow path information
@@ -118,7 +120,7 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
     if (track == "line") {
         # crop river network to aoi
         if(!is.null(aoi)) {
-            river <- st_intersection(river, st_geometry(aoi))
+            river <- sf::st_intersection(river, sf::st_geometry(aoi))
         }
 
         # 1. split river to grid
@@ -128,7 +130,7 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
         river <- flow_network(river)
 
         # 3. compute weights based on river lines
-        river <- compute_river_weights(river, grid, segment.weights = weights)
+        river <- compute_river_weights(river, grid, seg_weights = weights)
 
         # create output list and class it
         river_grid <- list(river = river, grid = grid)
@@ -199,12 +201,12 @@ compute_area_weights <- function(basins, grid) {
 
 #' Assign weights to area features within grid cells.
 #'
-#' @param segment.weights A character vector specifying type of weights, or a vector of user-specified
+#' @param seg_weights A character vector specifying type of weights, or a vector of user-specified
 #'   weights. See Details section. Defaults to "length".
 #' @inheritParams compute_weights
 #'
 #' @section Details:
-#'   segment.weights should be one of the following: "equal", "length", "strahler", or a numeric vector
+#'   seg_weights should be one of the following: "equal", "length", "strahler", or a numeric vector
 #'   which specifies the weight for each river segment. "equal" assigned grid cell value to all river
 #'   segments within the cell, equally."length" does the same, but weights are based on the length of
 #'   river segment within the cell, so that longer segments get higher weights. "strahler" computes the
@@ -215,13 +217,13 @@ compute_area_weights <- function(basins, grid) {
 #' @export
 #'
 #'
-compute_river_weights <- function(river, grid, segment.weights = "length") {
+compute_river_weights <- function(river, grid, seg_weights = "length") {
   #get elements of rivers intersecting polygons
   riverIntsc <- sf::st_contains(grid,river, sparse=FALSE)
 
-  # if segment.weights is a character vector
-  if (is.character(segment.weights)) {
-      if(segment.weights == "length") {
+  # if seg_weights is a character vector
+  if (is.character(seg_weights)) {
+      if(seg_weights == "length") {
         lengths <- sf::st_length(river) %>%
           unclass()
         weight <- apply(riverIntsc,1, compute_segment_weights, lengths)
@@ -234,7 +236,7 @@ compute_river_weights <- function(river, grid, segment.weights = "length") {
         river$weights  <- weight
         return(river)
 
-      } else if(segment.weights == "equal") {
+      } else if(seg_weights == "equal") {
         #equal weights
         equal <- seq(1,NROW(river))
         weight <- apply(riverIntsc,1, compute_segment_weights, equal)
@@ -247,7 +249,7 @@ compute_river_weights <- function(river, grid, segment.weights = "length") {
         river$weights  <- weight
         return(river)
 
-      } else if(segment.weights == "strahler") {
+      } else if(seg_weights == "strahler") {
         test <- any(names(river) == "STRAHLER")
         if (test) {
           strahler <- river$STRAHLER
@@ -269,9 +271,9 @@ compute_river_weights <- function(river, grid, segment.weights = "length") {
       } else {
         stop("Accepted values for weights are either 'length', 'equal', 'strahler', or a vector of weights. Please check the input.")
       }
-  } else if(is.vector(segment.weights)) {
+  } else if(is.vector(seg_weights)) {
 
-    weight <- apply(riverIntsc,1, compute_segment_weights, segment.weights)
+    weight <- apply(riverIntsc,1, compute_segment_weights, seg_weights)
     weight <- apply(weight,1, FUN=sum)
     weight <- unlist(weight)
 

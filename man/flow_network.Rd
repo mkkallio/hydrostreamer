@@ -13,7 +13,7 @@ flow_network(river, ID = "ID")
 }
 \value{
 Returns the river network with class 'HSrnet' with added columns:
-\itemize {
+\itemize{
   \item PREVIOUS: ID(s) of the previous river segment(s) as a list
   \item NEXT: ID of the segment where the river flows to
   \item DOWNSTREAM: ID(s) of all the river segments downstream for the current segment, as a list.

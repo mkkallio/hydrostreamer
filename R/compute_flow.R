@@ -146,7 +146,7 @@ compute_runoff_using_area <- function(river, basins, grid, rID = "ID", bID = "rI
 
 
   #prepare a table to collect time series
-  Q_ts <- dplyr::select_(river, rID) %>% rename_("ID" = rID)
+  Q_ts <- dplyr::select_(river, rID) %>% dplyr::rename_("ID" = rID)
 
   #basins id's corresponding river ids
   bID <- dplyr::select_(basins, bID) %>%
@@ -196,7 +196,7 @@ compute_runoff_using_area <- function(river, basins, grid, rID = "ID", bID = "rI
 
   # add class to return object, and add specific columns from river object
   class(Q_ts) <- append(class(Q_ts), "HSrunoff")
-  Q_ts <- add_column(Q_ts, PREVIOUS = river$PREVIOUS, NEXT = river$NEXT, DOWNSTREAM = river$DOWNSTREAM, .after=1)
+  Q_ts <- tibble::add_column(Q_ts, PREVIOUS = river$PREVIOUS, NEXT = river$NEXT, DOWNSTREAM = river$DOWNSTREAM, .after=1)
   return(Q_ts)
 }
 
@@ -275,7 +275,7 @@ accumulate_runoff_addition <- function(x) {
   }
   close(pb)
 
-  Q <- add_column(Q, ID = x$ID)
+  Q <- tibble::add_column(Q, ID = x$ID)
   Q_ts <- merge(Q_ts, Q)
   class(Q_ts) <- append(class(Q_ts), "HSflow")
   return(Q_ts)

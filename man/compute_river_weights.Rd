@@ -4,14 +4,14 @@
 \alias{compute_river_weights}
 \title{Assign weights to area features within grid cells.}
 \usage{
-compute_river_weights(river, grid, segment.weights = "length")
+compute_river_weights(river, grid, seg_weights = "length")
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network. Required.}
 
 \item{grid}{A 'HSgrid' object. Required.}
 
-\item{segment.weights}{A character vector specifying type of weights, or a vector of user-specified
+\item{seg_weights}{A character vector specifying type of weights, or a vector of user-specified
 weights. See Details section. Defaults to "length".}
 }
 \value{
@@ -23,7 +23,7 @@ Assign weights to area features within grid cells.
 }
 \section{Details}{
 
-  segment.weights should be one of the following: "equal", "length", "strahler", or a numeric vector
+  seg_weights should be one of the following: "equal", "length", "strahler", or a numeric vector
   which specifies the weight for each river segment. "equal" assigned grid cell value to all river
   segments within the cell, equally."length" does the same, but weights are based on the length of
   river segment within the cell, so that longer segments get higher weights. "strahler" computes the

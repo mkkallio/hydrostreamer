@@ -48,7 +48,7 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
   p4s <- sf::st_crs(river)
 
   # extract end nodes
-  p4s <- st_crs(river)[[2]]
+  p4s <- sf::st_crs(river)[[2]]
   if( grepl("longlat", p4s, fixed=TRUE) ) {
       for (i in 1:n) {
         segcoords <- coords[coords[,3] == i,]
@@ -161,12 +161,12 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
   }
 
   # process IDs
-  voronoi <- rename_(voronoi, riverID = ID)
+  voronoi <- dplyr::rename_(voronoi, riverID = ID)
 
   if (any(names(voronoi) == "ID")) {
       voronoi$ID <- 1:NROW(voronoi)
   } else {
-      voronoi <- add_column(voronoi, ID = 1:NROW(voronoi), .before=1)
+      voronoi <- tibble::add_column(voronoi, ID = 1:NROW(voronoi), .before=1)
   }
 
   return(voronoi)
