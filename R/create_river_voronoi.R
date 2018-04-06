@@ -27,7 +27,7 @@
 #' @export
 #'
 #'
-river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
+river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 0.001) {
   #get rid of extremely small segments
   # set units for the minimum length
   units(min) <- with(units::ud_units, m)
@@ -37,7 +37,9 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
   message(paste0("Cleaned away ", table(short)[2], " segments shorter than ", min, " meter(s). These will not take part in Voronoi polygon creation."))
 
   # set units for tolerance
-  units(tolerance) <- with(units::ud_units, m)
+  #units(tolerance) <- with(units::ud_units, m)
+  
+  ID <- dplyr::select_(river, riverID) %>% sf::st_set_geometry(NULL) %>% unlist()
 
   message("Extracting line segment end points...")
   n <- NROW(river)
@@ -60,7 +62,7 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
           end <- rbind(end, node)
         }
       }
-      end <- sf::st_sfc(end)
+      end <- sf::st_sfc(end) %>% sf::st_set_crs(p4s)
   } else {
     end <- sf::st_line_sample(river, sample=1)
   }
@@ -97,7 +99,8 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
   #create voronoi, spatially join attributes
   # needs also densification of points!
   message("Processing Voronoi tesselation")
-  #vorPoints <- sf::st_line_sample(river, density = 0.001)
+  # ID for the grouping
+  #ID <- 
   vorPoints <- suppressWarnings(sf::st_cast(vorRiv, "POINT"))
   remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","gridID")
   vorPoints <- vorPoints[ , !(names(vorPoints) %in% remove)]
@@ -108,7 +111,7 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
     sf::st_sf() %>%
     sf::st_join(vorPoints) %>%
     lwgeom::st_make_valid() %>% # fix any broken geometries
-    dplyr::group_by_(.dots = list(ID)) %>%
+    dplyr::group_by_(.dots = list(~ID)) %>%
     dplyr::summarise() %>%
     sf::st_intersection(sf::st_geometry(aoi))
 
@@ -124,7 +127,7 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
 
   # sometimes there are voronoi areas left which were not assigned any ID (why??). The following code merges them to the neighbouring polygon
   # with which it shares the longest border segment.
-  IDs <- voronoi[, names(voronoi) %in% ID] %>%
+  IDs <- voronoi[, names(voronoi) %in% riverID] %>%
     sf::st_set_geometry(NULL) %>%
     unlist()
   v.na <- is.na(IDs)
@@ -161,10 +164,10 @@ river_voronoi <- function(river, aoi, riverID = "ID", min=10, tolerance = 5) {
   }
 
   # process IDs
-  voronoi <- dplyr::rename_(voronoi, riverID = ID)
-
   if (any(names(voronoi) == "ID")) {
+      voronoi$riverID <- voronoi$ID
       voronoi$ID <- 1:NROW(voronoi)
+      
   } else {
       voronoi <- tibble::add_column(voronoi, ID = 1:NROW(voronoi), .before=1)
   }
