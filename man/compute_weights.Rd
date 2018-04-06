@@ -3,7 +3,9 @@
 \name{compute_weights}
 \alias{compute_weights}
 \title{Computes the weights used for each river segment when assigning values of an arbitrarily shaped polygon
-  network. The function computes the weights either based on catchment areas(polygons), or line segments
+  network. 
+  
+  The function computes the weights either based on catchment areas(polygons), or line segments
   which intersect a grid cell. Weights are assigned so that the sum of weights for area or line features
   within a grid cell equals to 1.}
 \usage{
@@ -38,7 +40,9 @@ Returns a list object with class 'HSrgrid' or 'HSragrid', depending on the metho
 }
 \description{
 Computes the weights used for each river segment when assigning values of an arbitrarily shaped polygon
-  network. The function computes the weights either based on catchment areas(polygons), or line segments
+  network. 
+  
+  The function computes the weights either based on catchment areas(polygons), or line segments
   which intersect a grid cell. Weights are assigned so that the sum of weights for area or line features
   within a grid cell equals to 1.
 }

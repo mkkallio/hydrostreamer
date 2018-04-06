@@ -76,7 +76,7 @@ average_monthly_runoff <- function(x, timesteps=NULL) {
   UseMethod("average_monthly_runoff", x)
 }
 
-
+#' @export
 average_monthly_runoff.HSgrid <- function(grid) {
   message("Assuming first timestep to be January, and finishing in December.")
   ts <- dplyr::select(grid, -ID, -area_m2) %>% sf::st_set_geometry(NULL)
@@ -101,7 +101,7 @@ average_monthly_runoff.HSgrid <- function(grid) {
   return(grid)
 }
 
-
+#' @export
 average_monthly_runoff.RasterBrick <- function(raster) {
   message("Assuming first timestep to be January, and finishing in December.")
   n_ts <- raster::nlayers(raster)
@@ -122,7 +122,7 @@ average_monthly_runoff.RasterBrick <- function(raster) {
 }
 
 
-
+#' @export
 average_monthly_runoff.RasterStack <- function(raster) {
   message("Assuming first timestep to be January, and finishing in December.")
   n_ts <- raster::nlayers(raster)

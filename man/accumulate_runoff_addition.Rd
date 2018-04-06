@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_flow.R
 \name{accumulate_runoff_addition}
 \alias{accumulate_runoff_addition}
-\title{Title}
+\title{Accumulate runoff downstream}
 \usage{
 accumulate_runoff_addition(x)
 }
@@ -13,5 +13,5 @@ accumulate_runoff_addition(x)
 Returns the input river network where runoff timeseries is switched to accumulated flow for each river segment.
 }
 \description{
-Title
+Applies the simplest possible river routing scheme by adding runoff to all segments downstream, for each timestep.
 }

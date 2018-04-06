@@ -4,12 +4,14 @@
 \alias{compute_segment_runoff}
 \title{Computes specific runoff generated in the river segment based on either polygon or area weighting.}
 \usage{
-compute_segment_runoff(x, timesteps = NULL)
+compute_segment_runoff(x, timesteps = NULL, unit = "mm/s")
 }
 \arguments{
 \item{x}{An object of class 'HSrgrid' or 'HSragrid', obtained with compute_weights().}
 
 \item{timesteps}{A logical vector of the length of timesteps in x, or a numeric vector specifying which timesteps to process. If no timesteps are given, all will be processed.}
+
+\item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". Defaults to mm/s (equivalent to kg/m2/s)}
 }
 \value{
 River network ('sf' linestring object) with river segment specific runoff for all timesteps processed as attribute columns. Object class 'HSrunoff'.

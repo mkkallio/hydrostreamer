@@ -2,6 +2,7 @@
 #'
 #' @param x An object of class 'HSrgrid' or 'HSragrid', obtained with compute_weights().
 #' @param timesteps A logical vector of the length of timesteps in x, or a numeric vector specifying which timesteps to process. If no timesteps are given, all will be processed.
+#' @param unit Unit of runoff. Can be either "mm/s", or "m3/s". Defaults to mm/s (equivalent to kg/m2/s)
 #'
 #' @return River network ('sf' linestring object) with river segment specific runoff for all timesteps processed as attribute columns. Object class 'HSrunoff'.
 #' @export
@@ -11,28 +12,29 @@
 #' compute_segment_runoff(voronoi_weigths)
 #' compute_segment_runoff(voronoi_weigths, timesteps=1:12)
 #' }
-compute_segment_runoff <- function(x, timesteps=NULL) {
+compute_segment_runoff <- function(x, timesteps=NULL, unit="mm/s") {
     UseMethod("compute_segment_runoff")
 }
 
 
-
-compute_segment_runoff.HSrgrid <- function(x, timesteps = NULL) {
+#' @export
+compute_segment_runoff.HSrgrid <- function(x, timesteps = NULL, unit="mm/s") {
 
     if (is.null(timesteps)) {
-          river <- compute_runoff_using_line(x[[1]], x[[2]])
+          river <- compute_runoff_using_line(x[[1]], x[[2]], unit="mm/s")
     } else {
-          river <- compute_runoff_using_line(x[[1]], x[[2]], timesteps=timesteps)
+          river <- compute_runoff_using_line(x[[1]], x[[2]], timesteps=timesteps, unit="mm/s")
     }
   return(river)
 }
 
-compute_segment_runoff.HSragrid <- function(x, timesteps = NULL) {
+#' @export
+compute_segment_runoff.HSragrid <- function(x, timesteps = NULL, unit="mm/s") {
 
   if (is.null(timesteps)) {
-      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]])
+      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], unit="mm/s")
   } else {
-      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], timesteps=timesteps)
+      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], timesteps=timesteps, unit="mm/s")
   }
   return(river)
 }
@@ -228,7 +230,9 @@ accumulate_flow <- function(x, method="simple") {
 
 
 
-#' Title
+#' Accumulate runoff downstream
+#' 
+#' Applies the simplest possible river routing scheme by adding runoff to all segments downstream, for each timestep.
 #'
 #' @inheritParams accumulate_flow
 #'
