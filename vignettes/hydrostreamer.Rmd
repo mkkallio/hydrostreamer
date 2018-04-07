@@ -1,0 +1,177 @@
+---
+title: "hydrostreamer tutorial"
+author: "Marko Kallio"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{hydrostreamer tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+The development of 'hydrostreamer' was inspired by my last study, where one component was estimating water availability in rural villages. In that study, we estimated it using a regional distributed hydrological model with 5km grid size, but I was unhappy with how it actually represented water quantities in the villages. First, the grid size was too large to represent the stream network accurately. Second, because the stream network was not usable, the results could only be taken as a continuous field. However, a continuous field of surface water hardly describes the tendency of water to flow in streams.
+
+Hence, **hydrostreamer** was conceived. **hydrostreamer** takes an off-the-shelf runoff product of an arbitrary resolution, and assigns runoff to an explicitly represented river network. To keep things simple and approachable, there is no modelling involved in the use of **hydrostreamer**, rather, we post-process results from either hydrological or land sufrace models.
+
+The concept of **hydrostreamer** is very simple and easy to grasp, and in fact it is nothing new. There are many solutions which use similar ideas (for instance HydroROUT, RAPID or mizuRoute). These also take off-the-shelf runoff products, and apply river routing algorithms to predict streamflow at explicit river segments. These solutions, however, may be difficult to use due to the technical skills required to install and use them, or they may be developed for licenced software. **hydrostreamer**'s focus is also not in river routing, but in the downscaling step.
+
+
+# Using **hydrostreamer**
+
+Fictional example data is provided with the package for tutorial purposes. It contains a river network with 71 river segments, and runoff timeseries as GeoTIFF (12 layers; one for each month of the year). These are the minimum requirements, but I strongly suggest adding also an area of interest.
+
+```{r}
+library(sf)
+library(raster)
+library(hydrostreamer)
+
+data(river)
+data(basin)
+runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+
+```
+
+
+```{r}
+plot(runoff[[1]])
+plot(st_geometry(river), add=TRUE)
+plot(st_geometry(basin), add=TRUE)
+```
+
+
+**hydrostreamer** workflow occurs in four steps (and four functions):
+
+1. Convert the raster timeseries to a polygon grid
+2. Compute weights for each river segments
+3. Compute segment specific runoff
+4. Apply river routing
+
+## 1. Converting raster to a polygon grid
+
+The raster layers are converted to polygons in order to do all the computations using only vector processing. each cell of the raster is polygonized, and if an area of interest is provided, the polygons are cropped to it. This removes any unneeded grid cells. The resulting 'HSgrid' object has an ID and surface area columns in addition to each timestep as their own columns. 
+```{r message=FALSE, warning=FALSE}
+grid <- polygrid_timeseries(runoff, aoi=basin)
+names(grid)
+plot(grid[,"area_m2"])
+```
+
+
+## 2. Compute weight for each river segment using segment catchments
+
+Once the raster has been polygonized, we can compute the weights. The function provides a possibility to weight the segments by their respective drainage area, or by using segment properties. If the catchment areas for each specific river segment are known, they can be provided. If not, **hydrostreamer** can estimate catchment areas using medial axis delineation (segment specific Voronoi polygons). Alternatively, if the river network is derived from a DEM, providing drainage direction raster allows **hydrostreamer** to delineate basins according to it.
+
+Here, our river network is not a product of a DEM, so we'll use medial axis delineation. The area of interest is important here as it is used to clip the voronoi polygons.
+```{r message=FALSE, warning=FALSE, include=FALSE}
+voronoi <- river_voronoi(river, aoi=basin)
+```
+
+```{r message=FALSE, warning=FALSE}
+plot(voronoi[,"riverID"])
+plot(st_geometry(river), add=TRUE)
+```
+
+Each river segment now has a specific drainage area associated with it, and these can be used to weight. The voronoi creating step can be incorporated in the basin weighting step. here the third argument "area" tells the function that we're using area-based weighting.
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+v.weights <- compute_weights(river, grid, "area", aoi=basin)
+```
+
+If the basins were already calculated, we could also skip the extra delineation step by providing the basin areas.
+```{r message=TRUE, warning=TRUE, include=FALSE}
+v.weights <- compute_weights(river, grid, "area", aoi=basin, basins = voronoi)
+```
+
+
+The output ('HSragrid') is a list of 3 objects: 
+
+1. a routed river network (created using *river_network*)
+2. weighted basins (in this case, weighted Voronoi polygons)
+3. 'HSgrid' object created earlier
+
+```{r}
+plot(v.weights[[2]][,"weights"])
+```
+
+
+## 2. Compute weight for each river segment using segment linestrings
+
+If the river network is very large, creating the catchment areas may take considerable amount of time. Alternative is to simply use the river segments and their properties for weighting. There are some important things to consider here. Runoff is allocated to the river segments only where they intersect the grid cells. In our example, this means that grid ID 4 on the left edge of the area of interest is not considered, because no river line crosses to that grid cell (see below).
+
+```{r message=FALSE, warning=FALSE}
+plot(grid[,"ID"])
+plot(st_geometry(river), add=TRUE)
+```
+
+
+Currently, **hydrostreamer** offers four ways to weight the segments:
+
+1. equal weights (equally divide the grid cell value to all segments within)
+2. Strahler stream order 
+3. Segment length
+4. User provided numeric vector
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+l.weights <- compute_weights(river, grid, "length", aoi=basin)
+```
+
+The function works a little bit different with segment-based weighting. The river network is first split at grid cell boundaries (using function *split_river_with_grid*). The segments are then routed with *river_network*, and finally weighted based on the property defined. The output ('HSrgrid') is a list of 2 objects: 
+
+1. a split and routed river network
+2. 'HSgrid' object created earlier
+
+
+
+## 3. Compute segment spefic runoff
+
+After weighting, we can apply the actual downscaling.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+v.runoff <- compute_segment_runoff(v.weights)
+l.runoff <- compute_segment_runoff(l.weights)
+```
+
+The output is the river network with additional runoff columns for each timestep (in our case, one for each month of the year).
+```{r}
+v.runoff
+```
+
+```{r message=FALSE, warning=FALSE}
+plot(v.runoff[,"TS9"])
+plot(st_geometry(st_cast(grid, "LINESTRING")), add=TRUE)
+plot(l.runoff[,"TS9"])
+plot(st_geometry(st_cast(grid, "LINESTRING")), add=TRUE)
+```
+
+Some differences between the two approaches can be seen here: the long segment in the middle of the basin is split into shorter segments, when segment-based weighting is included. In catchment based weighting this is not automatically done (nothing stops the user from splitting the river network prior to creating the basins). 
+
+## 4. Apply river routing
+
+The last step is to accumulate flow downstream. The previous step only assigned the grid cell value to the streams. This may be usable in itself, e.g. if we were interested whether the water use in a specific segment is self-sufficient, or is dependent on flow from upstream. However, often we want to know the accumulated discharge at certain points of the river. 
+
+**hydrostreamer** currently (April 2018) only implements the simplest possible river routing by adding all runoff to every segment downstream, at each timestep. This is an overly simple scheme, and there are plans to add more sophisticated river routing algorithms to the package.
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+v.flow <- accumulate_flow(v.runoff)
+l.flow <- accumulate_flow(l.runoff)
+```
+
+```{r message=FALSE, warning=FALSE}
+plot(v.flow[,"TS9"])
+plot(l.flow[,"TS9"])
+```
+
+
+# Conclusion
+
+**hydrostreamer** provides simple tools to downscale off-the-shelf runoff products without performing additional modelling. The package is under rapid development. Some planned upcoming features in future releases include:
+
+* Add Muskingum river routing scheme
+* Analysis and plotting functions supporting observation data
+* Optimising an ensemble of several runoff products based on observed flow

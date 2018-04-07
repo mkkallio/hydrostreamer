@@ -21,9 +21,9 @@ compute_segment_runoff <- function(x, timesteps=NULL, unit="mm/s") {
 compute_segment_runoff.HSrgrid <- function(x, timesteps = NULL, unit="mm/s") {
 
     if (is.null(timesteps)) {
-          river <- compute_runoff_using_line(x[[1]], x[[2]], unit="mm/s")
+          river <- compute_runoff_using_line(x[[1]], x[[2]], unit=unit)
     } else {
-          river <- compute_runoff_using_line(x[[1]], x[[2]], timesteps=timesteps, unit="mm/s")
+          river <- compute_runoff_using_line(x[[1]], x[[2]], timesteps=timesteps, unit=unit)
     }
   return(river)
 }
@@ -32,9 +32,9 @@ compute_segment_runoff.HSrgrid <- function(x, timesteps = NULL, unit="mm/s") {
 compute_segment_runoff.HSragrid <- function(x, timesteps = NULL, unit="mm/s") {
 
   if (is.null(timesteps)) {
-      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], unit="mm/s")
+      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], unit=unit)
   } else {
-      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], timesteps=timesteps, unit="mm/s")
+      river <- compute_runoff_using_area(x[[1]], x[[2]], x[[3]], timesteps=timesteps, unit=unit)
   }
   return(river)
 }

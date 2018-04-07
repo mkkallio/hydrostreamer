@@ -4,7 +4,7 @@
 \alias{river_voronoi}
 \title{Create segment-specific Voronoi polygons from a network.}
 \usage{
-river_voronoi(river, aoi, riverID = "ID", min = 10, tolerance = 5)
+river_voronoi(river, aoi, riverID = "ID", min = 10, tolerance = 0.001)
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network. Required.}
@@ -17,7 +17,7 @@ river network. Defaults to "ID".}
 \item{min}{A numeric value. Removes segments which are shorter than the value in meters, in order to remove unnecessarily
 short river segments. Defaults to 10 meters.}
 
-\item{tolerance}{The radius, in meters, of the buffer used to take difference. Defaults to 5 meters.}
+\item{tolerance}{Radius of the buffer used to take difference. Defaults to 0.001 (in map units).}
 }
 \value{
 Returns an 'sf' polygon object, with a column "ID" corresponding to the river segment IDs.

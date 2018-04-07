@@ -6,7 +6,7 @@
 #'
 #' @param min A numeric value. Removes segments which are shorter than the value in meters, in order to remove unnecessarily
 #'   short river segments. Defaults to 10 meters.
-#' @param tolerance The radius, in meters, of the buffer used to take difference. Defaults to 5 meters.
+#' @param tolerance Radius of the buffer used to take difference. Defaults to 0.001 (in map units).
 #' @inheritParams compute_weights
 #'
 #' @section Details:

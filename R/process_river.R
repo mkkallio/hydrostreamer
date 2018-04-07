@@ -13,7 +13,7 @@ split_river_with_grid <- function(river, grid) {
   names(grid)[names(grid)=="ID"] <- "gridID"
   river <- suppressMessages(suppressWarnings(sf::st_intersection(river, grid)))
 
-  names(river)[names(river)=="ID"] <- "gridID"
+  #names(river)[names(river)=="ID"] <- "gridID"
   #river <- select(river, -area_m2)
 
   #get rid of multilinestrings

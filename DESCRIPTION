@@ -1,9 +1,9 @@
 Package: hydrostreamer
 Type: Package
-Title: A package for assigning runoff from land surface models to explicit river segments
-Version: 0.0.0.9001
+Title: A package for assigning runoff from hydrological or land surface models to explicit river segments
+Version: 0.0.0.9002
 Author: person("Marko", "Kallio", email = "marko@markokallio.fi", role = c("aut", "cre"))
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: The package maintainer <marko@markokallio.fi>
 Description: Package description to be added.
     To be added I said!
 Depends: R (>= 3.4.0)
@@ -21,6 +21,7 @@ Imports:
 Suggests:
     knitr,
     rmarkdown
+LazyData: true
 License: GPL-3
 URL: https://github.com/mkkallio/hydrostreamer
 BugReports: https://github.com/mkkallio/hydrostreamer/issues
