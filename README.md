@@ -21,6 +21,16 @@ Minimum data requirement is a runoff timeseries, either as polygons or in raster
 
 First, load data to R:
 
+``` r
+library(sf)
+library(raster)
+library(hydrostreamer)
+
+data(river)
+data(basin)
+runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+```
+
 ### 1. Convert raster timeseries to a polygon grid
 
 If the runoff timeseries is in a raster format, it needs to be polygonized. *polygrid\_timeseries()* does that, and adds two columns: ID with unique ID for each polygon, and area\_m2, the surface area of each polygon. Providing an area of interest clips the polygons to the area.
@@ -44,10 +54,20 @@ Next, we weight the river segments within each segment, so that the weights of s
 
 Here, we use Voronoi delineated basins. For information on the other options, see *help(compute\_weights)*.
 
+``` r
+v.weights <- compute_weights(river, grid, "area", aoi=basin)
+```
+
+
 ### 3. Compute segment specific runoff
 
 With the weights computed, we can compute segment specific runoff.
 
+``` r
+v.runoff <- compute_segment_runoff(v.weights)
+```
+
+ 
 Plot first six timesteps:
 
 ``` r
@@ -61,6 +81,10 @@ plot(v.runoff[,5:10])
 The last step is to accumulate flow downstream. The previous step only assigned the grid cell value to the streams. This may be usable in itself, e.g. if we were interested whether the water use in a specific segment is self-sufficient, or is dependent on flow from upstream. However, often we want to know the accumulated discharge at certain points of the river.
 
 **hydrostreamer** currently (April 2018) only implements the simplest possible river routing by adding all runoff to every segment downstream, at each timestep. This is an overly simple scheme, and there are plans to add more sophisticated river routing algorithms to the package.
+
+``` r
+v.flow <- accumulate_flow(v.runoff)
+```
 
 Plot the same timesteps as above:
 
