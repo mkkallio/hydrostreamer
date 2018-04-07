@@ -1,6 +1,8 @@
 hydrostreamer
 =============
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214523.svg)](https://doi.org/10.5281/zenodo.1214523)
+
 **hydrostreamer** is an R package to downscale off-the-shelf runoff timeseries into explicitly represented river network. Downscaling is done by the spatial relationship between a polygon (raster cell) with runoff information and the river network. The cell value is divided among those river segments which intersect the cell in question using weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also provided to estimate discharge at each segment.
 
 To install **hydrostreamer**, use *devtools::install\_github()* in RStudio. You should have R version higher than 3.4.0 for the package to work properly.
