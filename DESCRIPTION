@@ -4,8 +4,11 @@ Title: A package for assigning runoff from hydrological or land surface models t
 Version: 0.0.0.9002
 Author: person("Marko", "Kallio", email = "marko@markokallio.fi", role = c("aut", "cre"))
 Maintainer: The package maintainer <marko@markokallio.fi>
-Description: Package description to be added.
-    To be added I said!
+Description: hydrostreamer is a package to downscale off-the-shelf runoff timeseries into explicitly represented 
+  river network. Downscaling is done by the spatial relationship between a polygon (raster cell) with runoff information
+  and the river network. The cell value is divided among those river segments which intersect the cell in question using
+  weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also
+  provided to estimate discharge at each segment.
 Depends: R (>= 3.4.0)
 Encoding: UTF-8
 Imports:
@@ -22,7 +25,7 @@ Suggests:
     knitr,
     rmarkdown
 LazyData: true
-License: GPL-3
+License: MIT
 URL: https://github.com/mkkallio/hydrostreamer
 BugReports: https://github.com/mkkallio/hydrostreamer/issues
 VignetteBuilder: knitr
