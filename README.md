@@ -1,4 +1,7 @@
-**hydrostreamer** is a package to downscale off-the-shelf runoff timeseries into explicitly represented river network. Downscaling is done by the spatial relationship between a polygon (raster cell) with runoff information and the river network. The cell value is divided among those river segments which intersect the cell in question using weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also provided to estimate discharge at each segment.
+hydrostreamer
+=============
+
+**hydrostreamer** is an R package to downscale off-the-shelf runoff timeseries into explicitly represented river network. Downscaling is done by the spatial relationship between a polygon (raster cell) with runoff information and the river network. The cell value is divided among those river segments which intersect the cell in question using weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also provided to estimate discharge at each segment.
 
 To install **hydrostreamer**, use *devtools::install\_github()* in RStudio. You should have R version higher than 3.4.0 for the package to work properly.
 
@@ -22,10 +25,7 @@ If the runoff timeseries is in a raster format, it needs to be polygonized. *pol
 
 ``` r
 grid <- polygrid_timeseries(runoff, aoi=basin)
-plot(grid[,"area_m2"])
 ```
-
-![](README_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 ### 2. Compute weights for each river segment
 
