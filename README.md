@@ -5,7 +5,7 @@ hydrostreamer
 
 **hydrostreamer** is an R package to downscale spatial runoff data products by spatial relationship between the areal unit in runoff data, and an explicitly represented river network. In practise the downscaling occurs by dividing the value of runoff to all those river segments intersecting the areal unit (of runoff) using a numerical attribute for weighting. These attributes can be, for instance, length of the intersecting river segment, Strahler number, or area of the segment-specific catchment.
 
-![](README_files/figure-markdown_github/hs_1.png) *Downscaling in hydrostreamer can be done either using river segment lines, or by their catchment areas. This is an example in case of a gridded runoff product, but the areal units can be arbitrarily shaped*
+![](https://github.com/mkkallio/hydrostreamer/blob/master/man/figures/hs_1.png) *Downscaling in hydrostreamer can be done either using river segment lines, or by their catchment areas. This is an example in case of a gridded runoff product, but the areal units can be arbitrarily shaped*
 
 To install **hydrostreamer**, use *devtools::install\_github()* in RStudio. You should have R version higher than 3.4.0 for the package to work properly.
 
