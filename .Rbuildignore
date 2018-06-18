@@ -9,6 +9,5 @@ NAMESPACE-old
 v.gpkg
 v1.gpkg
 README_files
-docs
 R/old_functions_not_included_in_package.R
 News.md
