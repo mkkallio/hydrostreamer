@@ -2,70 +2,106 @@
 % Please edit documentation in R/compute_weights.R
 \name{compute_weights}
 \alias{compute_weights}
-\title{Computes the weights used for each river segment when assigning values of an arbitrarily shaped polygon
-  network. 
-  
-  The function computes the weights either based on catchment areas(polygons), or line segments
-  which intersect a grid cell. Weights are assigned so that the sum of weights for area or line features
-  within a grid cell equals to 1.}
+\title{Computes weights to assign runoff from runoff area features to the supplied river network.}
 \usage{
 compute_weights(river, grid, weights, aoi = NULL, basins = NULL,
-  drain.dir = NULL, riverID = "ID")
+  drain.dir = NULL, riverID = "riverID", verbose = FALSE)
 }
 \arguments{
-\item{river}{An 'sf' linestring feature representing a river network. Required.}
+\item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{grid}{A 'HSgrid' object. Required.}
+\item{grid}{A 'HSgrid' object, obtained with \code{\link{polygrid_timeseries}}.}
 
 \item{weights}{A character vector specifying type of weights, or a vector of user-specified weights. See
-Details section. Required.}
+Details.}
 
-\item{aoi}{An 'sf' polygon object, or an object which can be converted to 'sf' using st_as_sf(). Optional.}
+\item{aoi}{An 'sf' polygon object. Optional.}
 
-\item{basins}{If weights are set to "area", providing basins skips the polygon generation process.
-See Details section. Optional.}
+\item{basins}{An 'sf' polygon object. If weights are set to "area", providing basins skips the delineation 
+process. See Details. Optional.}
 
-\item{drain.dir}{If weights are set to "area", providing a drainage direction raster enables delineation
-of drainage basins from the provided river network. See Details. Optional.}
+\item{drain.dir}{A RasterLayer object. If weights are set to "area", providing a drainage direction raster 
+enables delineation of drainage basins for the provided river network. Optional.}
 
-\item{riverID}{A character string which specifies the name of the column containing unique identifier in
-river network. Defaults to "ID".}
+\item{riverID}{A character string which specifies the name of the column in \code{river} containing unique river network 
+identifiers. Defaults to "riverID".}
+
+\item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-Returns a list object with class 'HSrgrid' or 'HSragrid', depending on the method of weighting.
-  A 'HSrgrid' object includes the split, routed and weighted river network as first list element, and the
-  'HSgrid' object  as the second list element. In A 'HSragrid' object, the first list element is the routed
-  river network, the second element is a weighted area feature (catchment areas split at grid cell boundaries),
-  and the third list element is the 'HSgrid' object.
+Returns a list object with class 'HSweights', containing the following elements:
+\itemize{
+  \item \code{river}. The supplied river network with routing information. See \code{\link{flow_network}} 
+  for details.
+  \item \code{weights}. River network lines or catchment polygon network which was used as the basis of 
+  weighting. See \code{\link{compute_area_weights}} or \code{\link{compute_river_weights}} for details.
+  \item \code{grid}. HSgrid object containing runoff information. See \code{\link{polygrid_timeseries}} for
+  details.
+}
 }
 \description{
-Computes the weights used for each river segment when assigning values of an arbitrarily shaped polygon
-  network. 
-  
-  The function computes the weights either based on catchment areas(polygons), or line segments
-  which intersect a grid cell. Weights are assigned so that the sum of weights for area or line features
-  within a grid cell equals to 1.
+The function computes weights either based on catchment areas (polygons), or line segments which 
+intersect a polygon with runoff information. Weights are assigned so that the sum of weights for area or 
+line features within a polygon equal to 1.
 }
-\section{Details}{
+\details{
+The river network needs to be connected, so that connected river segments share a node, and all
+linestrings are cut at segment intersections (a "clean" network).
 
-  The river network needs to be connected, so that neighbouring river segments share a node, and all
-  linestrings are cut at segment intersections (a "clean" network).
-
-  Weights should be one of the following: "equal", "length", "strahler", "area", or a numeric vector
-  which specifies the weight for each river segment. Equal, length, Strahler or user-defined weights are
-  based on line segments. "equal" assigned grid cell value to all river segments within the cell, equally.
-  "length" does the same, but weights are based on the length of river segment within the cell, so that
-  longer segments get higher weights. "strahler" computes the strahler stream order for the river network
-  and weights are based on that.
-
-  If line-based weights are used, the river network is split at grid cell boundaries.
-
-  "area" weights is used when catchment-based weighting is desired. It assigns cell value based on the area
-  of catchment inside the grid cell. If no predefined basins or drainage directions are given, the function
-  computes Voronoi polygons based on the river network input. If drainage direction raster is given the
-  function computes catchment areas for each river segment in the input (however, at this stage the algorithm
-  is implemented in R and is slow).
-
-  Area of interest is optional. If provided, the river network will be clipped using it.
+Weights should be one of the following: "equal", "length", "strahler", "area", or a numeric vector
+which specifies the weight for each river segment. 
+\itemize{
+  \item \code{equal} option assigns equal weights to all river segments within a polygon.
+  \item \code{length} option weights river segments within a polygon based on the length of the segment.
+  \item \code{strahler} option weights river segments based on the Strahler number computed for the 
+  supplied river network.
+  \item A numeric vector with length equal to the number of features in \code{river}. Weights will be
+  computed within a polygon: \eqn{x_i/sum(x)}
+  \item \code{area} option weights the river segments based on segment-specific catchment area falling
+  inside a polygon. See more details below.
 }
 
+If line-based weights (equal, length, strahler, user specified vector) are used, the river network is split 
+at grid cell boundaries before determining polygon-segment relationship.
+
+"area" weights can be used when catchment-based weighting is desired. If no further data is supplied, the 
+function computes a Voronoi diagram from the river network (see \code{\link{river_voronoi}} for details). By
+providing a drainage direction raster, segment specific catchment are delineated based on it (see
+\code{\link{delineate_basin}} for details). If the basins are known, they can be supplied which allows
+skipping the delineation step entirely.
+
+Area of interest is optional. If provided, the river network will be clipped using the supplied AoI.
+}
+\examples{
+\dontrun{
+library(raster)
+library(hydrostreamer)
+
+# load data
+data(river)
+data(basin)
+runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+
+# create HSgrid
+grid <- polygrid_timeseries(grid, aoi=basin)
+
+# weights based on line segments
+# equal
+eq <- compute_weights(river, grid, "equal", aoi=basin, riverID="ID")
+# length
+len <- compute_weights(river, grid, "length", aoi=basin, riverID="ID")
+# strahler
+str <- compute_weights(river, grid, "strahler", aoi=basin, riverID="ID")
+# vector of weights
+w <- rnorm(nrow(river))
+vec <- compute_weights(river, grid, w, aoi=basin, riverID="ID")
+
+# catchment based weights
+# Voronoi diagram
+vor <- compute_weights(river, grid, "area", aoi=basin, riverID="ID")
+# using predefined basins
+basins <- river_voronoi(river, aoi=basin, riverID = "ID")
+bas <- compute_weights(river, grid, "area", basins=basins, aoi=basin, riverID="ID")
+}
+
+}
