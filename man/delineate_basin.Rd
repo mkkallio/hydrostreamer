@@ -29,12 +29,6 @@ This algorithm delineates multiple catchments from input point locations and a d
 Catchments are delineated upstream from the point given, until another given outlet point is met. The result
 is a set of catchments which are unique to the points given.
 }
-\details{
-Note that this function is currently implemented using R alone, which means that the for large areas of interest,
-computation time may take long. Reading the drainage direction raster entirely to memory (using 
-\code{\link[raster]{readAll}} from the \code{raster} package) speeds up the computation#' considerably, and is strongly 
-suggested.
-}
 \examples{
 \dontrun{
 # to be added

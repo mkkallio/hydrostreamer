@@ -1,4 +1,13 @@
 
+# hydrostreamer 0.2.1
+
+*   `flow_network()` now works correctly even if the last features in the river network
+    did not have any downstream segments.
+    
+*   `delineate_basin()` is now re-implemented partly in Fortran, yielding a very large speed
+    boost compared to the previous R native implementation.
+
+
 # hydrostreamer 0.2.0
 
 ## Minor improvements and fixes

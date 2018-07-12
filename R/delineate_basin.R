@@ -4,10 +4,6 @@
 #' Catchments are delineated upstream from the point given, until another given outlet point is met. The result
 #' is a set of catchments which are unique to the points given.
 #' 
-#' Note that this function is currently implemented using R alone, which means that the for large areas of interest,
-#' computation time may take long. Reading the drainage direction raster entirely to memory (using 
-#' \code{\link[raster]{readAll}} from the \code{raster} package) speeds up the computation#' considerably, and is strongly 
-#' suggested.   
 #'
 #' @param outlets An 'sf' point object, with locations of the catchment outlets for delineation. Obtained
 #' e.g. with \code{\link{river_outlets}}
