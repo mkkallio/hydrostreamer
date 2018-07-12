@@ -5,7 +5,10 @@
 #'and the river network. The cell value is divided among those river segments which intersect the cell in question using
 #'weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also
 #'provided to estimate discharge at each segment.
-#'
+#' @importFrom dplyr %>%
+#' @importFrom utils setTxtProgressBar
+#' @importFrom utils txtProgressBar
+#' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer
 NULL

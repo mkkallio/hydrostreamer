@@ -18,6 +18,10 @@ average_monthly_runoff <- function(x) {
 
 #' @export
 average_monthly_runoff.HSgrid <- function(x) {
+    
+    gridID <- NULL
+    area_m2 <- NULL
+    
     message("Assuming first timestep to be January, and finishing in December.")
     ts <- dplyr::select(x, -gridID, -area_m2) %>% sf::st_set_geometry(NULL)
     n_ts <- NCOL(ts)

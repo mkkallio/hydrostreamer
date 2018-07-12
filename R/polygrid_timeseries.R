@@ -14,6 +14,10 @@
 #'
 polygrid_timeseries <- function(brick, aoi=NULL, timesteps = NULL) {
     
+    . <- NULL
+    gridID <- NULL
+    area_m2 <- NULL
+    
     # test for brick-class
     accepted <- c("RasterLayer", "RasterStack", "RasterBrick")
     if (!any(class(brick) %in% accepted)) stop("brick needs to be a Raster* object")
@@ -24,7 +28,7 @@ polygrid_timeseries <- function(brick, aoi=NULL, timesteps = NULL) {
         # if aoi is an 'sf' object, else if its an 'sp' object, else stop
         accepted <- c("sf", "sfc", "sfg")
         if( any(class(aoi) %in% accepted) ) {
-            aoi <- as(aoi, "Spatial")
+            aoi <- methods::as(aoi, "Spatial")
             brick <- raster::crop(brick, aoi, snap="out")
             aoi <- sf::st_as_sf(aoi)
         } else if ( grepl("Spatial", class(aoi), fixed=TRUE) ) {
@@ -44,7 +48,7 @@ polygrid_timeseries <- function(brick, aoi=NULL, timesteps = NULL) {
     
     # change class to 'sf', intersect grid to aoi, if exists
     if(!is.null(aoi)) {
-        grid <- suppressWarnings(suppressMessages(as(grid, "sf") %>%
+        grid <- suppressWarnings(suppressMessages(methods::as(grid, "sf") %>%
                                                       sf::st_intersection(., sf::st_union(aoi))))
     }
     

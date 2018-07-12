@@ -31,7 +31,7 @@ is a set of catchments which are unique to the points given.
 }
 \details{
 Note that this function is currently implemented using R alone, which means that the for large areas of interest,
-computation time may be long. Reading the drainage direction raster entirely to memory (using 
+computation time may take long. Reading the drainage direction raster entirely to memory (using 
 \code{\link[raster]{readAll}} from the \code{raster} package) speeds up the computation#' considerably, and is strongly 
 suggested.
 }

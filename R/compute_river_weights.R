@@ -53,6 +53,10 @@
 #' @export
 compute_river_weights <- function(river, grid, seg_weights = "length", riverID = "riverID", split=FALSE) {
     
+    weights <- NULL
+    ID <- NULL
+    gridID <- NULL
+    
     if(!any(class(grid) == "HSgrid")) {
         stop("grid input should be of class HSgrid, obtained with function polygrid_timeseries()")
     }

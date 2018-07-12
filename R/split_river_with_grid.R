@@ -31,6 +31,9 @@
 #' @export
 split_river_with_grid <- function(river, grid, riverID = "riverID") {
     
+    gridID <- NULL
+    ID <- NULL
+    
     #inspect input
     accepted <- c("LINESTRING", "MULTILINESTRING", "GEOMETRY")
     if(!any(class(river) %in% accepted) && !any(class(river) == "sf")) {

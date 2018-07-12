@@ -10,4 +10,10 @@ v.gpkg
 v1.gpkg
 README_files
 R/old_functions_not_included_in_package.R
+R/dev.R
+src/del.R
+src/fort.R
 News.md
+src
+fort.6
+docs

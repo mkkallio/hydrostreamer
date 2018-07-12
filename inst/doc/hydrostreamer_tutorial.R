@@ -8,6 +8,7 @@ knitr::opts_chunk$set(
 library(sf)
 library(raster)
 library(hydrostreamer)
+library(rgdal)
 
 data(river)
 data(basin)

@@ -32,6 +32,7 @@ Fictional example data is provided with the package for tutorial purposes. It co
 library(sf)
 library(raster)
 library(hydrostreamer)
+library(rgdal)
 
 data(river)
 data(basin)

@@ -32,6 +32,8 @@
 compute_segment_runoff_without_HSweights <- function(river, weights, grid, rID = "riverID", wID = "riverID",
                                                      timesteps = NULL, unit = "mm/s", verbose = FALSE) {
     
+    area_m2 <- NULL
+    
     if(!any(class(grid) == "HSgrid")) {
         stop("grid input should be of class HSgrid, obtained with function polygrid_timeseries()")
     }

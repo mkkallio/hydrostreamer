@@ -43,6 +43,13 @@
 #' @export
 compute_area_weights <- function(basins, grid, riverID = "riverID") {
     
+    gridID <- NULL
+    area_m2 <- NULL
+    weights <- NULL
+    ID <- NULL
+    b_area_m2 <- NULL
+    g_area_m2 <- NULL
+    
     if(!any(class(grid) == "HSgrid")) {
         stop("grid input should be of class HSgrid, obtained with function polygrid_timeseries()")
     }

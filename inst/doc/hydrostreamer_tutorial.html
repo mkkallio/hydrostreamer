@@ -12,7 +12,7 @@
 
 <meta name="author" content="Marko Kallio" />
 
-<meta name="date" content="2018-06-18" />
+<meta name="date" content="2018-07-12" />
 
 <title>hydrostreamer tutorial</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">hydrostreamer tutorial</h1>
 <h4 class="author"><em>Marko Kallio</em></h4>
-<h4 class="date"><em>2018-06-18</em></h4>
+<h4 class="date"><em>2018-07-12</em></h4>
 
 
 
@@ -83,6 +83,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sf)
 <span class="kw">library</span>(raster)
 <span class="kw">library</span>(hydrostreamer)
+<span class="kw">library</span>(rgdal)
+<span class="co">#&gt; rgdal: version: 1.2-20, (SVN revision 725)</span>
+<span class="co">#&gt;  Geospatial Data Abstraction Library extensions to R successfully loaded</span>
+<span class="co">#&gt;  Loaded GDAL runtime: GDAL 2.2.3, released 2017/11/20</span>
+<span class="co">#&gt;  Path to GDAL shared files: C:/Users/haiwe/Documents/R/win-library/3.5/rgdal/gdal</span>
+<span class="co">#&gt;  GDAL binary built with GEOS: TRUE </span>
+<span class="co">#&gt;  Loaded PROJ.4 runtime: Rel. 4.9.3, 15 August 2016, [PJ_VERSION: 493]</span>
+<span class="co">#&gt;  Path to PROJ.4 shared files: C:/Users/haiwe/Documents/R/win-library/3.5/rgdal/proj</span>
+<span class="co">#&gt;  Linking to sp version: 1.2-7</span>
 
 <span class="kw">data</span>(river)
 <span class="kw">data</span>(basin)

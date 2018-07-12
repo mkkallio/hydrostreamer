@@ -30,6 +30,11 @@
 #' @export
 flow_network <- function(river, riverID = "riverID", verbose=FALSE) {
     
+    PREVIOUS <- NULL
+    NEXT <- NULL
+    DOWNSTREAM <- NULL
+    UP_SEGMENTS <- NULL
+    
     #inspect input
     if(!any(class(river) == "sf")) {
         stop("river input should be an 'sf' LINESTRING object")
@@ -108,6 +113,7 @@ flow_network <- function(river, riverID = "riverID", verbose=FALSE) {
             n <- n+1
             
             nextID <- which(IDs == to)
+            if(length(nextID) == 0) nextID <- -9999
             all[[n]] <- IDs[nextID]
             to <- TO[[nextID]]
             if(to == -9999){
@@ -122,9 +128,18 @@ flow_network <- function(river, riverID = "riverID", verbose=FALSE) {
         
         if(verbose) setTxtProgressBar(pb, i)
     }
+    
     if(verbose) close(pb)
     
     TO <- unlist(TO)
+    
+    # if the last features in river are river outlets (next ID == -9999), the TO_ALL list will be shorter
+    # than nrow(river). If this is the case, grow TO_ALL with lists containing NULL
+    if(length(TO_ALL) != nrow(river)) {
+        for (i in 1:(nrow(river)-length(TO_ALL)))
+            ind <- length(TO_ALL)
+            TO_ALL[[ ind+i ]] <- list(NULL)
+    }
     
     #  process output
     #cat("\n")

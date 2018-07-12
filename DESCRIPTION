@@ -1,7 +1,7 @@
 Package: hydrostreamer
 Type: Package
 Title: A package for assigning runoff output from hydrological or land surface models to explicit river segments
-Version: 0.2.0
+Version: 0.2.1
 Date: 2018-04-07
 Authors@R: person("Marko", "Kallio", email = "marko@markokallio.fi", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6917-7790"))
 Maintainer: The package maintainer <marko@markokallio.fi>
@@ -16,12 +16,12 @@ Imports:
     dplyr,
     geosphere,
     lwgeom,
-    magrittr,
     methods,
     raster,
     sf,
     tibble,
-    units
+    units,
+    rgdal
 Suggests:
     knitr,
     rmarkdown

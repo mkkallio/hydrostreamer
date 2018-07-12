@@ -38,6 +38,8 @@ switch_grid <- function(HSweights, grid, gridID = "gridID") {
     if (!test_ID) stop("Replacing grid has ID's which do not match existing grid ID's in original grid.")
     
     if (test_area && test_ID) HSweights[[3]] <- grid else stop('Replacing grid is not equivalent to existing one.')
+    
+    return(HSweights)
 }
 
 
@@ -56,7 +58,7 @@ switch_grid <- function(HSweights, grid, gridID = "gridID") {
 #' @export
 upstream <- function(HSnetwork, ID, riverID = "riverID") {
     
-    if(!any(class(river) == "HSnetwork")) {
+    if(!any(class(HSnetwork) == "HSnetwork")) {
         stop("river input should be of class HSnetwork, obtained with function flow_network()")
     }
     

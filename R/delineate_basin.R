@@ -5,7 +5,7 @@
 #' is a set of catchments which are unique to the points given.
 #' 
 #' Note that this function is currently implemented using R alone, which means that the for large areas of interest,
-#' computation time may be long. Reading the drainage direction raster entirely to memory (using 
+#' computation time may take long. Reading the drainage direction raster entirely to memory (using 
 #' \code{\link[raster]{readAll}} from the \code{raster} package) speeds up the computation#' considerably, and is strongly 
 #' suggested.   
 #'
@@ -30,84 +30,40 @@
 #' @export
 delineate_basin <- function(outlets, drain.dir, riverID = "riverID", verbose = FALSE) {
     
+    #do checks
+    if (sf::st_is(outlets[1,], "LINESTRING")) outlets <- river_outlets(outlets, drain.dir)
+    
+    #prepare data and delineate
+    if (verbose) message("Preparing..")
     rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(outlets))
     outlets$cell <- rp
     outlets <- outlets[!is.na(outlets$cell),]
     ID <- outlets %>% dplyr::select_(riverID) %>% sf::st_set_geometry(NULL) %>% unlist()
+    ny <- nrow(drain.dir)
+    nx <- ncol(drain.dir)
+    nseeds <- nrow(outlets)
+    drdir <- raster::values(drain.dir)
+    delbas <- vector("numeric", raster::ncell(drain.dir))
+    if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
+    delbas <- .Fortran("delineate", as.integer(nx), as.integer(ny), as.integer(nseeds), as.integer(outlets$cell), 
+                       as.integer(ID), as.integer(drdir), as.integer(delbas), PACKAGE = 'hydrostreamer')[[7]]
     
-    #create empty raster for delineated basins
-    delbas <- drain.dir
-    raster::values(delbas) <- 0
-    raster::values(delbas)[outlets$cell] <- ID
-    
-    cell_list <- vector("list", nrow(outlets))
-    
-    maxbasin <- round(ncell(drain.dir)/nrow(outlets)*10,0)
-    
-    if(verbose) pb <- txtProgressBar(min = 0, max = nrow(outlets), style = 3)
-    
-    # delineate upstream from every point given
-    for (point in 1:nrow(outlets)) {
-        
-        #start the cellvisit list
-        c2v <- list()
-        basincells <- vector("numeric", maxbasin)
-        vpos <- 1
-        cells <- next_cell_up(outlets$cell[point], drain.dir)
-        if (length(cells) == 0) next #if there are no upcells, move to next point
-        for (i in 1:length(cells)) {
-            
-            if (!cells[i] %in% outlets$cell) {
-                c2v[[length(c2v)+1]] <- cells[i]
-                basincells[vpos] <- cells[i]
-            }
-            vpos <- vpos+1
-        }
-        
-        # visit all cells upstream, until another delineation point, and save info
-        while (length(c2v) >0) {
-            if (length(c2v) == 0) break
-            
-            cells <- next_cell_up(c2v[[1]], drain.dir)
-            if (!length(cells) == 0) {
-                for (i in 1:length(cells)) {
-                    
-                    if (!cells[i] %in% outlets$cell) {
-                        c2v[[length(c2v)+1]] <- cells[i]
-                        basincells[vpos] <- cells[i]
-                    }
-                    vpos <- vpos+1
-                }
-            }
-            c2v[[1]] <- NULL
-        }
-        
-        cell_list[[point]] <- basincells[!basincells == 0]
-        if (verbose) setTxtProgressBar(pb, point)
-    }
-    if (verbose) close(pb)
-    
-    #record which cells were visited from which point
-    for (i in 1:length(cell_list)) {
-        cells <- cell_list[[i]]
-        raster::values(delbas)[cells] <- ID[i]
-        raster::values(delbas)[raster::values(delbas) == 0] <- NA
-    }
-    
-    # count the number of cells in the basin
+    if (verbose) message("Postprocessing..")
+    # count cells in each basin
     ncells <- rep(0, length(ID))
-    
     for (i in 1:length(ID)) {
-        bcells <- sum(raster::values(delbas) == ID[i], na.rm=TRUE)
+        bcells <- sum(delbas == ID[i], na.rm=TRUE)
         ncells[i] <- bcells
     }
+    raster::values(drain.dir) <- delbas
+    delbas <- drain.dir
     ncells <- cbind(riverID = ID, ncells)
     
+    # vectorize raster
     delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
         sf::st_as_sf()
     names(delbas)[1] <- "riverID"
     delbas <- merge(delbas, ncells)
     
     return(delbas)
-    
 }
