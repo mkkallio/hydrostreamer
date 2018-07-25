@@ -8,14 +8,16 @@
 #' @param outlets An 'sf' point object, with locations of the catchment outlets for delineation. Obtained
 #' e.g. with \code{\link{river_outlets}}
 #' @param riverID Name of the column in outlets with unique identifiers.
+#' @param output Whether to return a raster or vectors of delineated catchments.
 #' @inheritParams river_outlets
 #' @inheritParams compute_weights
 #'
-#' @return Returns polygonized catchment specific to the outlet points given. The output is 'sf' POLYGON class
+#' @return If output is \code{vector} (default), returns vectorized (polygon) catchments specific to the outlet points given. The output is 'sf' POLYGON class
 #' with attributes:
 #' \itemize{
 #'   \item riverID: The ID given in \code{outlets}.
-#'   \item ncells: The number of raster cells the catchment consists of.
+#'   \item NCELLS: The number of raster cells the catchment consists of.
+#'   \item AREA_M2: Surface area of the catchment in m^2. 
 #' }
 #' 
 #' @examples 
@@ -24,10 +26,12 @@
 #' }
 #'
 #' @export
-delineate_basin <- function(outlets, drain.dir, riverID = "riverID", verbose = FALSE) {
+delineate_basin <- function(outlets, drain.dir, riverID = "riverID", output = "vector", verbose = FALSE) {
     
     #do checks
     if (sf::st_is(outlets[1,], "LINESTRING")) outlets <- river_outlets(outlets, drain.dir)
+    
+    
     
     #prepare data and delineate
     if (verbose) message("Preparing..")
@@ -44,22 +48,32 @@ delineate_basin <- function(outlets, drain.dir, riverID = "riverID", verbose = F
     delbas <- .Fortran("delineate", as.integer(nx), as.integer(ny), as.integer(nseeds), as.integer(outlets$cell), 
                        as.integer(ID), as.integer(drdir), as.integer(delbas), PACKAGE = 'hydrostreamer')[[7]]
     
-    if (verbose) message("Postprocessing..")
-    # count cells in each basin
-    ncells <- rep(0, length(ID))
-    for (i in 1:length(ID)) {
-        bcells <- sum(delbas == ID[i], na.rm=TRUE)
-        ncells[i] <- bcells
+    delbas[delbas == 0] <- NA
+
+    
+    
+    if (output == "vector") {
+        if (verbose) message("Converting to vector. This may take considerable amount of time.")
+        
+        # count cells in each basin
+        ncells <- rep(0, length(ID))
+        for (i in 1:length(ID)) {
+            bcells <- sum(delbas == ID[i], na.rm=TRUE)
+            ncells[i] <- bcells
+        }
+        
+        raster::values(drain.dir) <- delbas
+        delbas <- drain.dir
+        
+        # vectorize raster
+        delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
+            sf::st_as_sf()
+        names(delbas)[1] <- "riverID"
+        areas <- st_area(delbas)
+        cols <- cbind(riverID = ID, NCELLS = ncells, AREA_M2 = areas)
+        delbas <- merge(delbas, cols)
     }
     raster::values(drain.dir) <- delbas
     delbas <- drain.dir
-    ncells <- cbind(riverID = ID, ncells)
-    
-    # vectorize raster
-    delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
-        sf::st_as_sf()
-    names(delbas)[1] <- "riverID"
-    delbas <- merge(delbas, ncells)
-    
     return(delbas)
 }

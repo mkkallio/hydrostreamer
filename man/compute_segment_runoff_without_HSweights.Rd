@@ -5,8 +5,7 @@
 \title{Computes specific runoff generated in the river segment without using a HSweights object.}
 \usage{
 compute_segment_runoff_without_HSweights(river, weights, grid,
-  rID = "riverID", wID = "riverID", timesteps = NULL, unit = "mm/s",
-  verbose = FALSE)
+  rID = "riverID", wID = "riverID", timesteps = NULL, unit = "mm/s")
 }
 \arguments{
 \item{river}{River network information.}
@@ -23,8 +22,6 @@ compute_segment_runoff_without_HSweights(river, weights, grid,
 timesteps to process. If no timesteps are given, all will be processed.}
 
 \item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". Defaults to mm/s (equivalent to kg/m2/s).}
-
-\item{verbose}{Whether or not print progress indicators.}
 }
 \value{
 Returns input river object (class 'HSrunoff') added with timeseries information as new attribute columns.

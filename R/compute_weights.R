@@ -107,6 +107,8 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
         if(!test) aoi <- sf::st_as_sf(aoi)
     }
     
+    if(riverID != "riverID") dplyr::rename_(river, riverID = riverID)
+    
    
 
     # check the weights input to determine which track to take (area or line)
@@ -149,8 +151,8 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
 
         # 2. create basins
         if (track == "delineate") {
-            outlets <- river_outlets(drain.dir, river)
-            basins <- delineate_basin(drain.dir, outlets, verbose = verbose)
+            outlets <- river_outlets(river, drain.dir)
+            basins <- delineate_basin(outlets, drain.dir, verbose = verbose)
         }
         if (track == "voronoi") {
             message("No predefined basins or drainage direction raster given: creating a river Voronoi diagram.")

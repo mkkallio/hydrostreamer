@@ -32,14 +32,14 @@ Voronoi polygons join together at network segment intersections.
 \details{
 Creating the segment Voronoi polygons is done in the following steps:
 \enumerate{
-  \item Extract segment end nodes.
-  \item Create a buffer of the end nodes, and take difference between the river network and the buffer layer.
-  \item Extract all nodes of the river network, and create Voronoi polygons for all nodes.
+  \item Move starting and ending nodes forward or backwards (respectively) for a small amount to ensure
+  there are no identical nodes.
+  \item Compute a Voronoi diagram from point cloud of river segment nodes.
   \item Dissolve the individual polygons using river segment ID.
   \item Clip the polygons to the area of interest.
-  \item Process erroneous polygons if any.
+  \item Process erroneous polygons, if any.
 }
 
 Thus, the accuracy of the final segment Voronoi diagram is depending on the density of nodes in the river network.
-Consider densifying geometry e.g. with sf::st_segmentize function for higher accuracy.
+Consider densifying geometry e.g. with \code{sf::st_segmentize()} function for higher accuracy.
 }

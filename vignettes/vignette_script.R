@@ -2,7 +2,7 @@
 
 library(raster)
 library(tidyverse)
-library(RQGIS)
+#library(RQGIS)
 library(sf)
 library(geosphere)
 
@@ -17,7 +17,7 @@ source("R/delineate_watershed.R")
 #polygon_file <- "grids/3S polygon intersect basin WGS84.gpkg"
 raster <- "../Sub-pixel hydrology/runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
 river <- "../Sub-pixel hydrology/river/Hydrosheds 3S rivers.gpkg"
-#basin <- "../Sub-pixel hydrology/grids/HS 3S basin.gpkg"
+basin <- "../Sub-pixel hydrology/grids/HS 3S basin.gpkg"
 basin <- "devdata/testibasin.gpkg"
 voronoi <- "devdata/HS voronoi.gpkg"
 HS_basins <- "devdata/HS_basins.gpkg"
@@ -37,7 +37,7 @@ drdir <- "../Sub-pixel hydrology/grids/3S drdir.tif" %>%
 
 grid <- polygrid_timeseries(raster, aoi=basin)
 area <- compute_weights(river, grid, "area", aoi=basin,drain.dir = drdir, riverID="ID")
-line <- compute_weights(river, grid, "strahler", aoi=basin, ID="ARCID")
+line <- compute_weights(river, grid, "length", aoi=basin, riverID="ARCID")
 
 river <- compute_segment_runoff()
 river
@@ -45,14 +45,14 @@ river
 river <- flow_network(river, ID="ARCID")
 
 # # year and month of timesteps (ISIMIP)
-# start <- 1860
+# start <- 1861
 # year <- vector()
-# for (i in 1:145) {
+# for (i in 1:144) {
 #   y <- start+i
 #   current <- rep(y, 12)
 #   year <- c(year, current)
 # }
-# month <- rep(1:12, 145)
+# month <- rep(1:12, 144)
 # timesteps <- tibble(year = year, month = month)
 
 #crop raster to basin. May take a while if the raster is large.
@@ -332,6 +332,7 @@ library(readr)
 # load observations
 obs <- "../Sub-pixel hydrology/obs/3S_monthly_Q.csv"
 obs <- read_csv(obs)
+names(obs)[5] <- "s451301"
 
 # load station data
 HYMOS <- "../Sub-pixel hydrology/obs/HYMOS stations.gpkg"
@@ -347,7 +348,7 @@ obs_na <- obs == 0
 obs_mon <- obs
 obs_mon[obs_na] <- NA
 obs_mon <- group_by(obs, Month) %>% summarise(s450701 = mean(s450701, na.rm=TRUE),
-                                              s451305 = mean(s451305, na.rm=TRUE),
+                                              s451301 = mean(s451301, na.rm=TRUE),
                                               s450101 = mean(s450101, na.rm=TRUE),
                                               s440601 = mean(s440601, na.rm=TRUE),
                                               s440201 = mean(s440201, na.rm=TRUE),
@@ -364,40 +365,13 @@ obs_mon <- obs_mon[c(5,4,8,1,9,7,6,2,12,11,10,3), ]
 
 
 
-station <- "s440601"
 
-rID <- 1157
-Q <- flow.h.30min
-plot_flow(station, rID, Q, obs_mon, ARCID=FALSE, timeseries=NULL)
-
-
-rID <- 848656
-Q <- flow.b.30min
-plot_flow(station, rID, Q, obs_mon, ARCID=FALSE, timeseries=NULL)
-
-
-
-
-# compare two
-ts1 <- filter(flow.v, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
-ts2 <- filter(flow.b, ID == 853219) %>% select(-ID) %>% t() %>% unlist()
-ts3 <- filter(flow.l, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-ts4 <- filter(flow.e, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-ts5 <- filter(flow.h, ID == 1224) %>% select(-ID) %>% t() %>% unlist()
-
-plot(ts1, type='l')
-lines(ts2, col='blue', lty=2)
-lines(ts3, col='red')
-lines(ts4, col='pink')
-lines(ts5, col='orange')
-
-cor(cbind(ts1,ts2,ts3,ts4,ts5))
-
-
-
+library(hydroGOF)
+library(ggplot2)
+library(reshape2)
 ###
 writepath <- "../Sub-pixel hydrology/results/"
-model <- "CARAIB"
+model <- "VISIT"
 resolution <- "30min"
 period <- "1861-2005"
 v <- st_read(paste0(writepath, "v.", resolution, ".", model,".", period, ".gpkg"))
@@ -407,25 +381,177 @@ e <- st_read(paste0(writepath, "e.", resolution, ".", model,".", period, ".gpkg"
 h <- st_read(paste0(writepath, "h.", resolution, ".", model,".", period, ".gpkg"))
 
 
-station <- "440201"
-aid <- HYMOS %>% filter(Code == station)
-id <- aid$rID_30min
-aid <- aid$ARCID
+stations <- dplyr::select(HYMOS, Code) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+gof_all <- list()
+plots <- list()
+for (i in 1:length(stations)) {
+    station <- as.character(stations[i])
+    aid <- HYMOS %>% filter(Code == station)
+    id <- aid$rID_30min
+    aid <- aid$ARCID
+    
+    station <- paste0("s",station)
+    obs.ts <- dplyr::select_(obs_mon, station) %>% unlist() %>% unname()
+    ts1 <- filter(e, ID == id) %>% dplyr::select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+    ts2 <- filter(h, ID == id) %>% dplyr::select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+    ts3 <- filter(l, ID == id) %>% dplyr::select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+    ts4 <- filter(v, ID == aid) %>% dplyr::select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+    ts5 <- filter(b, ID == aid) %>% dplyr::select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+    
+    mat <- cbind(obs.ts,ts1,ts2,ts3,ts4,ts5)
+    gof <- data.frame(equal = gof(mat[,1], mat[,2]),
+                      strahler = gof(mat[,1], mat[,3]),
+                      length = gof(mat[,1], mat[,4]),   
+                      voronoi = gof(mat[,1], mat[,5]),
+                      basin = gof(mat[,1], mat[,6]))
+    
+    gof_all[[i]] <- gof
+    
+    max <- max(mat, na.rm=TRUE)
+    plot(ts1,type='l', ylim=c(0,max))
+    lines(ts2, col='blue')
+    lines(ts3, col='red')
+    lines(ts4, col='darkgreen')
+    lines(ts5, col='purple')
+    points(obs.ts)
+    lines(obs.ts, col='black')
+    
+    mat <- data.frame(Month = 1:12, mat[,1:6])
+    names(mat)[2:7] <- c("Observed", "Equal", "Strahler", "Length", "Voronoi", "Drain.dir")
+    ggmat <- melt(mat, id.vars="Month")
 
-station <- paste0("s",station)
-obs.ts <- select_(obs_mon, station) %>% unlist() %>% unname()
-ts1 <- filter(e, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
-ts2 <- filter(h, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
-ts3 <- filter(l, ID == id) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
-ts4 <- filter(v, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
-ts5 <- filter(b, ID == aid) %>% select(-ID) %>% st_set_geometry(NULL) %>% unlist() %>% unname()
+    ggobs <- data.frame(mat[,1:2])
+    ggobs <- melt(ggobs, id.vars="Month")
 
-cor(cbind(obs.ts,ts1,ts2,ts3,ts4,ts5))
-max <- max(cbind(obs.ts,ts1,ts2,ts3,ts4,ts5))
+    plots[[i]] <- ggplot(ggmat) +
+            geom_line(aes(x=Month, y=value, colour=variable)) +
+            geom_point(data=ggobs, aes(x=Month, y=value, fill='black')) +
+            theme_minimal() +
+            xlab('Month') + ylab('Q [m3/s]')
+}
+#gplots[[3]]
+# ggsave("../Sub-pixel hydrology/poster/stat9.eps", plot = plots[[9]], device="eps")
 
-plot(ts1,type='l', ylim=c(0,max))
-lines(ts2, col='blue')
-lines(ts3, col='red')
-lines(ts4, col='darkgreen')
-lines(ts5, col='purple')
-points(obs.ts)
+for (i in 1:length(gof_all)) {
+    if(i == 1) {
+        out_table <- gof_all[[1]]
+    } else {
+        out_table <- data.frame(out_table, gof_all[[i]])
+    }
+}
+
+write_csv(out_table, paste0(writepath, model, ".csv"))
+
+
+#############
+#############
+# which model is best?
+writepath <- "../Sub-pixel hydrology/results/"
+csvlist <- list.files(writepath)
+csvlist <- csvlist[grepl(".csv", csvlist) ]
+
+for (i in 1:length(csvlist)) {
+    table <- read_csv(paste0(writepath,csvlist[i], " "))
+    if (i == 1) {
+        stat1 <- table[,1:5]
+        stat2 <- table[,6:10]
+        stat3 <- table[,11:15]
+        stat4 <- table[,16:20]
+        stat5 <- table[,21:25]
+        stat6 <- table[,26:30]
+        stat7 <- table[,31:35]
+        stat8 <- table[,36:40]
+        stat9 <- table[,41:45]
+        stat10 <- table[,46:50]
+        stat11 <- table[,51:55]
+    } else {
+        stat1 <- cbind(stat1, table[,1:5])
+        stat2 <- cbind(stat2, table[,6:10])
+        stat3 <- cbind(stat3, table[,11:15])
+        stat4 <- cbind(stat4, table[,16:20])
+        stat5 <- cbind(stat5, table[,21:25])
+        stat6 <- cbind(stat6, table[,26:30])
+        stat7 <- cbind(stat7, table[,31:35])
+        stat8 <- cbind(stat8, table[,36:40])
+        stat9 <- cbind(stat9, table[,41:45])
+        stat10 <- cbind(stat10, table[,46:50])
+        stat11 <- cbind(stat11, table[,51:55])
+    }
+}
+
+names <- (c(rep("CARAIB", 5), 
+          rep("H08", 5),
+          rep("LPJ_GUESS", 5),
+          rep("LPJML", 5),
+          rep("PCRGLOBWB", 5),
+          rep("VISIT", 5),
+          rep("WATERGAP2", 5)))
+newnames <- paste0(names, names(stat1))
+names(stat1) <- newnames
+names(stat2) <- newnames
+names(stat3) <- newnames
+names(stat4) <- newnames
+names(stat5) <- newnames
+names(stat6) <- newnames
+names(stat7) <- newnames
+names(stat8) <- newnames
+names(stat9) <- newnames
+names(stat10) <- newnames
+names(stat11) <- newnames
+
+
+best <- function(stat) {
+    minrmse <- min(stat[4,])
+    brmse <- which(stat[4,] == minrmse)
+    print(paste0("Minimum RMSE: ",minrmse," at ",names(stat)[brmse]))
+    
+    maxnse <- max(stat[10,])
+    bnse <- which(stat[10,] == maxnse)
+    print(paste0("Maximum NSE: ",maxnse," at ",names(stat)[bnse]))
+    
+    maxr2 <- max(stat[19,])
+    br2 <- which(stat[19,] == maxr2)
+    print(paste0("Maximum R2: ",maxr2," at ",names(stat)[br2]))
+    
+    maxcor <- max(stat[17,])
+    bcor <- which(stat[17,] == maxr2)
+    print(paste0("Maximum Pearson correlation: ",maxcor," at ",names(stat)[bcor]))
+}
+
+
+
+
+
+
+raster <- "../Sub-pixel hydrology/runoff/pcrglobwb_gfdl-esm2m_hist_nosoc_mrro_monthly_1971_2005.nc"
+river <- "../Sub-pixel hydrology/river/Hydrosheds 3S rivers.gpkg"
+river <- st_read(river)
+raster <- brick(raster)
+
+drain.dir <- "../Sub-pixel hydrology/grids/3S drdir.tif" %>%
+    raster() %>% readAll()
+
+points <- river_outlets(river,drdir)
+
+system.time(delbas <- delineate_basin(points, drdir, riverID = "ARCID", verbose=TRUE))
+
+
+system.time(delbas <- delineate_basin(points, drain.dir, riverID = "ARCID", verbose=TRUE))
+
+
+
+
+
+
+
+library(sf)
+library(raster)
+library(hydrostreamer)
+library(rgdal)
+
+data(river)
+data(basin)
+runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+
+grid <- polygrid_timeseries(runoff, aoi=basin)
+v.weights <- compute_weights(river, grid, "area", aoi=basin, riverID = "ID")

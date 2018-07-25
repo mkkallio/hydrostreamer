@@ -63,7 +63,7 @@ is a set of catchments which are unique to the points given." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
       </span>
     </div>
 
@@ -127,7 +127,8 @@ is a set of catchments which are unique to the points given.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>delineate_basin</span>(<span class='no'>outlets</span>, <span class='no'>drain.dir</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>delineate_basin</span>(<span class='no'>outlets</span>, <span class='no'>drain.dir</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>output</span> <span class='kw'>=</span> <span class='st'>"vector"</span>,
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -146,6 +147,10 @@ e.g. with <code><a href='river_outlets.html'>river_outlets</a></code></p></td>
       <td><p>Name of the column in outlets with unique identifiers.</p></td>
     </tr>
     <tr>
+      <th>output</th>
+      <td><p>Whether to return a raster or vectors of delineated catchments.</p></td>
+    </tr>
+    <tr>
       <th>verbose</th>
       <td><p>Whether or not print progress indicators.</p></td>
     </tr>
@@ -153,19 +158,13 @@ e.g. with <code><a href='river_outlets.html'>river_outlets</a></code></p></td>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns polygonized catchment specific to the outlet points given. The output is 'sf' POLYGON class
+    <p>If output is <code>vector</code> (default), returns vectorized (polygon) catchments specific to the outlet points given. The output is 'sf' POLYGON class
 with attributes:</p><ul>
 <li><p>riverID: The ID given in <code>outlets</code>.</p></li>
-<li><p>ncells: The number of raster cells the catchment consists of.</p></li>
+<li><p>NCELLS: The number of raster cells the catchment consists of.</p></li>
+<li><p>AREA_M2: Surface area of the catchment in m^2.</p></li>
 </ul>
 
-    
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>Note that this function is currently implemented using R alone, which means that the for large areas of interest,
-computation time may take long. Reading the drainage direction raster entirely to memory (using 
-<code><a href='http://www.rdocumentation.org/packages/raster/topics/readAll'>readAll</a></code> from the <code>raster</code> package) speeds up the computation#' considerably, and is strongly 
-suggested.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -181,8 +180,6 @@ suggested.</p>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-
-      <li><a href="#details">Details</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

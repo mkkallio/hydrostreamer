@@ -1,4 +1,14 @@
 
+# hydrostreamer 0.2.2
+
+*   `compute_weights()` now calls the correct function when delineating basins from drainage directions.
+
+*   `compute_segment_runoff()` has been partially re-implemented in Fortran, making it much faster
+
+*   `river_voronoi()` is changed in the way it ensures no nodes are overlapping when tesselating Voronoi
+    diagram. Should be faster now.
+
+
 # hydrostreamer 0.2.1
 
 *   `flow_network()` now works correctly even if the last features in the river network

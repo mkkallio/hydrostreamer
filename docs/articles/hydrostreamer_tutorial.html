@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
       </span>
     </div>
 
@@ -82,7 +82,7 @@
       <h1>hydrostreamer tutorial</h1>
                         <h4 class="author">Marko Kallio</h4>
             
-            <h4 class="date">2018-07-12</h4>
+            <h4 class="date">2018-07-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/mkkallio/hydrostreamer/blob/master/vignettes/hydrostreamer_tutorial.Rmd"><code>vignettes/hydrostreamer_tutorial.Rmd</code></a></small>
       <div class="hidden name"><code>hydrostreamer_tutorial.Rmd</code></div>
@@ -100,8 +100,10 @@
 </h1>
 <p>Fictional example data is provided with the package for tutorial purposes. It contains a river network with 71 river segments, and runoff timeseries as GeoTIFF (12 layers; one for each month of the year). Included is also an area of interest (a basin). an AoI is not an absolute requirement, but it ensures that no erroneous assignments are done at the edges.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sf)
+<span class="co">#&gt; Warning: package 'sf' was built under R version 3.5.1</span>
 <span class="co">#&gt; Linking to GEOS 3.6.1, GDAL 2.2.3, proj.4 4.9.3</span>
 <span class="kw">library</span>(raster)
+<span class="co">#&gt; Warning: package 'raster' was built under R version 3.5.1</span>
 <span class="co">#&gt; Loading required package: sp</span>
 <span class="kw">library</span>(hydrostreamer)
 <span class="kw">library</span>(rgdal)
@@ -213,27 +215,27 @@ v.runoff
 <span class="co">#&gt; 9        9    8, 12   14                14, 15, 21, 25, 30, 33, 32, 26</span>
 <span class="co">#&gt; 10      10   11, 20    4 4, 3, 7, 8, 9, 14, 15, 21, 25, 30, 33, 32, 26</span>
 <span class="co">#&gt;           TS1         TS2         TS3         TS4        TS5        TS6</span>
-<span class="co">#&gt; 1  0.05742213 0.009133529 0.007181127 0.016599013 0.17076607 0.43034150</span>
-<span class="co">#&gt; 2  0.06418934 0.010209916 0.008027424 0.018555208 0.19089086 0.48105727</span>
-<span class="co">#&gt; 3  0.01123945 0.001787741 0.001405590 0.003248989 0.03342470 0.08423239</span>
-<span class="co">#&gt; 4  0.01434150 0.002281151 0.001793527 0.004145697 0.04264979 0.10748022</span>
-<span class="co">#&gt; 5  0.08858261 0.014089896 0.011078011 0.025606570 0.26343333 0.66386898</span>
-<span class="co">#&gt; 6  0.01466616 0.002332790 0.001834128 0.004239545 0.04361527 0.10991330</span>
-<span class="co">#&gt; 7  0.02801368 0.004455839 0.003503350 0.008097914 0.08330911 0.20994432</span>
-<span class="co">#&gt; 8  0.07473950 0.011888020 0.009346812 0.021604944 0.22226571 0.56012392</span>
-<span class="co">#&gt; 9  0.19700751 0.066808547 0.049854856 0.107526692 0.32405957 0.63189319</span>
-<span class="co">#&gt; 10 0.08964928 0.014259559 0.011211407 0.025914911 0.26660546 0.67186295</span>
+<span class="co">#&gt; 1  0.05734096 0.009120618 0.007170976 0.016575549 0.17052467 0.42973317</span>
+<span class="co">#&gt; 2  0.06439330 0.010242358 0.008052931 0.018614167 0.19149741 0.48258583</span>
+<span class="co">#&gt; 3  0.01124571 0.001788735 0.001406372 0.003250796 0.03344329 0.08427926</span>
+<span class="co">#&gt; 4  0.01430010 0.002274565 0.001788349 0.004133728 0.04252665 0.10716991</span>
+<span class="co">#&gt; 5  0.08860844 0.014094004 0.011081241 0.025614037 0.26351015 0.66406256</span>
+<span class="co">#&gt; 6  0.01432467 0.002278473 0.001791422 0.004140832 0.04259974 0.10735408</span>
+<span class="co">#&gt; 7  0.02811325 0.004471677 0.003515802 0.008126696 0.08360521 0.21069052</span>
+<span class="co">#&gt; 8  0.07478026 0.011894502 0.009351909 0.021616725 0.22238690 0.56042934</span>
+<span class="co">#&gt; 9  0.19704753 0.066825417 0.049867329 0.107553239 0.32410106 0.63194304</span>
+<span class="co">#&gt; 10 0.09006974 0.014326438 0.011263990 0.026036456 0.26785588 0.67501408</span>
 <span class="co">#&gt;          TS7       TS8       TS9      TS10      TS11       TS12</span>
-<span class="co">#&gt; 1  0.8560678 1.7738297 2.2708805 2.1261018 1.2260397 0.43533529</span>
-<span class="co">#&gt; 2  0.9569554 1.9828757 2.5385039 2.3766630 1.3705285 0.48663958</span>
-<span class="co">#&gt; 3  0.1675614 0.3471985 0.4444882 0.4161501 0.2399775 0.08520985</span>
-<span class="co">#&gt; 4  0.2138078 0.4430240 0.5671652 0.5310059 0.3062103 0.10872745</span>
-<span class="co">#&gt; 5  1.3206183 2.7364094 3.5031879 3.2798441 1.8913577 0.67157269</span>
-<span class="co">#&gt; 6  0.2186478 0.4530529 0.5800044 0.5430265 0.3131421 0.11118876</span>
-<span class="co">#&gt; 7  0.4176371 0.8653720 1.1078608 1.0372297 0.5981298 0.21238057</span>
-<span class="co">#&gt; 8  1.1142408 2.3087814 2.9557328 2.7672917 1.5957888 0.56662374</span>
-<span class="co">#&gt; 9  1.0059348 1.7084506 2.1471681 2.0682293 1.3455960 0.64266678</span>
-<span class="co">#&gt; 10 1.3365205 2.7693598 3.5453715 3.3193383 1.9141325 0.67965942</span>
+<span class="co">#&gt; 1  0.8548576 1.7713222 2.2676704 2.1230963 1.2243065 0.43471990</span>
+<span class="co">#&gt; 2  0.9599961 1.9891762 2.5465700 2.3842149 1.3748834 0.48818588</span>
+<span class="co">#&gt; 3  0.1676547 0.3473917 0.4447355 0.4163816 0.2401110 0.08525726</span>
+<span class="co">#&gt; 4  0.2131905 0.4417449 0.5655278 0.5294729 0.3053263 0.10841354</span>
+<span class="co">#&gt; 5  1.3210033 2.7372073 3.5042094 3.2808005 1.8919092 0.67176851</span>
+<span class="co">#&gt; 6  0.2135568 0.4425041 0.5664996 0.5303828 0.3058510 0.10859985</span>
+<span class="co">#&gt; 7  0.4191215 0.8684477 1.1117984 1.0409163 0.6002557 0.21313542</span>
+<span class="co">#&gt; 8  1.1148483 2.3100403 2.9573445 2.7688006 1.5966589 0.56693270</span>
+<span class="co">#&gt; 9  1.0059597 1.7083907 2.1470796 2.0681636 1.3456034 0.64271823</span>
+<span class="co">#&gt; 10 1.3427889 2.7823485 3.5619997 3.3349064 1.9231100 0.68284711</span>
 <span class="co">#&gt;                              geom</span>
 <span class="co">#&gt; 1  LINESTRING (108.1354 13.429...</span>
 <span class="co">#&gt; 2  LINESTRING (108.0979 13.433...</span>

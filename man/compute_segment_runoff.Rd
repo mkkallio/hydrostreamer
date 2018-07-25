@@ -5,7 +5,7 @@
 \title{Computes specific runoff generated in the river segment.}
 \usage{
 compute_segment_runoff(HSweights, rID = "riverID", wID = "riverID",
-  timesteps = NULL, unit = "mm/s", verbose = FALSE)
+  timesteps = NULL, unit = "mm/s")
 }
 \arguments{
 \item{HSweights}{An object of class 'HSweights', obtained with \code{\link{compute_weights}}.}
@@ -18,8 +18,6 @@ compute_segment_runoff(HSweights, rID = "riverID", wID = "riverID",
 timesteps to process. If no timesteps are given, all will be processed.}
 
 \item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". Defaults to mm/s (equivalent to kg/m2/s).}
-
-\item{verbose}{Whether or not print progress indicators.}
 }
 \value{
 The routed river network object which has been enhanced with a runoff timeseries. Runoff is given

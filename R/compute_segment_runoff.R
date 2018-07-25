@@ -35,14 +35,14 @@
 #' 
 #' @export
 compute_segment_runoff <- function(HSweights, rID = "riverID", wID = "riverID", timesteps = NULL, 
-                                   unit = "mm/s", verbose = FALSE) {
+                                   unit = "mm/s") {
     
     if(!any(class(HSweights) == "HSweights")) {
         stop("Input should be of class HSweights. Otherwise use function compute_segment_runoff_without_HSweights()")
     }
     
     runoff <- compute_segment_runoff_without_HSweights(HSweights$river, HSweights$weights, HSweights$grid, 
-                                                       rID=rID, wID=wID, timesteps=timesteps, unit=unit, verbose=verbose)
+                                                       rID=rID, wID=wID, timesteps=timesteps, unit=unit)
     
     return(runoff)
 }

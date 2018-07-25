@@ -62,7 +62,7 @@ Voronoi polygons join together at network segment intersections." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
       </span>
     </div>
 
@@ -166,15 +166,15 @@ short river segments. Defaults to 10 meters.</p></td>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Creating the segment Voronoi polygons is done in the following steps:</p><ol>
-<li><p>Extract segment end nodes.</p></li>
-<li><p>Create a buffer of the end nodes, and take difference between the river network and the buffer layer.</p></li>
-<li><p>Extract all nodes of the river network, and create Voronoi polygons for all nodes.</p></li>
+<li><p>Move starting and ending nodes forward or backwards (respectively) for a small amount to ensure
+  there are no identical nodes.</p></li>
+<li><p>Compute a Voronoi diagram from point cloud of river segment nodes.</p></li>
 <li><p>Dissolve the individual polygons using river segment ID.</p></li>
 <li><p>Clip the polygons to the area of interest.</p></li>
-<li><p>Process erroneous polygons if any.</p></li>
+<li><p>Process erroneous polygons, if any.</p></li>
 </ol>
     <p>Thus, the accuracy of the final segment Voronoi diagram is depending on the density of nodes in the river network.
-Consider densifying geometry e.g. with sf::st_segmentize function for higher accuracy.</p>
+Consider densifying geometry e.g. with <code><a href='http://www.rdocumentation.org/packages/sf/topics/geos_unary'>sf::st_segmentize()</a></code> function for higher accuracy.</p>
     
 
   </div>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>hydrostreamer 0.2.1 • hydrostreamer</title>
+<title>hydrostreamer 0.2.2 • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,7 +30,7 @@
 
 
 
-<meta property="og:title" content="hydrostreamer 0.2.1" />
+<meta property="og:title" content="hydrostreamer 0.2.2" />
 
 
 
@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.1</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
       </span>
     </div>
 
@@ -109,12 +109,21 @@
 <div class="row">
   <div class="contents col-md-9">
     <div class="page-header">
-      <h1>hydrostreamer 0.2.1</h1>
+      <h1>hydrostreamer 0.2.2</h1>
     </div>
 
 
-<div id="hydrostreamer-0-2-1" class="section level1">
+<div id="hydrostreamer-0-2-2" class="section level1">
 
+<ul>
+<li><p><code><a href="reference/compute_weights.html">compute_weights()</a></code> now calls the correct function when delineating basins from drainage directions.</p></li>
+<li><p><code><a href="reference/compute_segment_runoff.html">compute_segment_runoff()</a></code> has been partially re-implemented in Fortran, making it much faster</p></li>
+<li><p><code><a href="reference/river_voronoi.html">river_voronoi()</a></code> is changed in the way it ensures no nodes are overlapping when tesselating Voronoi diagram. Should be faster now.</p></li>
+</ul>
+</div>
+<div id="hydrostreamer-0-2-1" class="section level1">
+<h1 class="hasAnchor">
+<a href="#hydrostreamer-0-2-1" class="anchor"></a>hydrostreamer 0.2.1</h1>
 <ul>
 <li><p><code><a href="reference/flow_network.html">flow_network()</a></code> now works correctly even if the last features in the river network did not have any downstream segments.</p></li>
 <li><p><code><a href="reference/delineate_basin.html">delineate_basin()</a></code> is now re-implemented partly in Fortran, yielding a very large speed boost compared to the previous R native implementation.</p></li>

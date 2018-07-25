@@ -30,10 +30,10 @@
 #' 
 #' @export
 compute_segment_runoff_without_HSweights <- function(river, weights, grid, rID = "riverID", wID = "riverID",
-                                                     timesteps = NULL, unit = "mm/s", verbose = FALSE) {
+                                                     timesteps = NULL, unit = "mm/s") {
     
     area_m2 <- NULL
-    
+    gridID <- NULL
     if(!any(class(grid) == "HSgrid")) {
         stop("grid input should be of class HSgrid, obtained with function polygrid_timeseries()")
     }
@@ -42,66 +42,75 @@ compute_segment_runoff_without_HSweights <- function(river, weights, grid, rID =
         stop("river input should be an 'sf' LINESTRING object")
     }
     
-    # Start processing
-    nweights <- NROW(weights)
-    nCells <- NROW(grid)
+    # PREPARE INPUT FOR FORTRAN SUBROUTINE
+    nriv <- NROW(river)
+    nseg <- NROW(weights)
+    ng <- NROW(grid)
     if (is.null(timesteps)) {
         message("No timesteps specified: computing for all timesteps")
         timesteps <- 1:(NCOL(grid)-3)
     }
-    
-    runoff <- dplyr::select(grid, -c(gridID, area_m2)) %>%
-        sf::st_set_geometry(NULL)
+    nts <- length(timesteps)
     
     
-    #prepare a table to collect time series
-    Q_ts <- dplyr::select_(river, rID) %>% dplyr::rename_("riverID" = rID)
-    
-    #weights id's corresponding river ids
-    wID <- dplyr::select_(weights, wID) %>%
-        sf::st_set_geometry(NULL) %>%
-        unlist()
-    rID <- dplyr::select_(river, rID) %>%
+    rIDs <- dplyr::select_(river, rID) %>%
         sf::st_set_geometry(NULL) %>%
         unlist()
     
-    #process every timestep, but first initiate progress bar
-    total <- length(timesteps)
-    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
+    gIDs <- dplyr::select(grid, gridID) %>%
+        sf::st_set_geometry(NULL) %>%
+        unlist()
     
-    for (ts in timesteps) {
-        
-        #initiate discharge of the current timestep
-        Q <- vector("numeric", NROW(river))
-        #process every segment
-        for (seg in 1:nweights) {
-            
-            #compute discharge of the segment at timestep
-            cell <- weights$gridID[seg]
-            discharge <- NULL
-            gridID <- which(grid$gridID == cell)
-            riverID <- which(rID == wID[seg])
-            
-            weight <- weights$weights[seg]
-            area <- grid$area_m2[gridID]
-            
-            if (unit == "mm/s") {
-                discharge <- runoff[gridID,ts]/1000 * area * weight
-            }
-            if (unit == "m3/s") {
-                discharge <- runoff[gridID,ts] * weight
-            }
-            
-            #add discharge to the segment
-            Q[riverID] <- Q[riverID] + unclass(discharge)
-            #Q <- unlist(Q)
-        }
-        Q_ts <- cbind(Q_ts, Q)
-        col <- length(names(Q_ts))-1
-        names(Q_ts)[col] <- paste0("TS",ts)
-        if (verbose) setTxtProgressBar(pb, ts)
-    }
-    if (verbose) close(pb)
+    
+    wrIDs <- dplyr::select_(weights, wID) %>% 
+        sf::st_set_geometry(NULL) %>%
+        unlist() %>%
+        match(rIDs)
+    
+    wgIDs <- dplyr::select(weights, gridID) %>%
+        sf::st_set_geometry(NULL) %>%
+        unlist() %>%
+        match(gIDs)
+    
+    
+    weightvec <- dplyr::select(weights, weights) %>%
+        sf::st_set_geometry(NULL) %>%
+        unlist()
+    
+    gridareas <- dplyr::select(grid, area_m2) %>%
+        sf::st_set_geometry(NULL) %>%
+        unlist()
+    
+    runoffTS <- dplyr::select(grid, -c(gridID, area_m2)) %>%
+        sf::st_set_geometry(NULL) %>% as.matrix()
+    runoffTS <- runoffTS[,timesteps]
+    #runoffTS <- runoffTS*1e6
+    
+    QTS <- matrix(0, nrow = nriv, ncol = nts)
+    
+    if (unit == "mm/s") convert <- TRUE
+    if (unit == "m3/s") convert <- FALSE
+    
+    QTS <- .Fortran("compute_runoff", 
+                    PACKAGE = "hydrostreamer",
+                    as.integer(nriv),
+                    as.integer(nseg),
+                    as.integer(ng),
+                    as.integer(nts),
+                    as.integer(wrIDs),
+                    as.integer(wgIDs),
+                    as.double(weightvec),
+                    as.double(gridareas),
+                    runoffTS,
+                    QTS,
+                    as.logical(convert),
+                    as.double(rep(0,nseg)),
+                    as.integer(rep(0,nseg)))[[10]]
+    
+    
+    colnames(QTS) <- paste0("TS", timesteps)
+    
+    Q_ts <- dplyr::select_(river, rID) %>% dplyr::rename_("riverID" = rID) %>% cbind(QTS)
     
     # add class to return object, and add specific columns from river object
     class(Q_ts) <- append(class(Q_ts), "HSrunoff")

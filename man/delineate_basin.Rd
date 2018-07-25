@@ -4,7 +4,8 @@
 \alias{delineate_basin}
 \title{Delineate catchments from multiple input points}
 \usage{
-delineate_basin(outlets, drain.dir, riverID = "riverID", verbose = FALSE)
+delineate_basin(outlets, drain.dir, riverID = "riverID", output = "vector",
+  verbose = FALSE)
 }
 \arguments{
 \item{outlets}{An 'sf' point object, with locations of the catchment outlets for delineation. Obtained
@@ -14,14 +15,17 @@ e.g. with \code{\link{river_outlets}}}
 
 \item{riverID}{Name of the column in outlets with unique identifiers.}
 
+\item{output}{Whether to return a raster or vectors of delineated catchments.}
+
 \item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-Returns polygonized catchment specific to the outlet points given. The output is 'sf' POLYGON class
+If output is \code{vector} (default), returns vectorized (polygon) catchments specific to the outlet points given. The output is 'sf' POLYGON class
 with attributes:
 \itemize{
   \item riverID: The ID given in \code{outlets}.
-  \item ncells: The number of raster cells the catchment consists of.
+  \item NCELLS: The number of raster cells the catchment consists of.
+  \item AREA_M2: Surface area of the catchment in m^2. 
 }
 }
 \description{
