@@ -39,6 +39,8 @@ flow_network <- function(river, riverID = "riverID", verbose=FALSE) {
     if(!any(class(river) == "sf")) {
         stop("river input should be an 'sf' LINESTRING object")
     }
+    test <- sf::st_is(river, "LINESTRING")
+    if(any(!test)) stop("Each geometry in river must be a LINESTRING; use e.g. sf::st_cast() to coerce geometries.")
     
     if(!any(names(river) == riverID)) {
         stop(paste0("ID column '", riverID,"' does not exist"))
@@ -61,7 +63,10 @@ flow_network <- function(river, riverID = "riverID", verbose=FALSE) {
     start <- list()
     end <- list()
     
-    coords <- sf::st_coordinates(river)
+    
+    coords <- river %>% 
+        sf::st_cast("LINESTRING") %>% 
+        sf::st_coordinates()
     
     for (i in 1:nSegments) {
         segcoords <- coords[coords[,"L1"] == i,]

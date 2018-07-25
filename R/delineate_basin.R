@@ -73,7 +73,6 @@ delineate_basin <- function(outlets, drain.dir, riverID = "riverID", output = "v
         cols <- cbind(riverID = ID, NCELLS = ncells, AREA_M2 = areas)
         delbas <- merge(delbas, cols)
     }
-    raster::values(drain.dir) <- delbas
-    delbas <- drain.dir
+
     return(delbas)
 }

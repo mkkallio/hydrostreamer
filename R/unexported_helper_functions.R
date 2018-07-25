@@ -33,6 +33,7 @@ next_cell_up <- function(cell, drain.dir) {
 
 move_nodes <- function(river, p4s, verbose=FALSE) {
     vorRiv <- st_geometry(river)
+    n <- nrow(river)
     if (verbose) pb <- txtProgressBar(min = 0, max = n, style = 3)
     if( grepl("longlat", p4s, fixed=TRUE) ) {
         dist <- 0.0005
