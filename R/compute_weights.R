@@ -107,7 +107,7 @@ compute_weights <- function(river, grid, weights, aoi=NULL, basins=NULL, drain.d
         if(!test) aoi <- sf::st_as_sf(aoi)
     }
     
-    if(riverID != "riverID") dplyr::rename_(river, riverID = riverID)
+    
     
    
 

@@ -27,7 +27,7 @@ Suggests:
     rmarkdown
 LazyData: true
 License: MIT + file LICENSE
-URL: https://github.com/mkkallio/hydrostreamer
+URL: https://mkkallio.github.io/hydrostreamer/
 BugReports: https://github.com/mkkallio/hydrostreamer/issues
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
