@@ -8,7 +8,8 @@
 #' @param outlets An 'sf' point object, with locations of the catchment outlets for delineation. Obtained
 #' e.g. with \code{\link{river_outlets}}
 #' @param riverID Name of the column in outlets with unique identifiers.
-#' @param output Whether to return a raster or vectors of delineated catchments.
+#' @param output Whether to return a raster or vectors of delineated catchments. Accepts "vector", "v", "raster",
+#' or "r".
 #' @inheritParams river_outlets
 #' @inheritParams compute_weights
 #'
@@ -19,6 +20,7 @@
 #'   \item NCELLS: The number of raster cells the catchment consists of.
 #'   \item AREA_M2: Surface area of the catchment in m^2. 
 #' }
+#' If output is \code{raster}, returns a raster with delineated areas.
 #' 
 #' @examples 
 #' \dontrun{
@@ -31,7 +33,8 @@ delineate_basin <- function(outlets, drain.dir, riverID = "riverID", output = "v
     #do checks
     if (sf::st_is(outlets[1,], "LINESTRING")) outlets <- river_outlets(outlets, drain.dir)
     
-    
+    if (!output %in% c("vector", "raster", "v", "r")) stop("output-argument must be either 'vector', 'v', 
+                                                           'raster', or 'r'")
     
     #prepare data and delineate
     if (verbose) message("Preparing..")
@@ -45,14 +48,21 @@ delineate_basin <- function(outlets, drain.dir, riverID = "riverID", output = "v
     drdir <- raster::values(drain.dir)
     delbas <- vector("numeric", raster::ncell(drain.dir))
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
-    delbas <- .Fortran("delineate", as.integer(nx), as.integer(ny), as.integer(nseeds), as.integer(outlets$cell), 
-                       as.integer(ID), as.integer(drdir), as.integer(delbas), PACKAGE = 'hydrostreamer')[[7]]
+    delbas <- .Fortran("delineate", 
+                       as.integer(nx), 
+                       as.integer(ny), 
+                       as.integer(nseeds), 
+                       as.integer(outlets$cell), 
+                       as.integer(ID), 
+                       as.integer(drdir), 
+                       as.integer(delbas), 
+                       PACKAGE = 'hydrostreamer')[[7]]
     
     delbas[delbas == 0] <- NA
 
     
     
-    if (output == "vector") {
+    if (output %in% c("vector","v")) {
         if (verbose) message("Converting to vector. This may take considerable amount of time.")
         
         # count cells in each basin
@@ -72,6 +82,11 @@ delineate_basin <- function(outlets, drain.dir, riverID = "riverID", output = "v
         areas <- st_area(delbas)
         cols <- cbind(riverID = ID, NCELLS = ncells, AREA_M2 = areas)
         delbas <- merge(delbas, cols)
+    }
+    
+    if(output %in% c("raster", "r")) {
+        raster::values(drain.dir) <- delbas	
+        delbas <- drain.dir
     }
 
     return(delbas)

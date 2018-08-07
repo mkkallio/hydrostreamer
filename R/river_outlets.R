@@ -11,14 +11,14 @@
 #' 
 #' Note: Drainage directions must be in coded 1-128:
 #' \itemize{
-#'   \item{1}{East}
-#'   \item{2}{Southeast}
-#'   \item{4}{South}
-#'   \item{8}{Southwest}
-#'   \item{16}{West}
-#'   \item{32}{Northwest}
-#'   \item{64}{North}
-#'   \item{128}{Northeast}
+#'   \item{1}{:East}
+#'   \item{2}{:Southeast}
+#'   \item{4}{:South}
+#'   \item{8}{:Southwest}
+#'   \item{16}{:West}
+#'   \item{32}{:Northwest}
+#'   \item{64}{:North}
+#'   \item{128}{:Northeast}
 #' }
 #'
 #' @param drain.dir A RasterLayer object of drainage directions.
@@ -39,31 +39,42 @@ river_outlets <- function(river, drain.dir) {
         stop("river input should be sf class LINESTRING")
     }
     
-    # shorten rivers the last node pair.
     p4s <- sf::st_crs(river)
-    for(line in 1:NROW(river)) {
-        coords <- sf::st_coordinates(river[line,])
-        len <- NROW(coords)
-        coords <- coords[(len-1):len,1:2]
-        if(line == 1) {
-            p <- sf::st_point(coords[2,]) %>% sf::st_sfc()
-            b <- geosphere::bearing(coords)
-        } else {
-            p2 <- sf::st_point(coords[2,]) %>% sf::st_sfc()
-            p <- c(p, p2)
-            b2 <- geosphere::bearing(coords)
-            b <- c(b, b2)
+    b <- vector("numeric", nrow(river))
+    pointcoords <- matrix(NA, ncol=2, nrow=nrow(river))
+    
+    # compute bearing
+    if( grepl("longlat", p4s[2], fixed=TRUE) ) {
+        for(line in 1:NROW(river)) {
+            coords <- sf::st_coordinates(river[line,])
+            len <- NROW(coords)
+            coords <- coords[(len-1):len,1:2]
+            
+            pointcoords[line,] <- coords[2,]
+            
+            b[line] <- geosphere::bearing(coords)[1]
+        }
+        b <- b+180
+    } else {
+        for(line in 1:NROW(river)) {
+            coords <- sf::st_coordinates(river[line,])
+            len <- NROW(coords)
+            coords <- coords[(len-1):len,1:2]
+            
+            pointcoords[line,] <- coords[2,]
+            
+            dx <- coords[1,1]-coords[2,1]
+            dy <- coords[1,2]-coords[2,2]
+            angle <- 90 - (180/pi)*atan2(dy,dx)
+            
+            b[line] <- angle %% 360
         }
     }
-    b <- b[!is.na(b)]
-    b <- b+180
-    p <- sf::st_set_crs(p, p4s)
     
     # cells of interest
-    rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(p))
-    nc <- raster::ncol(drain.dir)
+    rp <- raster::cellFromXY(drain.dir, pointcoords)
     
-    pointcoords <- data.frame(row = NULL, col = NULL)
+    pointcoords <- matrix(NA, nrow=length(rp), ncol=2)
     for (point in 1:length(rp)) {
         prc <- raster::rowColFromCell(drain.dir, rp[point]) %>% as.data.frame()
         
@@ -71,88 +82,20 @@ river_outlets <- function(river, drain.dir) {
         if(!is.na(cell)) {
             bearing <- b[point]
             
-            prep <- data.frame(row=0, col=0)
-            if (bearing > -5 && bearing < 5) {
-                prep$row <- prc$row-1
-                prep$col <- prc$col
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
+            prep <- new_row_col(bearing, prc)
             
-            if (bearing > 350 && bearing < 370) {
-                prep$row <- prc$row-1
-                prep$col <- prc$col
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
+            cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
+            coords <- raster::xyFromCell(drain.dir, cell)
+            pointcoords[point,] <- coords
             
-            if (bearing > 40 && bearing < 50) {
-                prep$row <- prc$row-1
-                prep$col <- prc$col+1
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
-            
-            if (bearing > 80 && bearing < 100) {
-                prep$row <- prc$row
-                prep$col <- prc$col+1
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
-            
-            if (bearing > 125 && bearing < 145) {
-                prep$row <- prc$row+1
-                prep$col <- prc$col+1
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
-            
-            if (bearing > 170 && bearing < 190) {
-                prep$row <- prc$row+1
-                prep$col <- prc$col
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
-            
-            
-            if (bearing > 215 && bearing < 235) {
-                prep$row <- prc$row+1
-                prep$col <- prc$col-1
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
-            
-            if (bearing > 260 && bearing < 280) {
-                prep$row <- prc$row
-                prep$col <- prc$col-1
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
-            
-            if (bearing > 305 && bearing < 325) {
-                prep$row <- prc$row-1
-                prep$col <- prc$col-1
-                cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
-                coords <- raster::xyFromCell(drain.dir, cell)
-                pointcoords <- rbind(pointcoords, coords)
-            }
         } else {
             coords <- c(NA,NA)
-            pointcoords <- rbind(pointcoords, coords)
+            pointcoords[point,] <- coords
         }
         
     }
     
-    #pointcoords <- matrix(pointcoords, ncol=2)
-    points <- sf::st_multipoint(as.matrix(pointcoords)) %>%
+    points <- sf::st_multipoint(pointcoords) %>%
         sf::st_sfc() %>%
         sf::st_cast("POINT") %>%
         sf::st_set_crs(p4s)

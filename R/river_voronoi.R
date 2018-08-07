@@ -16,9 +16,6 @@
 #' Thus, the accuracy of the final segment Voronoi diagram is depending on the density of nodes in the river network.
 #' Consider densifying geometry e.g. with \code{sf::st_segmentize()} function for higher accuracy.
 #'
-#' @param min A numeric value. Removes segments which are shorter than the value in meters, in order to remove unnecessarily
-#'   short river segments. Defaults to 10 meters.
-#' @param tolerance Radius of the buffer used to take difference. Defaults to 0.001 (in map units).
 #' @inheritParams compute_weights
 #'
 #'
@@ -26,23 +23,26 @@
 #' @export
 #'
 #'
-river_voronoi<- function(river, aoi, riverID = "riverID", min=10, tolerance = 0.001, verbose=FALSE) {
+river_voronoi<- function(river, aoi, riverID = "riverID", verbose=FALSE) {
+    
+    if(is.null(river)) stop("river network is required")
+    if(is.null(aoi)) stop("area of interest is required")
     
     #inspect input
     if(!any(class(river) == "sf")) {
         stop("river input should be an 'sf' LINESTRING object")
     }
 
-    IDs <- dplyr::select_(river, riverID) %>% sf::st_set_geometry(NULL) %>% unlist()
-    
-    if (verbose) message("Extracting line segment end points...")
-    n <- NROW(river)
-    #coords <- sf::st_coordinates(river)
-    p4s <- sf::st_crs(river)[[2]]
+    IDs <- dplyr::select_(river, riverID) %>% 
+        sf::st_set_geometry(NULL) %>% 
+        unlist() %>% 
+        unname()
     
     # Move end and start coordinates ~10m backwards, in order to prevent river nodes being at exact same position
     # when calculating the Voronoi diagram
-    voronoi <- move_nodes(river, p4s, verbose = verbose)
+    if (verbose) message("Processing nodes..")
+    n <- NROW(river)
+    voronoi <- move_nodes(river, verbose = verbose)
     
     #create voronoi diagram, spatially join attributes
     if (verbose) message("Processing Voronoi tesselation")
@@ -59,17 +59,14 @@ river_voronoi<- function(river, aoi, riverID = "riverID", min=10, tolerance = 0.
                                                      dplyr::group_by_(riverID) %>%
                                                      dplyr::summarise() %>%
                                                      sf::st_intersection(sf::st_geometry(aoi))))
-    #voronoi <- tesselate_voronoi(voronoi, aoi, riverID = riverID, verbose = verbose)
     
     # fix any bad polygons
     voronoi <- fix_voronoi(voronoi, riverID = riverID, verbose = verbose)
   
-    
     # prepare return
     if (any(names(voronoi) == "ID")) {
         voronoi$riverID <- voronoi$ID
         voronoi$ID <- 1:NROW(voronoi)
-        
     } else {
         voronoi <- tibble::add_column(voronoi, ID = 1:NROW(voronoi), .before=1)
     }

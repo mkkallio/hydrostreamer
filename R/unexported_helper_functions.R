@@ -30,85 +30,81 @@ next_cell_up <- function(cell, drain.dir) {
 }
 
 
-
-move_nodes <- function(river, p4s, verbose=FALSE) {
-    vorRiv <- st_geometry(river)
+# helper for river_voronoi
+# moves starting and ending nodes either 0.0005 degrees, or 10 meters, depending on projection
+move_nodes <- function(river, verbose=FALSE) {
+    
+    rivgeom <- st_geometry(river)
+    p4s <- sf::st_crs(river)[2]
+    
     n <- nrow(river)
     if (verbose) pb <- txtProgressBar(min = 0, max = n, style = 3)
+    
     if( grepl("longlat", p4s, fixed=TRUE) ) {
         dist <- 0.0005
         for (line in 1:nrow(river)) {
             coords <- sf::st_coordinates(river[line,])
             len <- NROW(coords)
+            firstpair <- coords[2:1,1:2]
+            lastpair <- coords[(len-1):len,1:2]
             
-            bear <- geosphere::bearing(coords[(len-1):len,1:2])[1] 
-            if(bear > 90) bear <- abs(bear)-90 else
-                if(bear < -90) bear <- -(bear+270) else
-                    if(bear < 90 && bear >= 0) bear <- 90-bear else
-                        if(bear < 0 && bear >= -90) bear <- -bear+90
+            firstbear <- geosphere::bearing(firstpair)[1] +180
+            lastbear <- geosphere::bearing(lastpair)[1] +180
             
-            newx <- coords[len,1] - dist * cos(bear*pi/180)
-            newy <- coords[len,2] - dist * sin(bear*pi/180)
-            coords[len,1:2] <- c(newx,newy)
+            move <- move_coords(firstbear,dist)
+            coords[1,1:2] <- coords[1,1:2] + move
             
-            
-            bear <- geosphere::bearing(coords[1:2,1:2])[1]
-            if(bear > 90) bear <- abs(bear)-90 else
-                if(bear < -90) bear <- -(bear+270) else
-                    if(bear < 90 && bear >= 0) bear <- 90-bear else
-                        if(bear < 0 && bear >= -90) bear <- -bear+90
-            
-            newx <- coords[1,1] + dist * cos(bear*pi/180)
-            newy <- coords[1,2] + dist * sin(bear*pi/180)
-            coords[1,1:2] <- c(newx,newy)
+            move <- move_coords(lastbear,dist)
+            coords[len,1:2] <- coords[len,1:2] + move
             
             sfc <- sf::st_linestring(coords[,1:2], dim="XY") %>% 
-                sf::st_sfc() #%>% 
-            #st_set_crs(p4s) %>% 
-            #sf::st_sf() %>% 
-            #cbind(ID = ID[line])
-            vorRiv[line] <- sfc
+                sf::st_sfc()
+            rivgeom[line] <- sfc
             
             if (verbose) setTxtProgressBar(pb, line)
         }
-        vorRiv <- st_set_geometry(river, vorRiv)
+        rivgeom <- sf::st_set_geometry(river, rivgeom)
     } else {
         dist <- 10
         for (line in 1:n) {
             coords <- sf::st_coordinates(river[line,])
             len <- NROW(coords)
-            
-            a <- coords[len-1,1:2]
-            b <- coords[len,1:2]
-            #theta <- acos( sum(a*b) / ( sqrt(sum(a * a)) * sqrt(sum(b * b)) ) )
-            theta = atan2(a[2] - b[2], a[1] - b[1])
-            newx <- coords[len,1] + dist * cos(theta)
-            newy <- coords[len,2] + dist * sin(theta)
-            coords[len,1:2] <- c(newx,newy)
+            firstpair <- coords[2:1,1:2]
+            lastpair <- coords[(len-1):len,1:2]
             
             
-            a <- coords[1,1:2]
-            b <- coords[2,1:2]
-            #theta <- acos( sum(a*b) / ( sqrt(sum(a * a)) * sqrt(sum(b * b)) ) )
-            theta = atan2(a[2] - b[2], a[1] - b[1])
-            newx <- coords[1,1] - dist * cos(theta)
-            newy <- coords[1,2] - dist * sin(theta)
-            coords[1,1:2] <- c(newx,newy)
+            dx <- firstpair[1,1]-firstpair[2,1]
+            dy <- firstpair[1,2]-firstpair[2,2]
+            angle <- 90 - (180/pi)*atan2(dy,dx)
+            angle <- angle %% 360
+            move <- move_coords(angle,dist)
+            coords[1,1:2] <- coords[1,1:2] + move
+            
+            dx <- lastpair[1,1]-lastpair[2,1]
+            dy <- lastpair[1,2]-lastpair[2,2]
+            angle <- 90 - (180/pi)*atan2(dy,dx)
+            angle <- angle %% 360
+            move <- move_coords(angle,dist)
+            coords[len,1:2] <- coords[len,1:2] + move
             
             sfc <- sf::st_linestring(coords[,1:2], dim="XY") %>% 
-                sf::st_sfc() #%>% 
-            #st_set_crs(p4s) %>% 
-            #sf::st_sf() %>% 
-            #cbind(ID = ID[line])
-            vorRiv[line] <- sfc
+                sf::st_sfc() 
+            rivgeom[line] <- sfc
             
             if (verbose) setTxtProgressBar(pb, line)
         }
-        vorRiv <- st_set_geometry(river, vorRiv)
+        rivgeom <- sf::st_set_geometry(river, rivgeom)
         
     }
     if (verbose) close(pb)
-    return(vorRiv)
+    return(rivgeom)
+}
+
+
+move_coords <- function(bear, dist) {
+    movex <- dist * sin(bear*pi/180)
+    movey <- dist * cos(bear*pi/180)
+    return(c(x=movex, y=movey))
 }
 
 tesselate_voronoi <- function(vorPoints, aoi, riverID = "riverID", verbose = FALSE) {
@@ -190,3 +186,39 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
     #------
     return(voronoi)
 }
+
+
+
+new_row_col <- function(bearing, prc) {
+    prep <- data.frame(row=0, col=0)
+    if (bearing > -5 && bearing < 5) {
+        prep$row <- prc$row-1
+        prep$col <- prc$col
+    } else if (bearing > 350 && bearing < 370) {
+        prep$row <- prc$row-1
+        prep$col <- prc$col
+    } else  if (bearing > 40 && bearing < 50) {
+        prep$row <- prc$row-1
+        prep$col <- prc$col+1
+    } else if (bearing > 80 && bearing < 100) {
+        prep$row <- prc$row
+        prep$col <- prc$col+1
+    } else if (bearing > 125 && bearing < 145) {
+        prep$row <- prc$row+1
+        prep$col <- prc$col+1
+    } else if (bearing > 170 && bearing < 190) {
+        prep$row <- prc$row+1
+        prep$col <- prc$col
+    } else if (bearing > 215 && bearing < 235) {
+        prep$row <- prc$row+1
+        prep$col <- prc$col-1
+    } else if (bearing > 260 && bearing < 280) {
+        prep$row <- prc$row
+        prep$col <- prc$col-1
+    } else if (bearing > 305 && bearing < 325) {
+        prep$row <- prc$row-1
+        prep$col <- prc$col-1
+    }
+    return(prep)
+} 
+
