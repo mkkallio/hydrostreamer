@@ -22,7 +22,7 @@
 #' }
 #'
 #' @param drain.dir A RasterLayer object of drainage directions.
-#' @inheritParams compute_weights
+#' @inheritParams compute_HSweights
 #'
 #' @return Returns an 'sf' point object of identified raster cell centers. Includes all the attributes in the 
 #' given \code{river} object.

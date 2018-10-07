@@ -4,27 +4,29 @@
 \alias{split_river_with_grid}
 \title{Split river segments at runoff unit (polygon) boundaries.}
 \usage{
-split_river_with_grid(river, grid, riverID = "riverID")
+split_river_with_grid(river, grid, riverID = "riverID", gridID = "gridID")
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{grid}{A 'HSgrid' object, obtained with \code{\link{polygrid_timeseries}}.}
-
-\item{riverID}{A character string which specifies the name of the column in \code{river} containing unique river network 
-identifiers. Defaults to "riverID".}
+\item{riverID}{A character string which specifies the name of the column in 
+\code{river} containing unique river network identifiers. Defaults to "riverID".}
 }
 \value{
-Returns an 'sf' linestring object which has been split at the polygon (grid) boundaries with
-attributes:
-\itemize{
-  \item \emph{ID}. Unique ID of the split river segments.
-  \item \emph{riverID}. ID of the original river segment prior to splitting.
-  \item \emph{gridID}. ID of the runoff unit split river segment is contained in.  
+Returns an 'sf' linestring object which has been split at 
+  the polygon (grid) boundaries with attributes:
+  \itemize{
+    \item \emph{ID}. Unique ID of the split river segments.
+    \item \emph{riverID}. ID of the original river segment prior 
+      to splitting.
+    \item \emph{gridID}. ID of the runoff unit split river segment 
+      is contained in. 
+    \item Other columns inherited from \code{river}.
 }
 }
 \description{
-Splits an 'sf' linestring object at the boundaries of runoff units (polygons).
+Splits an 'sf' linestring object at the boundaries of 
+runoff units (polygons).
 }
 \examples{
 \dontrun{
@@ -34,12 +36,14 @@ library(hydrostreamer)
 # load data
 data(river)
 data(basin)
-runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+runoff <- brick(system.file("extdata", "runoff.tif", 
+                            package = "hydrostreamer"))
 
 # create HSgrid
-grid <- polygrid_timeseries(grid, aoi=basin)
+grid <- raster_to_HSgrid(grid, aoi=basin)
 
-splitriver <- split_river_with_grid(river, grid, riverID="ID")
+splitriver <- split_river_with_grid(river, grid, 
+                                    riverID="ID")
 }
 
 }

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Find all upstream segments from a point — upstream • hydrostreamer</title>
+<title>Find all upstream segments from a specified river segment. — upstream • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,9 +30,10 @@
 
 
 
-<meta property="og:title" content="Find all upstream segments from a point — upstream" />
+<meta property="og:title" content="Find all upstream segments from a specified river segment. — upstream" />
 
-<meta property="og:description" content="Function returns the river network consisting of all upstream segments from a specified river segment." />
+<meta property="og:description" content="Function returns the river network consisting of all upstream segments 
+from a specified river segment." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -61,7 +62,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -84,7 +85,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -94,12 +95,7 @@
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -112,14 +108,15 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Find all upstream segments from a point</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/utility.R'><code>R/utility.R</code></a></small>
+    <h1>Find all upstream segments from a specified river segment.</h1>
+    
     <div class="hidden name"><code>upstream.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Function returns the river network consisting of all upstream segments from a specified river segment.</p>
+    <p>Function returns the river network consisting of all upstream segments 
+from a specified river segment.</p>
     
     </div>
 
@@ -130,7 +127,8 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>HSnetwork</th>
-      <td><p>a <code>HSnetwork</code> (routed river network) object obtained with <code><a href='flow_network.html'>flow_network</a></code>.</p></td>
+      <td><p>a <code>HSnetwork</code> (routed river network) object obtained
+with <code><a href='river_network.html'>river_network</a></code>.</p></td>
     </tr>
     <tr>
       <th>ID</th>
@@ -138,15 +136,15 @@
     </tr>
     <tr>
       <th>riverID</th>
-      <td><p>A character string which specifies the name of the column in <code>river</code> containing unique river network 
-identifiers. Defaults to "riverID".</p></td>
+      <td><p>A character string which specifies the name of the column in 
+<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>HSnetwork</code> object (a routed river network) consisting of the segments upstream from the 
-segment specified.</p>
+    <p>A <code>HSnetwork</code> object (a routed river network) consisting of the 
+segments upstream from the segment specified.</p>
     
 
   </div>

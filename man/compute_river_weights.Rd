@@ -10,41 +10,45 @@ compute_river_weights(river, grid, seg_weights = "length",
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{grid}{A 'HSgrid' object, obtained with \code{\link{polygrid_timeseries}}.}
+\item{seg_weights}{A character vector specifying type of weights, or a 
+numerical vector. See Details. Defaults to "length".}
 
-\item{seg_weights}{A character vector specifying type of weights, or a numerical vector. See Details. 
-Defaults to "length".}
+\item{riverID}{A character string which specifies the name of the column in 
+\code{river} containing unique river network identifiers. Defaults to "riverID".}
 
-\item{riverID}{A character string which specifies the name of the column in \code{river} containing unique river network 
-identifiers. Defaults to "riverID".}
-
-\item{split}{Whether or not to use \code{\link{split_river_with_grid}} before computing weights. Default
-is FALSE (assuming the river has already been split)}
+\item{split}{Whether or not to use \code{\link{split_river_with_grid}} 
+before computing weights. Default is FALSE (assuming the river has already 
+been split)}
 }
 \value{
 Returns an 'sf' linestring feature with attributes:
-\itemize{
-  \item \emph{ID}. Unique ID of the feature.
-  \item \emph{riverID}. ID of the river each segment is associated to.
-  \item \emph{gridID}. ID of the runoff unit the river segment is contained in.
-  \item \emph{weights}. Weights computed for each river segment.
+  \itemize{
+    \item \emph{ID}. Unique ID of the feature.
+    \item \emph{riverID}. ID of the river each segment is associated to.
+    \item \emph{gridID}. ID of the runoff unit the river segment is contained in.
+    \item \emph{weights}. Weights computed for each river segment.
 }
 }
 \description{
-Computes weights for each individual river segments falling in the areal units of the runoff \emph{grid}. 
-Weight is computed from a numerical property of segments by \emph{x/sum(x)} where x are the river segments
-contained in a areal unit of runoff (\emph{grid}). This function is called by \code{\link{compute_weights}}.
+Computes weights for each individual river segments falling in the 
+areal units of the runoff \emph{grid}. Weight is computed from a 
+numerical property of segments by \emph{x/sum(x)} where x are the 
+river segments contained in a areal unit of runoff (\emph{grid}). 
+This function is called by \code{\link{compute_HSweights}}.
 }
 \details{
-\emph{seg_weights} should be one of the following: "equal", "length", "strahler", or a numeric vector
-which specifies the weight for each river segment. 
-\itemize{
-  \item \emph{equal} option assigns equal weights to all river segments within a runoff unit.
-  \item \emph{length} option weights river segments within a runoff unit based on the length of the 
-  segment.
-  \item \emph{strahler} option weights river segments based on the Strahler number computed for the 
-  supplied river network.
-  \item A numeric vector with length equal to the number of features in \emph{river}. 
+\emph{seg_weights} should be one of the following: "equal", "length", 
+  "strahler", or a numeric vector which specifies the weight for each 
+  river segment. 
+  \itemize{
+    \item \emph{equal} option assigns equal weights to all river segments 
+      within a runoff unit.
+    \item \emph{length} option weights river segments within a runoff unit 
+      based on the length of the segment.
+    \item \emph{strahler} option weights river segments based on the 
+      Strahler number computed for the supplied river network.
+    \item A numeric vector with length equal to the number of features 
+      in \emph{river}. 
 }
 }
 \examples{

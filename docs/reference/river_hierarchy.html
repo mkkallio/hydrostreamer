@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes river hierarchies from a connected river network. — river_hierarchy • hydrostreamer</title>
+<title>Computes river hierarchies for a HSnetwork object. — river_hierarchy • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,10 +30,10 @@
 
 
 
-<meta property="og:title" content="Computes river hierarchies from a connected river network. — river_hierarchy" />
+<meta property="og:title" content="Computes river hierarchies for a HSnetwork object. — river_hierarchy" />
 
 <meta property="og:description" content="Computes river hierarchies from a routed river network (HSnetwork object), or from an unrouted,
-connected river network. In case the input river network is unrouted, flow_network is run
+connected river network. In case the input river network is unrouted, river_network is run
 before computing river hierarchy." />
 <meta name="twitter:card" content="summary" />
 
@@ -63,7 +63,7 @@ before computing river hierarchy." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -86,7 +86,7 @@ before computing river hierarchy." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -96,12 +96,7 @@ before computing river hierarchy." />
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -114,15 +109,15 @@ before computing river hierarchy." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes river hierarchies from a connected river network.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/river_hierarchy.R'><code>R/river_hierarchy.R</code></a></small>
+    <h1>Computes river hierarchies for a HSnetwork object.</h1>
+    
     <div class="hidden name"><code>river_hierarchy.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
     <p>Computes river hierarchies from a routed river network (<em>HSnetwork</em> object), or from an unrouted,
-connected river network. In case the input river network is unrouted, <code><a href='flow_network.html'>flow_network</a></code> is run
+connected river network. In case the input river network is unrouted, <code><a href='river_network.html'>river_network</a></code> is run
 before computing river hierarchy.</p>
     
     </div>
@@ -142,8 +137,8 @@ before computing river hierarchy.</p>
     </tr>
     <tr>
       <th>riverID</th>
-      <td><p>A character string which specifies the name of the column in <code>river</code> containing unique river network 
-identifiers. Defaults to "riverID".</p></td>
+      <td><p>A character string which specifies the name of the column in 
+<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
     </tr>
     </table>
     
@@ -155,6 +150,7 @@ identifiers. Defaults to "riverID".</p></td>
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><span class='co'># NOT RUN {</span>
 <span class='fu'>library</span>(<span class='no'>hydrostreamer</span>)
+<span class='fu'>library</span>(<span class='no'>dplyr</span>)
 
 <span class='co'># load data</span>
 <span class='fu'>data</span>(<span class='no'>river</span>)
@@ -163,7 +159,7 @@ identifiers. Defaults to "riverID".</p></td>
 <span class='no'>river</span> <span class='kw'>&lt;-</span> <span class='fu'>river_hierarchy</span>(<span class='no'>river</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
 
 <span class='co'># with routed network</span>
-<span class='no'>routed_river</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='flow_network.html'>flow_network</a></span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>) <span class='kw'>%&gt;%</span>
+<span class='no'>routed_river</span> <span class='kw'>&lt;-</span> <span class='fu'>flow_network</span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>) <span class='kw'>%&gt;%</span>
     <span class='fu'>river_hierarchy</span>()
 <span class='co'># }</span><div class='input'>
 </div></pre>

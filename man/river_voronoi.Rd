@@ -2,44 +2,41 @@
 % Please edit documentation in R/river_voronoi.R
 \name{river_voronoi}
 \alias{river_voronoi}
-\title{Create segment-specific Voronoi diagram from a network.}
+\title{Create a segment-specific Voronoi diagram from an sf LINESTRING object.}
 \usage{
-river_voronoi(river, aoi, riverID = "riverID", min = 10,
-  tolerance = 0.001, verbose = FALSE)
+river_voronoi(river, aoi, riverID = "riverID", verbose = FALSE)
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
 \item{aoi}{An 'sf' polygon object. Optional.}
 
-\item{riverID}{A character string which specifies the name of the column in \code{river} containing unique river network 
-identifiers. Defaults to "riverID".}
-
-\item{min}{A numeric value. Removes segments which are shorter than the value in meters, in order to remove unnecessarily
-short river segments. Defaults to 10 meters.}
-
-\item{tolerance}{Radius of the buffer used to take difference. Defaults to 0.001 (in map units).}
+\item{riverID}{A character string which specifies the name of the column in 
+\code{river} containing unique river network identifiers. Defaults to "riverID".}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-Returns an 'sf' polygon object, with a column "ID" corresponding to the river segment IDs.
+Returns an 'sf' polygon object, with a column "ID" corresponding 
+  to the river segment IDs.
 }
 \description{
-The function creates Voronoi diagram for each segment in a directed connected river network, where the 
-Voronoi polygons join together at network segment intersections.
+The function creates Voronoi diagram for each segment in a directed 
+connected river network (\code{sf LINESTRING}), where the Voronoi 
+polygons join together at network segment intersections.
 }
 \details{
-Creating the segment Voronoi polygons is done in the following steps:
+Creating the segment Voronoi diagram is done in the following steps:
 \enumerate{
-  \item Move starting and ending nodes forward or backwards (respectively) for a small amount to ensure
-  there are no identical nodes.
+  \item Move starting and ending nodes forward or backwards (respectively) 
+  for a small amount to ensure there are no identical nodes.
   \item Compute a Voronoi diagram from point cloud of river segment nodes.
-  \item Dissolve the individual polygons using river segment ID.
+  \item Union the individual polygons using river segment ID.
   \item Clip the polygons to the area of interest.
   \item Process erroneous polygons, if any.
 }
 
-Thus, the accuracy of the final segment Voronoi diagram is depending on the density of nodes in the river network.
-Consider densifying geometry e.g. with \code{sf::st_segmentize()} function for higher accuracy.
+The accuracy of the final segment Voronoi diagram is depending on the 
+density of nodes in the river network. Consider densifying geometry e.g. 
+with \code{sf::st_segmentize()} function for higher accuracy.
 }

@@ -32,9 +32,11 @@
 
 <meta property="og:title" content="Compute weights for river segments within runoff area features. — compute_river_weights" />
 
-<meta property="og:description" content="Computes weights for each individual river segments falling in the areal units of the runoff grid. 
-Weight is computed from a numerical property of segments by x/sum(x) where x are the river segments
-contained in a areal unit of runoff (grid). This function is called by compute_weights." />
+<meta property="og:description" content="Computes weights for each individual river segments falling in the 
+areal units of the runoff grid. Weight is computed from a 
+numerical property of segments by x/sum(x) where x are the 
+river segments contained in a areal unit of runoff (grid). 
+This function is called by compute_HSweights." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -63,7 +65,7 @@ contained in a areal unit of runoff (grid). This function is called by compute_w
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -86,7 +88,7 @@ contained in a areal unit of runoff (grid). This function is called by compute_w
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -96,12 +98,7 @@ contained in a areal unit of runoff (grid). This function is called by compute_w
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -115,15 +112,17 @@ contained in a areal unit of runoff (grid). This function is called by compute_w
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Compute weights for river segments within runoff area features.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/compute_river_weights.R'><code>R/compute_river_weights.R</code></a></small>
+    
     <div class="hidden name"><code>compute_river_weights.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Computes weights for each individual river segments falling in the areal units of the runoff <em>grid</em>. 
-Weight is computed from a numerical property of segments by <em>x/sum(x)</em> where x are the river segments
-contained in a areal unit of runoff (<em>grid</em>). This function is called by <code><a href='compute_weights.html'>compute_weights</a></code>.</p>
+    <p>Computes weights for each individual river segments falling in the 
+areal units of the runoff <em>grid</em>. Weight is computed from a 
+numerical property of segments by <em>x/sum(x)</em> where x are the 
+river segments contained in a areal unit of runoff (<em>grid</em>). 
+This function is called by <code><a href='compute_HSweights.html'>compute_HSweights</a></code>.</p>
     
     </div>
 
@@ -138,23 +137,20 @@ contained in a areal unit of runoff (<em>grid</em>). This function is called by 
       <td><p>An 'sf' linestring feature representing a river network.</p></td>
     </tr>
     <tr>
-      <th>grid</th>
-      <td><p>A 'HSgrid' object, obtained with <code><a href='polygrid_timeseries.html'>polygrid_timeseries</a></code>.</p></td>
-    </tr>
-    <tr>
       <th>seg_weights</th>
-      <td><p>A character vector specifying type of weights, or a numerical vector. See Details. 
-Defaults to "length".</p></td>
+      <td><p>A character vector specifying type of weights, or a 
+numerical vector. See Details. Defaults to "length".</p></td>
     </tr>
     <tr>
       <th>riverID</th>
-      <td><p>A character string which specifies the name of the column in <code>river</code> containing unique river network 
-identifiers. Defaults to "riverID".</p></td>
+      <td><p>A character string which specifies the name of the column in 
+<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
     </tr>
     <tr>
       <th>split</th>
-      <td><p>Whether or not to use <code><a href='split_river_with_grid.html'>split_river_with_grid</a></code> before computing weights. Default
-is FALSE (assuming the river has already been split)</p></td>
+      <td><p>Whether or not to use <code><a href='split_river_with_grid.html'>split_river_with_grid</a></code> 
+before computing weights. Default is FALSE (assuming the river has already 
+been split)</p></td>
     </tr>
     </table>
     
@@ -170,14 +166,17 @@ is FALSE (assuming the river has already been split)</p></td>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p><em>seg_weights</em> should be one of the following: "equal", "length", "strahler", or a numeric vector
-which specifies the weight for each river segment.</p><ul>
-<li><p><em>equal</em> option assigns equal weights to all river segments within a runoff unit.</p></li>
-<li><p><em>length</em> option weights river segments within a runoff unit based on the length of the 
-  segment.</p></li>
-<li><p><em>strahler</em> option weights river segments based on the Strahler number computed for the 
-  supplied river network.</p></li>
-<li><p>A numeric vector with length equal to the number of features in <em>river</em>.</p></li>
+    <p><em>seg_weights</em> should be one of the following: "equal", "length", 
+  "strahler", or a numeric vector which specifies the weight for each 
+  river segment.</p><ul>
+<li><p><em>equal</em> option assigns equal weights to all river segments 
+      within a runoff unit.</p></li>
+<li><p><em>length</em> option weights river segments within a runoff unit 
+      based on the length of the segment.</p></li>
+<li><p><em>strahler</em> option weights river segments based on the 
+      Strahler number computed for the supplied river network.</p></li>
+<li><p>A numeric vector with length equal to the number of features 
+      in <em>river</em>.</p></li>
 </ul>
     
 
@@ -192,7 +191,7 @@ which specifies the weight for each river segment.</p><ul>
 <span class='no'>runoff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='http://www.rdocumentation.org/packages/raster/topics/brick'>brick</a></span>(<span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"runoff.tif"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"hydrostreamer"</span>))
 
 <span class='co'># create HSgrid</span>
-<span class='no'>grid</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='polygrid_timeseries.html'>polygrid_timeseries</a></span>(<span class='no'>grid</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>)
+<span class='no'>grid</span> <span class='kw'>&lt;-</span> <span class='fu'>polygrid_timeseries</span>(<span class='no'>grid</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>)
 
 <span class='co'># create basins</span>
 <span class='no'>basins</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='river_voronoi.html'>river_voronoi</a></span>(<span class='no'>river</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>)

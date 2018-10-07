@@ -1,15 +1,19 @@
 Package: hydrostreamer
 Type: Package
-Title: A package for assigning runoff output from hydrological or land surface models to explicit river segments
-Version: 0.2.2
-Date: 2018-07-25
-Authors@R: person("Marko", "Kallio", email = "marko@markokallio.fi", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6917-7790"))
+Title: A package for downscaling distributed runoff products in to 
+  explicit river segments.
+Version: 0.3.0
+Date: 2018-09-17
+Authors@R: person("Marko", "Kallio", email = "marko@markokallio.fi", 
+                  role = c("aut", "cre"), 
+                  comment = c(ORCID = "0000-0002-6917-7790"))
 Maintainer: The package maintainer <marko@markokallio.fi>
-Description: hydrostreamer is an R package to downscale off-the-shelf runoff timeseries into explicitly represented 
-  river network. Downscaling is done by the spatial relationship between a polygon (raster cell) with runoff information
-  and the river network. The cell value is divided among those river segments which intersect the cell in question using
-  weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also
-  provided to estimate discharge at each segment.
+Description: hydrostreamer provides functions to downscale distributed runoff data 
+  into an explicitly represented river network. Downscaling is done by the spatial 
+  relationship between an areal unit of runoff and an overlaid river network. 
+  Value of the runoff unit is divided among intersecting river segments. hydrostreamer
+  provides several methods for the assignment. Simple river routing algorithms 
+  are also provided to estimate discharge at each segment.
 Depends: R (>= 3.4.0)
 Encoding: UTF-8
 Imports:
@@ -21,10 +25,15 @@ Imports:
     sf,
     tibble,
     units,
-    rgdal
+    rgdal,
+    lubridate,
+    hydroGOF,
+    ggplot2,
+    quadprog
 Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
+    plotly
 LazyData: true
 License: MIT + file LICENSE
 URL: https://mkkallio.github.io/hydrostreamer/

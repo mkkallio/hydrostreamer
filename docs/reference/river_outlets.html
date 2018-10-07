@@ -63,7 +63,7 @@ of segment specific catchments." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -86,7 +86,7 @@ of segment specific catchments." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -96,12 +96,7 @@ of segment specific catchments." />
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -115,7 +110,7 @@ of segment specific catchments." />
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Identify locations from where to start catchment delineation.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/river_outlets.R'><code>R/river_outlets.R</code></a></small>
+    
     <div class="hidden name"><code>river_outlets.Rd</code></div>
     </div>
 
@@ -154,14 +149,14 @@ of the last node pair is computed, and the raster cell from where the last node-
 Note that the logic of the function requires that the river network is derived from the same raster than the 
 drainage directions input to the function.</p>
 <p>Note: Drainage directions must be in coded 1-128:</p><ul>
-<li><p>1East</p></li>
-<li><p>2Southeast</p></li>
-<li><p>4South</p></li>
-<li><p>8Southwest</p></li>
-<li><p>16West</p></li>
-<li><p>32Northwest</p></li>
-<li><p>64North</p></li>
-<li><p>128Northeast</p></li>
+<li><p>1:East</p></li>
+<li><p>2:Southeast</p></li>
+<li><p>4:South</p></li>
+<li><p>8:Southwest</p></li>
+<li><p>16:West</p></li>
+<li><p>32:Northwest</p></li>
+<li><p>64:North</p></li>
+<li><p>128:Northeast</p></li>
 </ul>
     
 

@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Compute weights for river catchment areas within the runoff area features. — compute_area_weights • hydrostreamer</title>
+<title>Compute weights for river catchment areas within the runoff area 
+features. — compute_area_weights • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,13 +31,16 @@
 
 
 
-<meta property="og:title" content="Compute weights for river catchment areas within the runoff area features. — compute_area_weights" />
+<meta property="og:title" content="Compute weights for river catchment areas within the runoff area 
+features. — compute_area_weights" />
 
-<meta property="og:description" content="Computes weights for each individual river segment specific catchments falling in the areal units of
-the runoff grid. Function first takes a union between basins and grid (creating 
-new catchment units which fall inside only one runoff unit), and calculating the area for each individual
-catchment unit. The weight is assigned by dividing the area of sub-catchment with the area of runoff unit.
-This function is called by compute_weights." />
+<meta property="og:description" content="Computes weights for each individual river segment specific catchments 
+falling in the areal units of the runoff grid. Function first 
+takes a union between basins and grid (creating new 
+catchment units which fall inside only one runoff unit), and calculating 
+the area for each individual catchment unit. The weight is assigned by 
+dividing the area of sub-catchment with the area of runoff unit.
+This function is called by compute_HSweights." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -65,7 +69,7 @@ This function is called by compute_weights." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -88,7 +92,7 @@ This function is called by compute_weights." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -98,12 +102,7 @@ This function is called by compute_weights." />
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -116,50 +115,55 @@ This function is called by compute_weights." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Compute weights for river catchment areas within the runoff area features.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/compute_area_weights.R'><code>R/compute_area_weights.R</code></a></small>
+    <h1>Compute weights for river catchment areas within the runoff area 
+features.</h1>
+    
     <div class="hidden name"><code>compute_area_weights.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Computes weights for each individual river segment specific catchments falling in the areal units of
-the runoff <em>grid</em>. Function first takes a union between <em>basins</em> and <em>grid</em> (creating 
-new catchment units which fall inside only one runoff unit), and calculating the area for each individual
-catchment unit. The weight is assigned by dividing the area of sub-catchment with the area of runoff unit.
-This function is called by <code><a href='compute_weights.html'>compute_weights</a></code>.</p>
+    <p>Computes weights for each individual river segment specific catchments 
+falling in the areal units of the runoff <em>grid</em>. Function first 
+takes a union between <em>basins</em> and <em>grid</em> (creating new 
+catchment units which fall inside only one runoff unit), and calculating 
+the area for each individual catchment unit. The weight is assigned by 
+dividing the area of sub-catchment with the area of runoff unit.
+This function is called by <code><a href='compute_HSweights.html'>compute_HSweights</a></code>.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>compute_area_weights</span>(<span class='no'>basins</span>, <span class='no'>grid</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>)</pre>
+    <pre class="usage"><span class='fu'>compute_area_weights</span>(<span class='no'>basins</span>, <span class='no'>grid</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>gridID</span> <span class='kw'>=</span> <span class='st'>"gridID"</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>basins</th>
-      <td><p>An 'sf' polygon feature specifying the river segment specific catchments.</p></td>
-    </tr>
-    <tr>
-      <th>grid</th>
-      <td><p>A 'HSgrid' object, obtained with <code><a href='polygrid_timeseries.html'>polygrid_timeseries</a></code>.</p></td>
+      <td><p>An 'sf' polygon feature specifying the river segment 
+specific catchments.</p></td>
     </tr>
     <tr>
       <th>riverID</th>
-      <td><p>A character string which specifies the name of the column in <code>river</code> containing unique river network 
-identifiers. Defaults to "riverID".</p></td>
+      <td><p>A character string which specifies the name of the column in 
+<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an 'sf' polygon feature (a union of basins, and grid) with attributes:</p><ul>
+    <p>Returns an 'sf' polygon feature (a union of basins, and grid) 
+  with attributes:</p><ul>
 <li><p><em>ID</em>. Unique ID of the feature.</p></li>
-<li><p><em>riverID</em>. ID of the river each sub-catchment is associated to.</p></li>
-<li><p><em>gridID</em>. ID of the runoff unit the sub-catchment is contained in.</p></li>
+<li><p><em>riverID</em>. ID of the river each sub-catchment is 
+      associated to.</p></li>
+<li><p><em>gridID</em>. ID of the runoff unit the sub-catchment 
+      is contained in.</p></li>
 <li><p><em>weights</em>. Weights computed for each sub-catchment.</p></li>
-<li><p><em>b_area_m2</em>. Area of the sub-catchment (basin) in \(m^2\).</p></li>
-<li><p><em>g_area_m2</em>. Area of the runoff unit sub-catchment is contained in. In \(m^2\).</p></li>
+<li><p><em>b_area_m2</em>. Area of the sub-catchment (basin) in 
+      \(m^2\).</p></li>
+<li><p><em>g_area_m2</em>. Area of the runoff unit sub-catchment is 
+      contained in. In \(m^2\).</p></li>
 </ul>
 
     
@@ -172,16 +176,18 @@ identifiers. Defaults to "riverID".</p></td>
 <span class='co'># load data</span>
 <span class='fu'>data</span>(<span class='no'>river</span>)
 <span class='fu'>data</span>(<span class='no'>basin</span>)
-<span class='no'>runoff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='http://www.rdocumentation.org/packages/raster/topics/brick'>brick</a></span>(<span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"runoff.tif"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"hydrostreamer"</span>))
+<span class='no'>runoff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='http://www.rdocumentation.org/packages/raster/topics/brick'>brick</a></span>(<span class='fu'>system.file</span>(<span class='st'>"extdata"</span>, <span class='st'>"runoff.tif"</span>,
+                            <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"hydrostreamer"</span>))
 
 <span class='co'># create HSgrid</span>
-<span class='no'>grid</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='polygrid_timeseries.html'>polygrid_timeseries</a></span>(<span class='no'>grid</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>)
+<span class='no'>grid</span> <span class='kw'>&lt;-</span> <span class='fu'>polygrid_timeseries</span>(<span class='no'>grid</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>)
 
 <span class='co'># create basins</span>
 <span class='no'>basins</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='river_voronoi.html'>river_voronoi</a></span>(<span class='no'>river</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>)
 
 <span class='co'># compute weights</span>
-<span class='no'>weighted_basins</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_area_weights</span>(<span class='no'>basins</span>, <span class='no'>grid</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
+<span class='no'>weighted_basins</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_area_weights</span>(<span class='no'>basins</span>, <span class='no'>grid</span>,
+                                        <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
 <span class='co'># }</span><div class='input'>  
 </div></pre>
   </div>

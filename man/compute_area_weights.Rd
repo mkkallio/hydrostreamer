@@ -2,35 +2,42 @@
 % Please edit documentation in R/compute_area_weights.R
 \name{compute_area_weights}
 \alias{compute_area_weights}
-\title{Compute weights for river catchment areas within the runoff area features.}
+\title{Compute weights for river catchment areas within the runoff area 
+features.}
 \usage{
-compute_area_weights(basins, grid, riverID = "riverID")
+compute_area_weights(basins, grid, riverID = "riverID", gridID = "gridID")
 }
 \arguments{
-\item{basins}{An 'sf' polygon feature specifying the river segment specific catchments.}
+\item{basins}{An 'sf' polygon feature specifying the river segment 
+specific catchments.}
 
-\item{grid}{A 'HSgrid' object, obtained with \code{\link{polygrid_timeseries}}.}
-
-\item{riverID}{A character string which specifies the name of the column in \code{river} containing unique river network 
-identifiers. Defaults to "riverID".}
+\item{riverID}{A character string which specifies the name of the column in 
+\code{river} containing unique river network identifiers. Defaults to "riverID".}
 }
 \value{
-Returns an 'sf' polygon feature (a union of basins, and grid) with attributes:
-\itemize{
-  \item \emph{ID}. Unique ID of the feature.
-  \item \emph{riverID}. ID of the river each sub-catchment is associated to.
-  \item \emph{gridID}. ID of the runoff unit the sub-catchment is contained in.
-  \item \emph{weights}. Weights computed for each sub-catchment.
-  \item \emph{b_area_m2}. Area of the sub-catchment (basin) in \eqn{m^2}.
-  \item \emph{g_area_m2}. Area of the runoff unit sub-catchment is contained in. In \eqn{m^2}.
+Returns an 'sf' polygon feature (a union of basins, and grid) 
+  with attributes:
+  \itemize{
+    \item \emph{ID}. Unique ID of the feature.
+    \item \emph{riverID}. ID of the river each sub-catchment is 
+      associated to.
+    \item \emph{gridID}. ID of the runoff unit the sub-catchment 
+      is contained in.
+    \item \emph{weights}. Weights computed for each sub-catchment.
+    \item \emph{b_area_m2}. Area of the sub-catchment (basin) in 
+      \eqn{m^2}.
+    \item \emph{g_area_m2}. Area of the runoff unit sub-catchment is 
+      contained in. In \eqn{m^2}.
 }
 }
 \description{
-Computes weights for each individual river segment specific catchments falling in the areal units of
-the runoff \emph{grid}. Function first takes a union between \emph{basins} and \emph{grid} (creating 
-new catchment units which fall inside only one runoff unit), and calculating the area for each individual
-catchment unit. The weight is assigned by dividing the area of sub-catchment with the area of runoff unit.
-This function is called by \code{\link{compute_weights}}.
+Computes weights for each individual river segment specific catchments 
+falling in the areal units of the runoff \emph{grid}. Function first 
+takes a union between \emph{basins} and \emph{grid} (creating new 
+catchment units which fall inside only one runoff unit), and calculating 
+the area for each individual catchment unit. The weight is assigned by 
+dividing the area of sub-catchment with the area of runoff unit.
+This function is called by \code{\link{compute_HSweights}}.
 }
 \examples{
 \dontrun{
@@ -40,7 +47,8 @@ library(hydrostreamer)
 # load data
 data(river)
 data(basin)
-runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+runoff <- brick(system.file("extdata", "runoff.tif", 
+                            package = "hydrostreamer"))
 
 # create HSgrid
 grid <- polygrid_timeseries(grid, aoi=basin)
@@ -49,7 +57,8 @@ grid <- polygrid_timeseries(grid, aoi=basin)
 basins <- river_voronoi(river, aoi=basin, riverID = "ID")
 
 # compute weights
-weighted_basins <- compute_area_weights(basins, grid, riverID="ID")
+weighted_basins <- compute_area_weights(basins, grid, 
+                                        riverID="ID")
 }
   
 }

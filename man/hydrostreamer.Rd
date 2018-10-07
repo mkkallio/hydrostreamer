@@ -4,11 +4,13 @@
 \name{hydrostreamer}
 \alias{hydrostreamer}
 \alias{hydrostreamer-package}
-\title{hydrostreamer: A package for assigning runoff outputs from hydrological or land surface models to explicit river segments.}
+\title{hydrostreamer: A package for downscaling distributed runoff products in to 
+explicit river segments.}
 \description{
-hydrostreamer is an R package to downscale off-the-shelf runoff timeseries into explicitly represented
-river network. Downscaling is done by the spatial relationship between a polygon (raster cell) with runoff information
-and the river network. The cell value is divided among those river segments which intersect the cell in question using
-weights based on catchment area within the cell, or by river segment properties. Simple river routing algorithm is also
-provided to estimate discharge at each segment.
+hydrostreamer provides functions to downscale distributed runoff data 
+into an explicitly represented river network. Downscaling is done by the spatial 
+relationship between an areal unit of runoff and an overlaid river network. 
+Value of the runoff unit is divided among intersecting river segments. hydrostreamer
+provides several methods for the assignment. Simple river routing algorithms 
+are also provided to estimate discharge at each segment.
 }

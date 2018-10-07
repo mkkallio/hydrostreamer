@@ -2,36 +2,41 @@
 % Please edit documentation in R/delineate_basin.R
 \name{delineate_basin}
 \alias{delineate_basin}
-\title{Delineate catchments from multiple input points}
+\title{Delineate multiple catchments from multiple input points}
 \usage{
 delineate_basin(outlets, drain.dir, riverID = "riverID", output = "vector",
   verbose = FALSE)
 }
 \arguments{
-\item{outlets}{An 'sf' point object, with locations of the catchment outlets for delineation. Obtained
-e.g. with \code{\link{river_outlets}}}
+\item{outlets}{An 'sf' point object, with locations of the catchment 
+outlets for delineation. Obtained e.g. with \code{\link{river_outlets}}}
 
 \item{drain.dir}{A RasterLayer object of drainage directions.}
 
 \item{riverID}{Name of the column in outlets with unique identifiers.}
 
-\item{output}{Whether to return a raster or vectors of delineated catchments.}
+\item{output}{Whether to return a raster or vectors of delineated catchments. 
+Accepts "vector", "v", "raster", or "r".}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-If output is \code{vector} (default), returns vectorized (polygon) catchments specific to the outlet points given. The output is 'sf' POLYGON class
-with attributes:
+If output is \code{vector} (default), returns vectorized (polygon) 
+  catchments specific to the outlet  points given. The output is 'sf' 
+  POLYGON class with attributes:
 \itemize{
   \item riverID: The ID given in \code{outlets}.
   \item NCELLS: The number of raster cells the catchment consists of.
   \item AREA_M2: Surface area of the catchment in m^2. 
 }
+If output is \code{raster}, returns a raster with delineated areas.
 }
 \description{
-This algorithm delineates multiple catchments from input point locations and a drainage direction layer.
-Catchments are delineated upstream from the point given, until another given outlet point is met. The result
-is a set of catchments which are unique to the points given.
+This algorithm delineates multiple catchments from input point 
+locations and a drainage direction layer. Catchments are delineated 
+upstream from the point given, until another given outlet point is 
+met. The result is a set of catchments which are unique to the points 
+given.
 }
 \examples{
 \dontrun{

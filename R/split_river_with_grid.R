@@ -1,15 +1,19 @@
 #' Split river segments at runoff unit (polygon) boundaries.
 #' 
-#' Splits an 'sf' linestring object at the boundaries of runoff units (polygons). 
+#' Splits an 'sf' linestring object at the boundaries of 
+#' runoff units (polygons). 
 #'
-#' @inheritParams compute_weights
+#' @inheritParams compute_HSweights
 #'
-#' @return Returns an 'sf' linestring object which has been split at the polygon (grid) boundaries with
-#' attributes:
-#' \itemize{
-#'   \item \emph{ID}. Unique ID of the split river segments.
-#'   \item \emph{riverID}. ID of the original river segment prior to splitting.
-#'   \item \emph{gridID}. ID of the runoff unit split river segment is contained in.  
+#' @return Returns an 'sf' linestring object which has been split at 
+#'   the polygon (grid) boundaries with attributes:
+#'   \itemize{
+#'     \item \emph{ID}. Unique ID of the split river segments.
+#'     \item \emph{riverID}. ID of the original river segment prior 
+#'       to splitting.
+#'     \item \emph{gridID}. ID of the runoff unit split river segment 
+#'       is contained in. 
+#'     \item Other columns inherited from \code{river}.
 #' }
 #' 
 #' @examples 
@@ -20,33 +24,27 @@
 #' # load data
 #' data(river)
 #' data(basin)
-#' runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
+#' runoff <- brick(system.file("extdata", "runoff.tif", 
+#'                             package = "hydrostreamer"))
 #' 
 #' # create HSgrid
-#' grid <- polygrid_timeseries(grid, aoi=basin)
+#' grid <- raster_to_HSgrid(grid, aoi=basin)
 #' 
-#' splitriver <- split_river_with_grid(river, grid, riverID="ID")
+#' splitriver <- split_river_with_grid(river, grid, 
+#'                                     riverID="ID")
 #' }
 #' 
 #' @export
-split_river_with_grid <- function(river, grid, riverID = "riverID") {
+split_river_with_grid <- function(river, 
+                                  grid, 
+                                  riverID = "riverID", 
+                                  gridID = "gridID") {
     
-    gridID <- NULL
     ID <- NULL
-    
-    #inspect input
-    accepted <- c("LINESTRING", "MULTILINESTRING", "GEOMETRY")
-    if(!any(class(river) %in% accepted) && !any(class(river) == "sf")) {
-        stop("river input should be sf class LINESTRING or MULTILINESTRING")
-    }
-    if(!any(class(grid) == "HSgrid")) {
-        stop("grid input should be of class HSgrid, obtained with function polygrid_timeseries()")
-    }
-    
-    grid <- dplyr::select(grid, gridID)
+
+    grid <- dplyr::select_(grid, gridID)
     
     river <- suppressMessages(suppressWarnings(sf::st_intersection(river, grid)))
-    river <- sf::st_cast(river, "LINESTRING")
     
     #add unique IDs
     if( any(names(river) == riverID) ) {

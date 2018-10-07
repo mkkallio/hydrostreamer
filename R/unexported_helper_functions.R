@@ -222,3 +222,162 @@ new_row_col <- function(bearing, prc) {
     return(prep)
 } 
 
+
+
+
+do_summary_fun <- function (list, funs, monthly,...) {
+    output <- list()
+    for(i in seq_along(list)) {
+        data <- list[[i]]
+        name <- names(list)[i]
+        if(is.null(name)) name <- paste0("runoff",i)
+        
+        if(monthly) data$Month <- lubridate::month(data$Date)
+
+        for (fun in funs) {
+            
+            # if input functions include quantile(), it needs to be handled in a special way so
+            # that output list of tables have the correct names, and the table contains correct
+            # column headers. If not for this, the output table has 2 or more times columns
+            # leading to problems later on in downscaling.
+            if (fun == "quantile" ) {
+                if (!hasArg(probs)) stop('Argument probs for quantile missing')
+                p <- list(...)
+
+                p <- p[['probs']]
+
+                for(prob in seq_along(p)) {
+                    elname <- paste0(name,"_Q",p[prob]*100,"%")
+                    if(monthly) {
+                        out <- data %>% 
+                            dplyr::select(-Date) %>%
+                            dplyr::group_by(Month) %>% 
+                            dplyr::summarise_all(.funs=fun, probs=p[prob])
+                        output[[elname]] <- out
+                    } else {
+                        out <- data %>% 
+                            dplyr::group_by(Date) %>% 
+                            dplyr::summarise_all(.funs=fun, probs=p[prob])
+                        output[[elname]] <- out
+                    }
+                }
+                
+            } else {
+                elname <- paste0(name,"_",fun)
+                if(monthly) {
+                    out <- data %>% 
+                        dplyr::select(-Date) %>%
+                        dplyr::group_by(Month) %>% 
+                        dplyr::summarise_all(.funs=fun)
+                    output[[elname]] <- out
+                } else {
+                    out <- data %>% 
+                        dplyr::group_by(Date) %>% 
+                        dplyr::summarise_all(.funs=fun)
+                    output[[elname]] <- out
+                }
+            }
+            
+            
+        }
+    }
+    return(output)
+}
+
+
+summarise_over_all <- function (list) {
+    n <- length(list)
+    temp <- list[[1]]
+    for(i in 2:n) {
+        temp <- bind_rows(temp, list[[i]])
+    }
+    name <- paste0("runoff")
+    out <- list(temp)
+    names(out) <- name
+    return(out)
+}
+
+
+
+
+
+# This is function ForecastComb::comb_CLS(), but edited according to https://stackoverflow.com/a/28388394. 
+# Edits marked with ###.
+forecastcomb_comb_CLS <- function (x) 
+{
+    if (class(x) != "foreccomb") 
+        stop("Data must be class 'foreccomb'. See ?foreccomb, to bring data in correct format.", 
+             call. = FALSE)
+    observed_vector <- x$Actual_Train
+    prediction_matrix <- x$Forecasts_Train
+    modelnames <- x$modelnames
+    p <- NCOL(prediction_matrix)
+    Rinv <- solve(safe_chol(t(prediction_matrix) %*% prediction_matrix))
+    C <- cbind(rep(1, p), diag(p))
+    b = c(1, rep(0, p))
+    d = t(observed_vector) %*% prediction_matrix
+    nn2 = sqrt(norm(d,"2")) ###
+    qp1 = solve.QP(Dmat = Rinv*nn2, factorized = TRUE, dvec = d/(nn2^2),  ###
+                   Amat = C, bvec = b, meq = 1)
+    weights = unname(qp1$sol)
+    fitted <- as.vector(weights %*% t(prediction_matrix))
+    accuracy_insample <- forecast::accuracy(fitted, observed_vector)
+    if (is.null(x$Forecasts_Test) & is.null(x$Actual_Test)) {
+        result <- structure(list(Method = "Constrained Least Squares Regression", 
+                                 Models = modelnames, Weights = weights, Fitted = fitted, 
+                                 Accuracy_Train = accuracy_insample, Input_Data = list(Actual_Train = x$Actual_Train, 
+                                                                                       Forecasts_Train = x$Forecasts_Train)), class = c("foreccomb_res"))
+        rownames(result$Accuracy_Train) <- "Training Set"
+    }
+    if (is.null(x$Forecasts_Test) == FALSE) {
+        newpred_matrix <- x$Forecasts_Test
+        pred <- as.vector(weights %*% t(newpred_matrix))
+        if (is.null(x$Actual_Test) == TRUE) {
+            result <- structure(list(Method = "Constrained Least Squares Regression", 
+                                     Models = modelnames, Weights = weights, Fitted = fitted, 
+                                     Accuracy_Train = accuracy_insample, Forecasts_Test = pred, 
+                                     Input_Data = list(Actual_Train = x$Actual_Train, 
+                                                       Forecasts_Train = x$Forecasts_Train, Forecasts_Test = x$Forecasts_Test)), 
+                                class = c("foreccomb_res"))
+            rownames(result$Accuracy_Train) <- "Training Set"
+        }
+        else {
+            newobs_vector <- x$Actual_Test
+            accuracy_outsample <- forecast::accuracy(pred, newobs_vector)
+            result <- structure(list(Method = "Constrained Least Squares Regression", 
+                                     Models = modelnames, Weights = weights, Fitted = fitted, 
+                                     Accuracy_Train = accuracy_insample, Forecasts_Test = pred, 
+                                     Accuracy_Test = accuracy_outsample, Input_Data = list(Actual_Train = x$Actual_Train, 
+                                                                                           Forecasts_Train = x$Forecasts_Train, Actual_Test = x$Actual_Test, 
+                                                                                           Forecasts_Test = x$Forecasts_Test)), class = c("foreccomb_res"))
+            rownames(result$Accuracy_Train) <- "Training Set"
+            rownames(result$Accuracy_Test) <- "Test Set"
+        }
+    }
+    return(result)
+}
+
+
+# from package 'lme4'; needed in forecastcomb_comb_CLS()
+safe_chol <- function(m) {
+    if (all(m==0)) return(m)
+    if (nrow(m)==1) return(sqrt(m))
+    if (all(dmult(m,0)==0)) {  ## diagonal
+        return(diag(sqrt(diag(m))))
+    }
+    ## attempt regular Chol. decomp
+    if (!inherits(try(cc <- chol(m),silent=TRUE),"try-error"))
+        return(cc)
+    ## ... pivot if necessary ...
+    cc <- suppressWarnings(chol(m,pivot=TRUE))
+    oo <- order(attr(cc,"pivot"))
+    cc[,oo]
+    ## FIXME: pivot is here to deal with semidefinite cases,
+    ## but results might be returned in a strange format: TEST
+}
+
+# from package 'lme4'; needed in safe_chol()
+dmult <- function(m,s) {
+    diag(m) <- diag(m)*s
+    m
+}

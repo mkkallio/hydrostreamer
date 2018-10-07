@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Create segment-specific Voronoi diagram from a network. — river_voronoi • hydrostreamer</title>
+<title>Create a segment-specific Voronoi diagram from an sf LINESTRING object. — river_voronoi • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -30,10 +30,11 @@
 
 
 
-<meta property="og:title" content="Create segment-specific Voronoi diagram from a network. — river_voronoi" />
+<meta property="og:title" content="Create a segment-specific Voronoi diagram from an sf LINESTRING object. — river_voronoi" />
 
-<meta property="og:description" content="The function creates Voronoi diagram for each segment in a directed connected river network, where the 
-Voronoi polygons join together at network segment intersections." />
+<meta property="og:description" content="The function creates Voronoi diagram for each segment in a directed 
+connected river network (sf LINESTRING), where the Voronoi 
+polygons join together at network segment intersections." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -62,7 +63,7 @@ Voronoi polygons join together at network segment intersections." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -85,7 +86,7 @@ Voronoi polygons join together at network segment intersections." />
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -95,12 +96,7 @@ Voronoi polygons join together at network segment intersections." />
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -113,20 +109,20 @@ Voronoi polygons join together at network segment intersections." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Create segment-specific Voronoi diagram from a network.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/river_voronoi.R'><code>R/river_voronoi.R</code></a></small>
+    <h1>Create a segment-specific Voronoi diagram from an sf LINESTRING object.</h1>
+    
     <div class="hidden name"><code>river_voronoi.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The function creates Voronoi diagram for each segment in a directed connected river network, where the 
-Voronoi polygons join together at network segment intersections.</p>
+    <p>The function creates Voronoi diagram for each segment in a directed 
+connected river network (<code>sf LINESTRING</code>), where the Voronoi 
+polygons join together at network segment intersections.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>river_voronoi</span>(<span class='no'>river</span>, <span class='no'>aoi</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>min</span> <span class='kw'>=</span> <span class='fl'>10</span>,
-  <span class='kw'>tolerance</span> <span class='kw'>=</span> <span class='fl'>0.001</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>river_voronoi</span>(<span class='no'>river</span>, <span class='no'>aoi</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -141,17 +137,8 @@ Voronoi polygons join together at network segment intersections.</p>
     </tr>
     <tr>
       <th>riverID</th>
-      <td><p>A character string which specifies the name of the column in <code>river</code> containing unique river network 
-identifiers. Defaults to "riverID".</p></td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td><p>A numeric value. Removes segments which are shorter than the value in meters, in order to remove unnecessarily
-short river segments. Defaults to 10 meters.</p></td>
-    </tr>
-    <tr>
-      <th>tolerance</th>
-      <td><p>Radius of the buffer used to take difference. Defaults to 0.001 (in map units).</p></td>
+      <td><p>A character string which specifies the name of the column in 
+<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
     </tr>
     <tr>
       <th>verbose</th>
@@ -161,20 +148,22 @@ short river segments. Defaults to 10 meters.</p></td>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an 'sf' polygon object, with a column "ID" corresponding to the river segment IDs.</p>
+    <p>Returns an 'sf' polygon object, with a column "ID" corresponding 
+  to the river segment IDs.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Creating the segment Voronoi polygons is done in the following steps:</p><ol>
-<li><p>Move starting and ending nodes forward or backwards (respectively) for a small amount to ensure
-  there are no identical nodes.</p></li>
+    <p>Creating the segment Voronoi diagram is done in the following steps:</p><ol>
+<li><p>Move starting and ending nodes forward or backwards (respectively) 
+  for a small amount to ensure there are no identical nodes.</p></li>
 <li><p>Compute a Voronoi diagram from point cloud of river segment nodes.</p></li>
-<li><p>Dissolve the individual polygons using river segment ID.</p></li>
+<li><p>Union the individual polygons using river segment ID.</p></li>
 <li><p>Clip the polygons to the area of interest.</p></li>
 <li><p>Process erroneous polygons, if any.</p></li>
 </ol>
-    <p>Thus, the accuracy of the final segment Voronoi diagram is depending on the density of nodes in the river network.
-Consider densifying geometry e.g. with <code><a href='http://www.rdocumentation.org/packages/sf/topics/geos_unary'>sf::st_segmentize()</a></code> function for higher accuracy.</p>
+    <p>The accuracy of the final segment Voronoi diagram is depending on the 
+density of nodes in the river network. Consider densifying geometry e.g. 
+with <code><a href='http://www.rdocumentation.org/packages/sf/topics/geos_unary'>sf::st_segmentize()</a></code> function for higher accuracy.</p>
     
 
   </div>

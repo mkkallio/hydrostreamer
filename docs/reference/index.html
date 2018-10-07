@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -81,7 +81,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -91,12 +91,7 @@
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -130,21 +125,33 @@
       <tr>
         
         <td>
-          <p><code><a href="accumulate_flow.html">accumulate_flow()</a></code> </p>
-        </td>
-        <td><p>Apply river routing based on selected routing method.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="accumulate_flow_instant.html">accumulate_flow_instant()</a></code> </p>
+          <p><code><a href="accumulate_runoff.instant.html">accumulate_runoff(<i>&lt;instant&gt;</i>)</a></code> </p>
         </td>
         <td><p>Compute instantaneous flow for each timestep</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="average_monthly_runoff.html">average_monthly_runoff()</a></code> </p>
+          <p><code><a href="accumulate_runoff.muskingum.html">accumulate_runoff(<i>&lt;muskingum&gt;</i>)</a></code> </p>
         </td>
-        <td><p>Monthly average of a runoff timeseries. Expects the timeseries to start from January and end in December.</p></td>
+        <td><p>Implements 'muskingum' routing algorithm for vector river network</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="accumulate_runoff.html">accumulate_runoff()</a></code> </p>
+        </td>
+        <td><p>Apply river routing based on selected routing method.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="accumulate_runoff.simple.html">accumulate_runoff(<i>&lt;simple&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Implements a simple lagged river routing algorithm.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="add_HSgrid.html">add_HSgrid()</a></code> </p>
+        </td>
+        <td><p>Combine <code>HSgrid</code> objects or addnew runoff input from raster.</p></td>
       </tr><tr>
         
         <td>
@@ -156,7 +163,15 @@
         <td>
           <p><code><a href="compute_area_weights.html">compute_area_weights()</a></code> </p>
         </td>
-        <td><p>Compute weights for river catchment areas within the runoff area features.</p></td>
+        <td><p>Compute weights for river catchment areas within the runoff area 
+features.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="compute_HSweights.html">compute_HSweights()</a></code> </p>
+        </td>
+        <td><p>Computes weights to assign runoff from runoff area features to the 
+supplied river network.</p></td>
       </tr><tr>
         
         <td>
@@ -166,45 +181,80 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="compute_segment_runoff.html">compute_segment_runoff()</a></code> </p>
+          <p><code><a href="create_HSgrid.html">create_HSgrid()</a></code> </p>
         </td>
-        <td><p>Computes specific runoff generated in the river segment.</p></td>
+        <td><p>Constructs a <code>HSgrid</code> object from given input</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="compute_segment_runoff_without_HSweights.html">compute_segment_runoff_without_HSweights()</a></code> </p>
+          <p><code><a href="create_HSobs.html">create_HSobs()</a></code> </p>
         </td>
-        <td><p>Computes specific runoff generated in the river segment without using a HSweights object.</p></td>
+        <td><p>Constructor for <code>HSobs</code> object</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="compute_weights.html">compute_weights()</a></code> </p>
+          <p><code><a href="create_HSweights.html">create_HSweights()</a></code> </p>
         </td>
-        <td><p>Computes weights to assign runoff from runoff area features to the supplied river network.</p></td>
+        <td><p>Creates a <code>HSweights</code> object</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="delineate_basin.html">delineate_basin()</a></code> </p>
         </td>
-        <td><p>Delineate catchments from multiple input points</p></td>
+        <td><p>Delineate multiple catchments from multiple input points</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="flow_network.html">flow_network()</a></code> </p>
+          <p><code><a href="downscale_runoff.html">downscale_runoff()</a></code> </p>
         </td>
-        <td><p>Generates neighbour information from a connected, directed river network.</p></td>
+        <td><p>Computes specific runoff generated in the river segment.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="ensemble_summary.html">ensemble_summary()</a></code> </p>
+        </td>
+        <td><p>Computes summaries from hydrostreamer::HS* objects</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="flow_gof.html">flow_gof()</a></code> </p>
+        </td>
+        <td><p>Computed goodness-of-fit statistics for discharge predictions
+against observed streamflow</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="HSwrite.html">HSwrite()</a></code> </p>
+        </td>
+        <td><p>Writes any HS* object as a single geopackage where each input 
+runoff is written as it's own layer.</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="hydrostreamer.html">hydrostreamer</a></code> </p>
         </td>
-        <td><p>hydrostreamer: A package for assigning runoff outputs from hydrological or land surface models to explicit river segments.</p></td>
+        <td><p>hydrostreamer: A package for downscaling distributed runoff products in to 
+explicit river segments.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="polygrid_timeseries.html">polygrid_timeseries()</a></code> </p>
+          <p><code><a href="optimise_point.html">optimise_point()</a></code> </p>
         </td>
-        <td><p>Polygonizes a raster and adds cell values as attribute columns to an 'sf' polygon object.</p></td>
+        <td><p>Computes optimal estimate from multiple input discharge timeseries</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="optimise_region.html">optimise_region()</a></code> </p>
+        </td>
+        <td><p>Computes and regionalizes optimal estimate from multiple discharge 
+timeseries against observed streamflow</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="raster_to_HSgrid.html">raster_to_HSgrid()</a></code> </p>
+        </td>
+        <td><p>Polygonizes a raster and adds cell values as attribute columns to 
+an 'sf' polygon object.</p></td>
       </tr><tr>
         
         <td>
@@ -216,7 +266,13 @@
         <td>
           <p><code><a href="river_hierarchy.html">river_hierarchy()</a></code> </p>
         </td>
-        <td><p>Computes river hierarchies from a connected river network.</p></td>
+        <td><p>Computes river hierarchies for a HSnetwork object.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="river_network.html">river_network()</a></code> </p>
+        </td>
+        <td><p>Generates neighbour information from a connected, directed river network.</p></td>
       </tr><tr>
         
         <td>
@@ -228,7 +284,7 @@
         <td>
           <p><code><a href="river_voronoi.html">river_voronoi()</a></code> </p>
         </td>
-        <td><p>Create segment-specific Voronoi diagram from a network.</p></td>
+        <td><p>Create a segment-specific Voronoi diagram from an sf LINESTRING object.</p></td>
       </tr><tr>
         
         <td>
@@ -238,15 +294,9 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="switch_grid.html">switch_grid()</a></code> </p>
-        </td>
-        <td><p>Switch the runoff grid in HSweights object</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="upstream.html">upstream()</a></code> </p>
         </td>
-        <td><p>Find all upstream segments from a point</p></td>
+        <td><p>Find all upstream segments from a specified river segment.</p></td>
       </tr>
     </tbody>
     </table>

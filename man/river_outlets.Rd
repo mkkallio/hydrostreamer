@@ -28,14 +28,14 @@ drainage directions input to the function.
 
 Note: Drainage directions must be in coded 1-128:
 \itemize{
-  \item{1}{East}
-  \item{2}{Southeast}
-  \item{4}{South}
-  \item{8}{Southwest}
-  \item{16}{West}
-  \item{32}{Northwest}
-  \item{64}{North}
-  \item{128}{Northeast}
+  \item{1}{:East}
+  \item{2}{:Southeast}
+  \item{4}{:South}
+  \item{8}{:Southwest}
+  \item{16}{:West}
+  \item{32}{:Northwest}
+  \item{64}{:North}
+  \item{128}{:Northeast}
 }
 }
 \examples{

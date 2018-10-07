@@ -1,3 +1,59 @@
+# hydrostreamer 0.3.0
+
+A major overhaul of the downscaling system and a number of additional features included. This update 
+changes names of many functions and their outputs and thus introduces breaking changes. The overhaul, 
+however, makes the package much more usable. Many of the changes are made to make further development
+of the package easier. This is a fairly experimental package with a number of bugs to be expected,
+but the main workflow works correctly.
+
+## Changes include, among smaller changes:
+
+*   date handling introduced, instead of sequential timestep numbers.
+
+*   Package now supports multiple input runoff timeseries, and the central functions support processing
+    them all in one command.
+
+*   function names changed:
+    +   `polygrid_timeseries()` --> `raster_to_HSgrid()`
+    +   `compute_weights()` --> `compute_HSweights()`
+    +   `compute_segment_runoff()` --> `downscale_runoff()`
+    +   `accumulate_flow()` --> `accumulate_runoff()`
+    +   `flow_network()` --> `river_network()`
+
+*   New S3 object classes added: 
+    +   `HSgrid` to store input runoff information
+    +   `HSweights` remains the same as in previous versions
+    +   `HSrunoff` for the downscaled runoff timeseries
+    +   `HSflow` to store discharge information after applying river routing
+    +   `HSobs` to store observation data
+    +   `HSoptim` to hold optimization information
+
+*   Added two new routing functions:
+    +   `accumulate_runoff.muskingum()` - Muskingum routing
+    +   `accumulate_runoff.simple()` - Simple lag routing
+
+*   Added forecast combination capabilities. It is now possible to get optimized flow estimates by
+    +   `optimise_point()` for optimising in point locations
+    +   `optimise_region()`for regionalizing weights obtained in point locations
+
+*   Added `ensemble_summary()` function for summarising HS* objects
+
+*   Added `HSwrite` for easy expor of HS* objects to GeoPackage format.
+
+## Future developments
+
+The current update contains minimal documentation and examples. In the immediate future, we'll
+
+*   Work with bringing all documentation up-to-date
+
+*   Add further regionalization options
+
+*   Provide a number of vignettes exploring the capabilities of `hydrostreamer`
+
+*   Provide river network generation functions, so that river network input can be replaced with
+    a DEM input.
+    
+    
 
 # hydrostreamer 0.2.2
 

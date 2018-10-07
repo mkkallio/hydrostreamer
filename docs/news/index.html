@@ -58,7 +58,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.2</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
       </span>
     </div>
 
@@ -81,7 +81,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/hydrostreamer_tutorial.html">hydrostreamer tutorial</a>
+      <a href="../articles/hydrostreamer_simple_tutorial.html">hydrostreamer tutorial</a>
     </li>
   </ul>
 </li>
@@ -91,12 +91,7 @@
       </ul>
       
       <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/mkkallio/hydrostreamer">
-    <span class="fa fa-github fa-lg"></span>
-     
-  </a>
-</li>
+        
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -110,15 +105,92 @@
   <div class="col-md-9 contents">
     <div class="page-header">
       <h1>Changelog <small></small></h1>
-      <small>Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
+      
     </div>
 
+    <div id="hydrostreamer-0-3-0" class="section level1">
+<h1 class="page-header">
+<a href="#hydrostreamer-0-3-0" class="anchor"></a>hydrostreamer 0.3.0</h1>
+<p>A major overhaul of the downscaling system and a number of additional features included. This update changes names of many functions and their outputs and thus introduces breaking changes. The overhaul, however, makes the package much more usable. Many of the changes are made to make further development of the package easier. This is a fairly experimental package with a number of bugs to be expected, but the main workflow works correctly.</p>
+<div id="changes-include-among-smaller-changes" class="section level2">
+<h2 class="hasAnchor">
+<a href="#changes-include-among-smaller-changes" class="anchor"></a>Changes include, among smaller changes:</h2>
+<ul>
+<li><p>date handling introduced, instead of sequential timestep numbers.</p></li>
+<li><p>Package now supports multiple input runoff timeseries, and the central functions support processing them all in one command.</p></li>
+<li>function names changed:
+<ul>
+<li>
+<code>polygrid_timeseries()</code> –&gt; <code><a href="../reference/raster_to_HSgrid.html">raster_to_HSgrid()</a></code>
+</li>
+<li>
+<code>compute_weights()</code> –&gt; <code><a href="../reference/compute_HSweights.html">compute_HSweights()</a></code>
+</li>
+<li>
+<code>compute_segment_runoff()</code> –&gt; <code><a href="../reference/downscale_runoff.html">downscale_runoff()</a></code>
+</li>
+<li>
+<code>accumulate_flow()</code> –&gt; <code><a href="../reference/accumulate_runoff.html">accumulate_runoff()</a></code>
+</li>
+<li>
+<code>flow_network()</code> –&gt; <code><a href="../reference/river_network.html">river_network()</a></code>
+</li>
+</ul>
+</li>
+<li>New S3 object classes added:
+<ul>
+<li>
+<code>HSgrid</code> to store input runoff information</li>
+<li>
+<code>HSweights</code> remains the same as in previous versions</li>
+<li>
+<code>HSrunoff</code> for the downscaled runoff timeseries</li>
+<li>
+<code>HSflow</code> to store discharge information after applying river routing</li>
+<li>
+<code>HSobs</code> to store observation data</li>
+<li>
+<code>HSoptim</code> to hold optimization information</li>
+</ul>
+</li>
+<li>Added two new routing functions:
+<ul>
+<li>
+<code><a href="../reference/accumulate_runoff.muskingum.html">accumulate_runoff.muskingum()</a></code> - Muskingum routing</li>
+<li>
+<code><a href="../reference/accumulate_runoff.simple.html">accumulate_runoff.simple()</a></code> - Simple lag routing</li>
+</ul>
+</li>
+<li>Added forecast combination capabilities. It is now possible to get optimized flow estimates by
+<ul>
+<li>
+<code><a href="../reference/optimise_point.html">optimise_point()</a></code> for optimising in point locations</li>
+<li>
+<code><a href="../reference/optimise_region.html">optimise_region()</a></code>for regionalizing weights obtained in point locations</li>
+</ul>
+</li>
+<li><p>Added <code><a href="../reference/ensemble_summary.html">ensemble_summary()</a></code> function for summarising HS* objects</p></li>
+<li><p>Added <code>HSwrite</code> for easy expor of HS* objects to GeoPackage format.</p></li>
+</ul>
+</div>
+<div id="future-developments" class="section level2">
+<h2 class="hasAnchor">
+<a href="#future-developments" class="anchor"></a>Future developments</h2>
+<p>The current update contains minimal documentation and examples. In the immediate future, we’ll</p>
+<ul>
+<li><p>Work with bringing all documentation up-to-date</p></li>
+<li><p>Add further regionalization options</p></li>
+<li><p>Provide a number of vignettes exploring the capabilities of <code>hydrostreamer</code></p></li>
+<li><p>Provide river network generation functions, so that river network input can be replaced with a DEM input.</p></li>
+</ul>
+</div>
+</div>
     <div id="hydrostreamer-0-2-2" class="section level1">
 <h1 class="page-header">
 <a href="#hydrostreamer-0-2-2" class="anchor"></a>hydrostreamer 0.2.2</h1>
 <ul>
-<li><p><code><a href="../reference/compute_weights.html">compute_weights()</a></code> now calls the correct function when delineating basins from drainage directions.</p></li>
-<li><p><code><a href="../reference/compute_segment_runoff.html">compute_segment_runoff()</a></code> has been partially re-implemented in Fortran, making it much faster</p></li>
+<li><p><code>compute_weights()</code> now calls the correct function when delineating basins from drainage directions.</p></li>
+<li><p><code>compute_segment_runoff()</code> has been partially re-implemented in Fortran, making it much faster</p></li>
 <li><p><code><a href="../reference/river_voronoi.html">river_voronoi()</a></code> is changed in the way it ensures no nodes are overlapping when tesselating Voronoi diagram. Should be faster now.</p></li>
 </ul>
 </div>
@@ -126,7 +198,7 @@
 <h1 class="page-header">
 <a href="#hydrostreamer-0-2-1" class="anchor"></a>hydrostreamer 0.2.1</h1>
 <ul>
-<li><p><code><a href="../reference/flow_network.html">flow_network()</a></code> now works correctly even if the last features in the river network did not have any downstream segments.</p></li>
+<li><p><code>flow_network()</code> now works correctly even if the last features in the river network did not have any downstream segments.</p></li>
 <li><p><code><a href="../reference/delineate_basin.html">delineate_basin()</a></code> is now re-implemented partly in Fortran, yielding a very large speed boost compared to the previous R native implementation.</p></li>
 </ul>
 </div>
@@ -150,14 +222,14 @@
 <a href="#breaking-changes" class="anchor"></a>Breaking changes</h2>
 <ul>
 <li>
-<code><a href="../reference/compute_weights.html">compute_weights()</a></code> now always outputs an object of class <em>HSweights</em>. As a result, line-based weighting now outputs the original river network, not one which has been split at runoff polygon borders.</li>
+<code>compute_weights()</code> now always outputs an object of class <em>HSweights</em>. As a result, line-based weighting now outputs the original river network, not one which has been split at runoff polygon borders.</li>
 </ul>
 </div>
 <div id="new-functions" class="section level2">
 <h2 class="hasAnchor">
 <a href="#new-functions" class="anchor"></a>New functions</h2>
 <ul>
-<li><p><code><a href="../reference/switch_grid.html">switch_grid()</a></code> can be used to safely switch the runoff input in a <em>HSweights</em> object without needing to recompute weights every time. The replacement has to include all features in the grid being replaced, with identical ID’s.</p></li>
+<li><p><code>switch_grid()</code> can be used to safely switch the runoff input in a <em>HSweights</em> object without needing to recompute weights every time. The replacement has to include all features in the grid being replaced, with identical ID’s.</p></li>
 <li><p><code><a href="../reference/upstream.html">upstream()</a></code> can be used to identify all river segments which are upstream from a certain segment.</p></li>
 </ul>
 </div>
@@ -168,6 +240,7 @@
     <div id="tocnav">
       <h2>Contents</h2>
       <ul class="nav nav-pills nav-stacked">
+        <li><a href="#hydrostreamer-0-3-0">0.3.0</a></li>
         <li><a href="#hydrostreamer-0-2-2">0.2.2</a></li>
         <li><a href="#hydrostreamer-0-2-1">0.2.1</a></li>
         <li><a href="#hydrostreamer-0-2-0">0.2.0</a></li>
