@@ -124,7 +124,7 @@ optimise_region <- function(HSrunoff,
         statobs <- HSobs$Observations[HSobs$Observations$Date %in% combdates,
                                       as.character(upstations$station[station])]
         keep <- !is.na(statobs)
-        statobs <- statobs[keep]
+        statobs <- unlist(statobs[keep,])
         statpreds <- statpreds[keep,]
         
         train_ <- 1:(round(length(statobs)*train, 0))
@@ -159,7 +159,7 @@ optimise_region <- function(HSrunoff,
         } 
         
         if (bias_correction) {
-            bias <- combs[[i]]$Accuracy_Train[1] / nrow(statflow$river)
+            bias <- comb[[station]]$Accuracy_Train[1] / nrow(statflow$river)
         } else {
             bias <- 0
         }
