@@ -113,7 +113,9 @@
 <a href="#hydrostreamer-0-3-1" class="anchor"></a>hydrostreamer 0.3.1</h1>
 <p>Small update with mostly bugfixes.</p>
 <ul>
-<li>Fixed <a href="https://github.com/mkkallio/hydrostreamer/issues/2">issue</a> where Strahler based weighting of river segments did not work.</li>
+<li><p>Fixed <a href="https://github.com/mkkallio/hydrostreamer/issues/2">issue</a> where Strahler based weighting of river segments did not work.</p></li>
+<li><p>Fixed an issue involving packages <code>hydroGOF</code> and <code>raster</code>, causing <code><a href="../reference/optimise_point.html">optimise_point()</a></code> to fail if <code>raster</code> was loaded.</p></li>
+<li><p><code>HSgrid</code>, <code>HSweights</code>, <code>HSrunoff</code> and <code>HSflow</code> no longer lose their <code>list</code> class.</p></li>
 </ul>
 </div>
     <div id="hydrostreamer-0-3-0" class="section level1">

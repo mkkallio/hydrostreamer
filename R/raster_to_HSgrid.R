@@ -99,7 +99,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
 
     
     # assign class
-    class(output) <- c(class(output), "HSgrid")
+    class(output) <- c("HSgrid", class(output))
     
     #return
     return(output)

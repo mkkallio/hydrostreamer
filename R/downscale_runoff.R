@@ -126,6 +126,6 @@ downscale_runoff <- function(HSweights,
         
     }
     
-    class(output) <-  append(class(output), "HSrunoff")
+    class(output) <-  c("HSrunoff", class(output))
     return(output)
 }

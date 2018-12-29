@@ -5,6 +5,9 @@ Small update with mostly bugfixes.
 * Fixed [issue](https://github.com/mkkallio/hydrostreamer/issues/2) where Strahler
 based weighting of river segments did not work.
 
+* Fixed an issue involving packages `hydroGOF` and `raster`, causing `optimise_point()` to fail if `raster` was loaded.
+
+* `HSgrid`, `HSweights`, `HSrunoff` and `HSflow` no longer lose their `list` class.
 
 # hydrostreamer 0.3.0
 

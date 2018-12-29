@@ -101,7 +101,7 @@ accumulate_runoff.instant <- function(HSrunoff, verbose = FALSE, ...) {
     }
     if (verbose) close(pb)
     output[["Routing_Method"]] <- "Instantaneous flow (accumulate_runoff.instant)"
-    class(output) <-  append(class(output), "HSflow")
+    class(output) <-  c("HSflow", class(output))
     return(output)
 }
 
@@ -210,7 +210,7 @@ accumulate_runoff.muskingum <- function(HSrunoff, velocity=1, x, verbose=FALSE, 
     
     if (verbose) close(pb)
     output[["Routing_Method"]] <- "Muskingum (accumulate_runoff.muskingum)"
-    class(output) <-  append(class(output), "HSflow")
+    class(output) <-  c("HSflow", class(output))
     return(output)
 
 }
@@ -326,7 +326,7 @@ accumulate_runoff.simple <- function(HSrunoff, velocity=1, boundary = NULL, verb
     
     if (verbose) close(pb)
     output[["Routing_Method"]] <- "Simple lag (accumulate_runoff.simple)"
-    class(output) <-  append(class(output), "HSflow")
+    class(output) <-  c("HSflow", class(output))
     return(output)
 }
 

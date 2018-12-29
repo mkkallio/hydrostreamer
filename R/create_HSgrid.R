@@ -40,5 +40,5 @@ create_HSgrid <- function(grid, runoff, name="runoff") {
     output <- list(grid = grid,
                    runoff = list(runoff))
     names(output$runoff) <- name
-    class(output) <- "HSgrid"
+    class(output) <- c("HSgrid", class(output))
 }

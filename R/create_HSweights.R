@@ -33,6 +33,6 @@ create_HSweights <- function(river, weights, grid, riverID = "riverID") {
     output <- list(river = river,
                    weights = weights,
                    grid = grid)
-    class(output) <- "HSweights"
+    class(output) <- c("HSweights", class(output))
     
 }
