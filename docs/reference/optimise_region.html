@@ -66,7 +66,7 @@ river segments which do not contain observation information." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.1</span>
       </span>
     </div>
 
@@ -160,7 +160,9 @@ linear regression. See details.</p></td>
     </tr>
     <tr>
       <th>bias_correction</th>
-      <td><p>Apply (constant) bias correction. Defaults to FALSE.</p></td>
+      <td><p>Whether to apply bias correction. Default FALSE.
+If TRUE, constant bias correction is applied to all river segments.
+See details.</p></td>
     </tr>
     <tr>
       <th>region_type</th>
@@ -202,6 +204,12 @@ station for the river segment.</p>
 which stands for "ensemble mean". For those river segments with no
 weights assigned from a station, an ensemble mean (each discharge
 prediction is given equal weight) is computed.</p>
+<p>If <code>bias_correction</code> is set to <code>TRUE</code>, constant bias 
+correction is applied. Bias is divided equally among all river
+segments which are being optimised within a region. For example,
+if the sub-basin being optimised has 10 river segments, and bias
+(mean error) at the station being optimised is 10 m3/s, each
+river segment is added with a constant 1 m3/s runoff.</p>
     
 
   </div>

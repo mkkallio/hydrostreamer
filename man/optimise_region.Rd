@@ -24,7 +24,9 @@ for all stations.}
 \item{optim_method}{Method used to optimise. Default uses constrained
 linear regression. See details.}
 
-\item{bias_correction}{Apply (constant) bias correction. Defaults to FALSE.}
+\item{bias_correction}{Whether to apply bias correction. Default FALSE.
+If TRUE, constant bias correction is applied to all river segments.
+See details.}
 
 \item{region_type}{How to regionalize combination weights. See details.}
 
@@ -61,4 +63,11 @@ Options for \code{no_station} is currently only one: \code{"em"},
 which stands for "ensemble mean". For those river segments with no
 weights assigned from a station, an ensemble mean (each discharge
 prediction is given equal weight) is computed.
+
+If \code{bias_correction} is set to \code{TRUE}, constant bias 
+correction is applied. Bias is divided equally among all river
+segments which are being optimised within a region. For example,
+if the sub-basin being optimised has 10 river segments, and bias
+(mean error) at the station being optimised is 10 m3/s, each
+river segment is added with a constant 1 m3/s runoff.
 }

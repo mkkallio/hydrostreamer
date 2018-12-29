@@ -101,7 +101,7 @@ accumulate_runoff.instant <- function(HSrunoff, verbose = FALSE, ...) {
     }
     if (verbose) close(pb)
     output[["Routing_Method"]] <- "Instantaneous flow (accumulate_runoff.instant)"
-    class(output) <- "HSflow"
+    class(output) <-  append(class(output), "HSflow")
     return(output)
 }
 
@@ -183,11 +183,15 @@ accumulate_runoff.muskingum <- function(HSrunoff, velocity=1, x, verbose=FALSE, 
             mat[1:nrow(Q), 1] <- Q[,i+1]
             mat[nrow(mat),1] <- mat[nrow(mat)-1,1]
             for (t in 1:(nrow(mat)-1)) {
-                C0 <- -(k[i]*x - 0.5*intervals[t]) / (k[i] - k[i]*x + 0.5*intervals[t])
-                C1 <- (k[i]*x + 0.5*intervals[t]) / (k[i] - k[i]*x + 0.5*intervals[t])
-                C2 <- (k[i] - k[i]*x - 0.5*intervals[t]) / (k[i] - k[i]*x + 0.5*intervals[t])
-                mat[t+1, 2] <- C0 * mat[t+1, 1] + C1 * mat[t, 1] + C2 * mat[t, 2]
-                
+                C0 <- -(k[i]*x - 0.5*intervals[t]) / 
+                       (k[i] - k[i]*x + 0.5*intervals[t])
+                C1 <- (k[i]*x + 0.5*intervals[t]) / 
+                      (k[i] - k[i]*x + 0.5*intervals[t])
+                C2 <- (k[i] - k[i]*x - 0.5*intervals[t]) / 
+                      (k[i] - k[i]*x + 0.5*intervals[t])
+                mat[t+1, 2] <- C0 * mat[t+1, 1] + 
+                               C1 * mat[t, 1] + 
+                               C2 * mat[t, 2]
             }
             mat[mat[, 2] < 0, 2] <- 0
             Q[, nextID[i] ] <- Q[, nextID[i] ] + mat[1:(nrow(mat)-1),2]
@@ -206,7 +210,7 @@ accumulate_runoff.muskingum <- function(HSrunoff, velocity=1, x, verbose=FALSE, 
     
     if (verbose) close(pb)
     output[["Routing_Method"]] <- "Muskingum (accumulate_runoff.muskingum)"
-    class(output) <- "HSflow"
+    class(output) <-  append(class(output), "HSflow")
     return(output)
 
 }
@@ -322,7 +326,7 @@ accumulate_runoff.simple <- function(HSrunoff, velocity=1, boundary = NULL, verb
     
     if (verbose) close(pb)
     output[["Routing_Method"]] <- "Simple lag (accumulate_runoff.simple)"
-    class(output) <- "HSflow"
+    class(output) <-  append(class(output), "HSflow")
     return(output)
 }
 

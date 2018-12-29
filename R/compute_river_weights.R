@@ -67,24 +67,16 @@ compute_river_weights <- function(river,
     ID <- NULL
     gridID <- NULL
     
-    # accepted <- c("POLYGON", "MULTIPOLYGON", "GEOMETRY")
-    # if(!any(class(grid) %in% accepted) && !any(class(grid) == "sf")) {
-    #     stop("grid input should be sf class POLYGON or MULTIPOLYGON")
-    # }
-    # if(!any(class(river) == "sf")) {
-    #     stop("river input should be an 'sf' LINESTRING object")
-    # }
+
     if(!any(colnames(river) == riverID)) stop("riverID column '", 
                                            riverID, "' does not exist in river input")
     if(!riverID == "riverID") river <- dplyr::rename_(river, 
                                                       riverID = riverID)  
     
 
-    river <- dplyr::select_(river, riverID)
-    
-    
+    #river <- dplyr::select_(river, riverID)
+    if(seg_weights == "strahler") river <- river_hierarchy(river)
     if(split) river <- split_river_with_grid(river, grid, riverID = riverID)
-
     #get elements of rivers intersecting polygons
     riverIntsc <- suppressWarnings(suppressMessages(sf::st_contains(grid,river, 
                                                                     sparse=FALSE)))
@@ -99,18 +91,20 @@ compute_river_weights <- function(river,
             input <- seq(1,NROW(river))
             
         } else if(seg_weights == "strahler") {
-            test <- any(names(river) == "STRAHLER")
-            if (test) {
-                input <- river$STRAHLER
-            } else {
-                river <- river_hierarchy(river)
-                input <- river$STRAHLER
-            }
+            # test <- any(names(river) == "STRAHLER")
+            # if (test) {
+            #     input <- river$STRAHLER
+            # } else {
+            #     #river <- river_hierarchy(river)
+            #     input <- river$STRAHLER
+            # }
+            input <- river$STRAHLER
             
         } else {
             stop("Accepted values for weights are either 'length', 'equal', 
                  'strahler', or a vector of weights. Please check the input.")
         }
+        
         
         weight <- apply(riverIntsc,1, compute_segment_weights, input)
         weight <- apply(weight,1, FUN=sum)
@@ -140,7 +134,6 @@ compute_river_weights <- function(river,
     }
     
     river$weights  <- weight
-    river <- river %>% dplyr::select(ID, riverID, gridID, weights, 
-                                     dplyr::everything())
+    river <- river %>% dplyr::select(ID, riverID, gridID, weights)
     return(river)
 }

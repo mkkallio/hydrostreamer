@@ -16,7 +16,7 @@ compute_HSweights(river, HSgrid, weights, aoi = NULL, basins = NULL,
 \item{weights}{A character vector specifying type of weights, or a vector of user-
 specified weights. See Details.}
 
-\item{aoi}{An 'sf' polygon object. Optional.}
+\item{aoi}{An area of interest. 'sf' polygon object. Optional.}
 
 \item{basins}{An 'sf' polygon object. If weights are set to "area", providing basins 
 skips the delineation process. ID column must have the name as \code{riverID} See 

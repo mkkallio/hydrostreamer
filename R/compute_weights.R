@@ -45,7 +45,7 @@
 #' @param HSgrid  A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.
 #' @param weights A character vector specifying type of weights, or a vector of user-
 #'   specified weights. See Details.
-#' @param aoi An 'sf' polygon object. Optional.
+#' @param aoi An area of interest. 'sf' polygon object. Optional.
 #' @param basins An 'sf' polygon object. If weights are set to "area", providing basins 
 #'   skips the delineation process. ID column must have the name as \code{riverID} See 
 #'   Details. Optional.
@@ -111,9 +111,12 @@ compute_HSweights <- function(river,
                               riverID = "riverID", 
                               verbose=FALSE) {
 
-    if(!class(HSgrid) == "HSgrid") { 
+    ##############
+    # CHECK INPUTS
+    ##############
+    if(!"HSgrid" %in% class(HSgrid)) { 
         stop("HSgrid input should be of class HSgrid, obtained with function 
-             polygrid_timeseries()")
+             raster_to_HSgrid()")
     }
     
     # Convert river and aoi to sf
@@ -124,7 +127,7 @@ compute_HSweights <- function(river,
         test <- any(class(aoi) == 'sf')
         if(!test) aoi <- sf::st_as_sf(aoi)
     }
-
+    
     # check the weights input to determine which track to take (area or line)
     if(is.character(weights)) {
         linetracks <- c("equal", "length", "strahler")
@@ -144,7 +147,12 @@ compute_HSweights <- function(river,
              vector of weights equaling the length of river segments.")
     }
 
+    
+    
+    #############
     # AREA TRACK
+    #############
+    
     if (track == "area") {
         if(!is.null(drain.dir)) {
             track <- "delineate"
@@ -189,8 +197,10 @@ compute_HSweights <- function(river,
         HSweights <- list(river = river, weights = basins, grid = HSgrid)
     }
 
-
+    ############
     # LINE TRACK
+    ############
+    
     if (track == "line") {
         # crop river network to aoi
         if(!is.null(aoi)) {
@@ -212,7 +222,7 @@ compute_HSweights <- function(river,
                           grid = HSgrid)
         
     }
-    class(HSweights) <- "HSweights"
+    class(HSweights) <-  append(class(HSweights), "HSweights")
     
     #return
     return(HSweights)

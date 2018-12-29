@@ -13,7 +13,7 @@
 #' @export
 add_HSgrid <- function(HSgrid, from=NULL, raster = NULL, date = NULL, timestep = NULL, aoi = NULL, name=NULL) {
     
-    if(!class(HSgrid) == "HSgrid") { 
+    if(!"HSgrid" %in% class(HSgrid)) { 
         stop("HSgrid input should be of class HSgrid")
     }
     
@@ -21,7 +21,7 @@ add_HSgrid <- function(HSgrid, from=NULL, raster = NULL, date = NULL, timestep =
         from <- raster_to_HSgrid(raster, date, timestep, aoi, name)
     }
     
-    if(!class(from) == "HSgrid") { 
+    if(!"HSgrid" %in% class(from)) { 
         stop("'from' input should be of class HSgrid")
     }
     

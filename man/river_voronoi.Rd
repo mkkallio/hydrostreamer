@@ -9,7 +9,7 @@ river_voronoi(river, aoi, riverID = "riverID", verbose = FALSE)
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{aoi}{An 'sf' polygon object. Optional.}
+\item{aoi}{An area of interest. 'sf' polygon object. Optional.}
 
 \item{riverID}{A character string which specifies the name of the column in 
 \code{river} containing unique river network identifiers. Defaults to "riverID".}

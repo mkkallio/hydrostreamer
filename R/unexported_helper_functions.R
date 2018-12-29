@@ -301,12 +301,14 @@ summarise_over_all <- function (list) {
 
 
 
-# This is function ForecastComb::comb_CLS(), but edited according to https://stackoverflow.com/a/28388394. 
+# This is function ForecastComb::comb_CLS(), but edited according to 
+# https://stackoverflow.com/a/28388394. 
 # Edits marked with ###.
 forecastcomb_comb_CLS <- function (x) 
 {
     if (class(x) != "foreccomb") 
-        stop("Data must be class 'foreccomb'. See ?foreccomb, to bring data in correct format.", 
+        stop("Data must be class 'foreccomb'. See ?foreccomb to bring data in 
+             in a correct format.", 
              call. = FALSE)
     observed_vector <- x$Actual_Train
     prediction_matrix <- x$Forecasts_Train
@@ -324,9 +326,13 @@ forecastcomb_comb_CLS <- function (x)
     accuracy_insample <- forecast::accuracy(fitted, observed_vector)
     if (is.null(x$Forecasts_Test) & is.null(x$Actual_Test)) {
         result <- structure(list(Method = "Constrained Least Squares Regression", 
-                                 Models = modelnames, Weights = weights, Fitted = fitted, 
-                                 Accuracy_Train = accuracy_insample, Input_Data = list(Actual_Train = x$Actual_Train, 
-                                                                                       Forecasts_Train = x$Forecasts_Train)), class = c("foreccomb_res"))
+                                 Models = modelnames, 
+                                 Weights = weights, 
+                                 Fitted = fitted, 
+                                 Accuracy_Train = accuracy_insample, 
+                                 Input_Data = list(Actual_Train = x$Actual_Train,
+                                 Forecasts_Train = x$Forecasts_Train)), 
+                            class = c("foreccomb_res"))
         rownames(result$Accuracy_Train) <- "Training Set"
     }
     if (is.null(x$Forecasts_Test) == FALSE) {
@@ -334,10 +340,14 @@ forecastcomb_comb_CLS <- function (x)
         pred <- as.vector(weights %*% t(newpred_matrix))
         if (is.null(x$Actual_Test) == TRUE) {
             result <- structure(list(Method = "Constrained Least Squares Regression", 
-                                     Models = modelnames, Weights = weights, Fitted = fitted, 
-                                     Accuracy_Train = accuracy_insample, Forecasts_Test = pred, 
+                                     Models = modelnames, 
+                                     Weights = weights, 
+                                     Fitted = fitted, 
+                                     Accuracy_Train = accuracy_insample, 
+                                     Forecasts_Test = pred, 
                                      Input_Data = list(Actual_Train = x$Actual_Train, 
-                                                       Forecasts_Train = x$Forecasts_Train, Forecasts_Test = x$Forecasts_Test)), 
+                                                       Forecasts_Train = x$Forecasts_Train, 
+                                                       Forecasts_Test = x$Forecasts_Test)), 
                                 class = c("foreccomb_res"))
             rownames(result$Accuracy_Train) <- "Training Set"
         }
@@ -345,11 +355,17 @@ forecastcomb_comb_CLS <- function (x)
             newobs_vector <- x$Actual_Test
             accuracy_outsample <- forecast::accuracy(pred, newobs_vector)
             result <- structure(list(Method = "Constrained Least Squares Regression", 
-                                     Models = modelnames, Weights = weights, Fitted = fitted, 
-                                     Accuracy_Train = accuracy_insample, Forecasts_Test = pred, 
-                                     Accuracy_Test = accuracy_outsample, Input_Data = list(Actual_Train = x$Actual_Train, 
-                                                                                           Forecasts_Train = x$Forecasts_Train, Actual_Test = x$Actual_Test, 
-                                                                                           Forecasts_Test = x$Forecasts_Test)), class = c("foreccomb_res"))
+                                     Models = modelnames, 
+                                     Weights = weights, 
+                                     Fitted = fitted, 
+                                     Accuracy_Train = accuracy_insample, 
+                                     Forecasts_Test = pred, 
+                                     Accuracy_Test = accuracy_outsample, 
+                                     Input_Data = list(Actual_Train = x$Actual_Train,
+                                                       Forecasts_Train = x$Forecasts_Train, 
+                                                       Actual_Test = x$Actual_Test, 
+                                                       Forecasts_Test = x$Forecasts_Test)),
+                                class = c("foreccomb_res"))
             rownames(result$Accuracy_Train) <- "Training Set"
             rownames(result$Accuracy_Test) <- "Test Set"
         }
@@ -381,3 +397,8 @@ dmult <- function(m,s) {
     diag(m) <- diag(m)*s
     m
 }
+
+
+
+
+

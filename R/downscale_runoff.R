@@ -44,7 +44,7 @@ downscale_runoff <- function(HSweights,
                              wID = "riverID", 
                              unit = "mm/s") {
     
-    if(!class(HSweights) == "HSweights") {
+    if(!any("HSweights" %in% class(HSweights))) {
         stop("Input should be of class HSweights.")
     }
     
@@ -126,6 +126,6 @@ downscale_runoff <- function(HSweights,
         
     }
     
-    class(output) <- "HSrunoff"
+    class(output) <-  append(class(output), "HSrunoff")
     return(output)
 }

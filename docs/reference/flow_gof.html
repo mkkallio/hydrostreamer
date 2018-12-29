@@ -64,7 +64,7 @@ for all the timeseries in the input HSflow object." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.3.1</span>
       </span>
     </div>
 
@@ -123,7 +123,7 @@ for all the timeseries in the input <code>HSflow</code> object.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>flow_gof</span>(<span class='no'>HSflow</span>, <span class='no'>HSobs</span>)</pre>
+    <pre class="usage"><span class='fu'>flow_gof</span>(<span class='no'>HSflow</span>, <span class='no'>HSobs</span>, <span class='kw'>weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -137,12 +137,26 @@ for all the timeseries in the input <code>HSflow</code> object.</p>
       <td><p>An <code>HSobs</code> object containing observations at the
 locations to optimise.</p></td>
     </tr>
+    <tr>
+      <th>weights</th>
+      <td><p>a numeric vector of weights, or a list of weight vectors 
+with the length of the number of timeseries in <code>HSflow</code>. See details. 
+Optional.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a list with gof-statistics for all the observations in
  every discharge prediction in <code>HSflow</code>.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>By default, goodness-of-fit measures are computed for all timeseries in 
+the input data. If weights are provided, the timeseries are
+first combined according to the weights, and goodness-of-fit are then 
+computed for the resulting combination. If a list of weights is provided,
+goodness-of-fit is computed for all of them.</p>
     
 
   </div>
@@ -152,6 +166,8 @@ locations to optimise.</p></td>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>

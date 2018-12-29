@@ -29,7 +29,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
                    length equal to number of timesteps in runoff")
     test <- length(date) == 1 && is.null(timestep)
     if(test) stop("Please provide timestep")
-    test <- length(date) != 1 && length(date) != nlayers(raster)
+    test <- length(date) != 1 && length(date) != raster::nlayers(raster)
     if(test) stop("length(date) != nlayers(raster)")
     test <- !is.null(timestep) && !timestep %in% c("day","month")
     if(test) stop("Only 'day' or 'month' timesteps supported.")
@@ -85,7 +85,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
     
     # process dates
     if(length(date) == 1) {
-        enddate <- date %m+% months(nlayers(raster) -1)
+        enddate <- date %m+% months(raster::nlayers(raster) -1)
         date <- seq(date, enddate, by = timestep)
     } 
     data$Date <- date
@@ -99,8 +99,9 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
 
     
     # assign class
-    class(output) <- "HSgrid"
+    class(output) <- c(class(output), "HSgrid")
     
     #return
     return(output)
 }
+

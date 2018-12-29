@@ -15,6 +15,13 @@
 #' weights assigned from a station, an ensemble mean (each discharge
 #' prediction is given equal weight) is computed.
 #' 
+#' If \code{bias_correction} is set to \code{TRUE}, constant bias 
+#' correction is applied. Bias is divided equally among all river
+#' segments which are being optimised within a region. For example,
+#' if the sub-basin being optimised has 10 river segments, and bias
+#' (mean error) at the station being optimised is 10 m3/s, each
+#' river segment is added with a constant 1 m3/s runoff.
+#' 
 #' @param HSrunoff An \code{HSrunoff} object containing  runoff
 #'   estimates.
 #' @param HSobs An \code{HSobs} object containing the observed timeseries
@@ -24,6 +31,9 @@
 #' @param region_type How to regionalize combination weights. See details.
 #' @param no_station How to handle river segments with no downstream 
 #'   stations. See details.
+#' @param bias_correction Whether to apply bias correction. Default FALSE.
+#'   If TRUE, constant bias correction is applied to all river segments.
+#'   See details.
 #' @param ... Additional parameters passed to the \code{routing} algorithm.
 #' @inheritParams optimise_point
 #' @inheritParams compute_HSweights
@@ -124,7 +134,7 @@ optimise_region <- function(HSrunoff,
         statobs <- HSobs$Observations[HSobs$Observations$Date %in% combdates,
                                       as.character(upstations$station[station])]
         keep <- !is.na(statobs)
-        statobs <- unlist(statobs[keep,])
+        statobs <- unlist(statobs[keep])
         statpreds <- statpreds[keep,]
         
         train_ <- 1:(round(length(statobs)*train, 0))
@@ -135,28 +145,29 @@ optimise_region <- function(HSrunoff,
                                                           statobs[test_], 
                                                           statpreds[test_,]))
         
-        
+        name <- as.character(upstations$station[station])
         if(optim_method == "factorCLS") {
             # This is the function ForecastComb::comb_CLS() in a factorized form 
             # because the original unfactorized ForecastComb function results often 
             # in no solutions error in solve.QP(). The fix is sourced from 
             # StackOverflow: https://stackoverflow.com/a/28388394
-            comb[[station]] <- hydrostreamer:::forecastcomb_comb_CLS(fcast) 
+            comb[[name]] <- hydrostreamer:::forecastcomb_comb_CLS(fcast) 
         } else if (optim_method == "CLS") {
-            comb[[station]] <- ForecastComb::comb_CLS(fcast)
+            comb[[name]] <- ForecastComb::comb_CLS(fcast)
         } else if (optim_method == "OLS") {
-            comb[[station]] <- ForecastComb::comb_OLS(fcast)
+            comb[[name]] <- ForecastComb::comb_OLS(fcast)
         } 
         
         # extract coefficients (weights) and intercept, and bias correction
         weights <- comb[[station]]$Weights
         names(weights) <- comb[[station]]$Models
         
+        
         if(is.null(comb[[station]]$Intercept)) {
             intercept <- 0
         } else{
             intercept <- comb[[station]]$Intercept / nrow(statflow$river)
-        } 
+        }
         
         if (bias_correction) {
             bias <- comb[[station]]$Accuracy_Train[1] / nrow(statflow$river)
@@ -180,7 +191,9 @@ optimise_region <- function(HSrunoff,
                 optimflow[,2:n] <- optimflow[,2:n] + temp
         }
         
-        outdischarge <- suppressMessages(dplyr::left_join(outdischarge, optimflow))
+        outdischarge <- suppressMessages(dplyr::left_join(outdischarge, 
+                                                          optimflow,
+                                                          by="Date"))
         optimizedIDs <- rbind(optimizedIDs, 
                               data.frame(riverID = statriver$riverID, 
                                          OPTIMIZED_STATION=as.character(upstations$station[station]),
@@ -197,7 +210,8 @@ optimise_region <- function(HSrunoff,
             boundary$Observations <- suppressMessages(dplyr::left_join(
                 boundary$Observations, 
                 optimflow[,c("Date", 
-                             as.character(upstations$riverID[station]) )]))
+                             as.character(upstations$riverID[station]) )],
+                by = "Date"))
             boundary$riverIDs <- c(boundary$riverIDs, river$NEXT[upstations$rind[station]])
             colnames(boundary$Observations) <- c("Date", boundary$riverIDs)
         }
@@ -236,7 +250,8 @@ optimise_region <- function(HSrunoff,
         }
 
         
-        outdischarge <- suppressMessages(dplyr::left_join(outdischarge, optimflow))
+        outdischarge <- suppressMessages(dplyr::left_join(outdischarge, optimflow,
+                                                          by = "Date"))
         optimizedIDs <- rbind(optimizedIDs, 
                               data.frame(riverID = statriver$riverID, 
                                          OPTIMIZED_STATION = "Ensemble Mean",
@@ -251,8 +266,10 @@ optimise_region <- function(HSrunoff,
     ord <- match(as.character(river$riverID), colnames(outdischarge)[-1])
     
     river <- suppressMessages(dplyr::left_join(river, optimizedIDs))
-    output <- list(river = river, discharge = list(optimized = outdischarge[,c(1,ord+1)]))
-    class(output) <- "HSflow"
+    output <- list(river = river, 
+                   discharge = list(optimized = outdischarge[,c(1,ord+1)]),
+                   optim_info = comb)
+    class(output) <- append(class(output), "HSflow")
     if (verbose) message(paste0("Finished in ", Sys.time()-start))
     return(output)
     

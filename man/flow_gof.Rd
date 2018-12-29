@@ -5,13 +5,17 @@
 \title{Computed goodness-of-fit statistics for discharge predictions
 against observed streamflow}
 \usage{
-flow_gof(HSflow, HSobs)
+flow_gof(HSflow, HSobs, weights = NULL)
 }
 \arguments{
 \item{HSflow}{An \code{HSflow} object}
 
 \item{HSobs}{An \code{HSobs} object containing observations at the
 locations to optimise.}
+
+\item{weights}{a numeric vector of weights, or a list of weight vectors 
+with the length of the number of timeseries in \code{HSflow}. See details. 
+Optional.}
 }
 \value{
 Returns a list with gof-statistics for all the observations in
@@ -20,4 +24,11 @@ Returns a list with gof-statistics for all the observations in
 \description{
 Computed goodness-of-fit statistics using \code{\link[hydroGOF]{gof}}
 for all the timeseries in the input \code{HSflow} object.
+}
+\details{
+By default, goodness-of-fit measures are computed for all timeseries in 
+the input data. If weights are provided, the timeseries are
+first combined according to the weights, and goodness-of-fit are then 
+computed for the resulting combination. If a list of weights is provided,
+goodness-of-fit is computed for all of them.
 }

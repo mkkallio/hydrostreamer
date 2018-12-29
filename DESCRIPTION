@@ -2,7 +2,7 @@ Package: hydrostreamer
 Type: Package
 Title: A package for downscaling distributed runoff products in to 
   explicit river segments.
-Version: 0.3.0
+Version: 0.3.1
 Date: 2018-09-17
 Authors@R: person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 
@@ -14,7 +14,8 @@ Description: hydrostreamer provides functions to downscale distributed runoff da
   Value of the runoff unit is divided among intersecting river segments. hydrostreamer
   provides several methods for the assignment. Simple river routing algorithms 
   are also provided to estimate discharge at each segment.
-Depends: R (>= 3.4.0)
+Depends: 
+    R (>= 3.4.0)
 Encoding: UTF-8
 Imports:
     dplyr,
@@ -27,9 +28,9 @@ Imports:
     units,
     rgdal,
     lubridate,
-    hydroGOF,
     ggplot2,
-    quadprog
+    quadprog,
+    hydroGOF
 Suggests:
     knitr,
     rmarkdown,

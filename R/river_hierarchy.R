@@ -1,13 +1,16 @@
 #' Computes river hierarchies for a HSnetwork object.
 #'
-#' Computes river hierarchies from a routed river network (\emph{HSnetwork} object), or from an unrouted,
-#' connected river network. In case the input river network is unrouted, \code{\link{river_network}} is run
-#' before computing river hierarchy.
+#' Computes river hierarchies from a routed river network (\emph{HSnetwork} 
+#' object), or from an unrouted, connected river network. In case the input 
+#' river network is unrouted, \code{\link{river_network}} is run before 
+#' computing river hierarchy.
 #'
-#' @param type Type hierarchy to compute. Currently only \code{strahler} stream order implemented.
+#' @param type Type hierarchy to compute. Currently only \code{strahler} 
+#'   stream order implemented.
 #' @inheritParams compute_HSweights
 #'
-#' @return Returns the river network with added column with the selected river hierarchy.
+#' @return Returns the river network with added column with the selected river 
+#'   hierarchy.
 #' 
 #' @examples 
 #' \dontrun{
@@ -29,9 +32,10 @@
 river_hierarchy <- function(river, type="strahler", riverID = "riverID") {
     
     if(!any(class(river)=="sf")) {
-        stop("river input should be of class 'HSnetwork' obtained with function flow_network() or an 'sf' linestring object.")
+        stop("river input should be of class 'HSnetwork' obtained with function 
+             flow_network() or an 'sf' linestring object.")
     }
-    test <- !any(names(river) %in% c("NEXT", "PREVIOUS", "DOWNSTREAM"))
+    test <- !"HSnetwork" %in% class(river)
     if (test) river <- river_network(river, riverID=riverID)
     
     from <- river$PREVIOUS
@@ -61,7 +65,9 @@ river_hierarchy <- function(river, type="strahler", riverID = "riverID") {
                 prev_seg <- as.numeric(unlist(from[seg]))
                 row <- ID == prev_seg
                 
-                if (!strahler[seg] == strahler[row]){ # if the current stream order IS NOT EQUAL TO inflowing stream order
+                # if the current stream order DOES NOT EQUAL TO inflowing 
+                # stream order
+                if (!strahler[seg] == strahler[row]){ 
                     strahler[seg] <- strahler[row]
                     edits <- edits+1
                 }
@@ -101,10 +107,14 @@ river_hierarchy <- function(river, type="strahler", riverID = "riverID") {
     test <- any(names(river) == "STRAHLER")
     if(test) {
         river <- river[,-"STRAHLER"]
-        river <- tibble::add_column(river, STRAHLER = strahler, .before=length(names(river)))
+        river <- tibble::add_column(river, 
+                                    STRAHLER = strahler, 
+                                    .before=length(names(river)))
         message("Replacing the existing column 'STRAHLER'.")
     } else {
-        river <- tibble::add_column(river, STRAHLER = strahler, .before=length(names(river)))
+        river <- tibble::add_column(river, 
+                                    STRAHLER = strahler, 
+                                    .before=length(names(river)))
     }
     
     return(river)

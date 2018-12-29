@@ -1,17 +1,20 @@
+# hydrostreamer 0.3.1
+
+Small update with mostly bugfixes.
+
+* Fixed [issue](https://github.com/mkkallio/hydrostreamer/issues/2) where Strahler
+based weighting of river segments did not work.
+
+
 # hydrostreamer 0.3.0
 
-A major overhaul of the downscaling system and a number of additional features included. This update 
-changes names of many functions and their outputs and thus introduces breaking changes. The overhaul, 
-however, makes the package much more usable. Many of the changes are made to make further development
-of the package easier. This is a fairly experimental package with a number of bugs to be expected,
-but the main workflow works correctly.
+A major overhaul of the downscaling system and a number of additional features included. This update changes names of many functions and their outputs and thus introduces breaking changes. The overhaul, however, makes the package much more usable. Many of the changes are made to make further development of the package easier. This is a fairly experimental package with a number of bugs to be expected, but the main workflow works correctly.
 
 ## Changes include, among smaller changes:
 
 *   date handling introduced, instead of sequential timestep numbers.
 
-*   Package now supports multiple input runoff timeseries, and the central functions support processing
-    them all in one command.
+*   Package now supports multiple input runoff timeseries, and the central functions support processing them all in one command.
 
 *   function names changed:
     +   `polygrid_timeseries()` --> `raster_to_HSgrid()`

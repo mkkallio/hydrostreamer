@@ -11,6 +11,8 @@
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
 #' @importFrom quadprog solve.QP
+#' @importFrom dplyr bind_rows
+#' @import hydroGOF
 #' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer

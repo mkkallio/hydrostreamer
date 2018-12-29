@@ -68,11 +68,11 @@ optimise_point <- function(HSflow,
     statdates <- list()
     traintest <- list()
     for (rID in seq_along(riverIDs)) {
-        ind <- which(colnames(HSflow$discharge[[1]]) == riverIDs[rID])
         #flow <- list()
        
         flow <- HSobs$Observations[,c(1,rID+1)]
         for(pred in seq_along(HSflow$discharge)){
+            ind <- which(colnames(HSflow$discharge[[pred]]) == riverIDs[rID])
             temp <- HSflow$discharge[[pred]][,c(1,ind)]
             flow <- dplyr::left_join(flow, temp, by=c("Date"))
         }
@@ -80,6 +80,12 @@ optimise_point <- function(HSflow,
         colremove <- apply(flow,2,FUN=function(x) all(is.na(x)))
         flow <- flow[,!colremove]
         flow <- flow[complete.cases(flow),]
+        
+        if(nrow(flow) < 12) {
+            warning("At least one of optimized stations have not enough (10) matching 
+                    observation and prediction dates.")
+          next
+        }
         
         train_ <- 1:(round(nrow(flow)*train, 0))
         test_ <- (max(train_)+1):nrow(flow)
