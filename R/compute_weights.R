@@ -222,7 +222,7 @@ compute_HSweights <- function(river,
                           grid = HSgrid)
         
     }
-    class(HSweights) <-  c("HSweights", class(output))
+    class(HSweights) <-  c("HSweights", class(HSweights))
     
     #return
     return(HSweights)

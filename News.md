@@ -56,8 +56,7 @@ The current update contains minimal documentation and examples. In the immediate
 
 *   Provide a number of vignettes exploring the capabilities of `hydrostreamer`
 
-*   Provide river network generation functions, so that river network input can be replaced with
-    a DEM input.
+*   Provide river network generation functions, so that river network input can be replaced with a DEM input.
     
     
 

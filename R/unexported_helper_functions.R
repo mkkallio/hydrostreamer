@@ -129,7 +129,8 @@ tesselate_voronoi <- function(vorPoints, aoi, riverID = "riverID", verbose = FAL
 
 fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
     #------
-    # the process may generate geometrycollections instead of polygons --> this will correct them
+    # the process may generate geometrycollections instead of polygons --> 
+    # this will correct them
     v.gc <- sf::st_is(voronoi, "GEOMETRYCOLLECTION")
     
     if (any(v.gc)) {
@@ -142,9 +143,9 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
     
     
     #------
-    # sometimes there are voronoi areas left which were not assigned any ID, and thus not dissolved. 
-    # The following code merges them to the neighbouring polygon with which it shares the longest 
-    # border segment.
+    # sometimes there are voronoi areas left which were not assigned any ID, and
+    # thus not dissolved. The following code merges them to the neighbouring 
+    # polygon with which it shares the longest border segment.
     
     
     IDs <- voronoi[, names(voronoi) %in% riverID] %>%
@@ -236,10 +237,11 @@ do_summary_fun <- function (list, funs, monthly,...) {
 
         for (fun in funs) {
             
-            # if input functions include quantile(), it needs to be handled in a special way so
-            # that output list of tables have the correct names, and the table contains correct
-            # column headers. If not for this, the output table has 2 or more times columns
-            # leading to problems later on in downscaling.
+            # if input functions include quantile(), it needs to be handled in a
+            # special way so that output list of tables have the correct names, 
+            # and the table contains correct column headers. If not for this, 
+            # the output table has 2 or more times columns leading to problems 
+            # later on in downscaling.
             if (fun == "quantile" ) {
                 if (!hasArg(probs)) stop('Argument probs for quantile missing')
                 p <- list(...)
