@@ -86,7 +86,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
     # process dates
     if(length(date) == 1) {
         if(timestep == "month") {
-            enddate <- date %m+% lubridate::months(raster::nlayers(raster) -1)
+            enddate <- date %m+% months(raster::nlayers(raster) -1)
         } else if(timestep == "day") {
             enddate <- date %m+% lubridate::days(raster::nlayers(raster) -1)
         } else if(timestep == "hour") {
