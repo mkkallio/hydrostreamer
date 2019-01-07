@@ -74,7 +74,8 @@ optimise_region <- function(HSrunoff,
     optimdates <- lapply(HSrunoff$downscaled, FUN = function(x) x$Date)
     alldates <- do.call(c,optimdates) %>% 
         unique() %>% 
-        lubridate::as_date() %>% data.frame(Date = .)
+        lubridate::as_date() %>% 
+        data.frame(Date = .)
     optimdates <- Reduce(intersect, optimdates) %>% 
         lubridate::as_date()
     
@@ -115,13 +116,18 @@ optimise_region <- function(HSrunoff,
         statrunoff <- HSrunoff
         statrunoff$river <- statriver
         statrunoff$downscaled <- lapply(statrunoff$downscaled, 
-                                        FUN=function(x) x[x$Date %in% optimdates, 
-                                                          c("Date",
-                                                             as.character(statriver$riverID))])
+                                        FUN=function(x) {
+                                            x[x$Date %in% optimdates, 
+                                              c("Date",
+                                                as.character(statriver$riverID)
+                                                )
+                                              ]
+                                            }
+                                        )
         # route
         statflow <- accumulate_runoff(statrunoff, 
                                       method = routing, 
-                                      boundary = boundary, 
+                                      boundary = boundary,
                                       ...)
         
         # combine
@@ -132,8 +138,9 @@ optimise_region <- function(HSrunoff,
                                               as.character(upstations$riverID[station])])
         statpreds <- do.call(cbind, statpreds)
         statobs <- HSobs$Observations[HSobs$Observations$Date %in% combdates,
-                                      as.character(upstations$station[station])]
-        keep <- !is.na(statobs)
+                                      as.character(upstations$station[station])] %>%
+            unlist()
+        keep <- !is.na(statobs) 
         statobs <- unlist(statobs[keep])
         statpreds <- statpreds[keep,]
         
@@ -151,7 +158,7 @@ optimise_region <- function(HSrunoff,
             # because the original unfactorized ForecastComb function results often 
             # in no solutions error in solve.QP(). The fix is sourced from 
             # StackOverflow: https://stackoverflow.com/a/28388394
-            comb[[name]] <- hydrostreamer:::forecastcomb_comb_CLS(fcast) 
+            comb[[name]] <- forecastcomb_comb_CLS(fcast) 
         } else if (optim_method == "CLS") {
             comb[[name]] <- ForecastComb::comb_CLS(fcast)
         } else if (optim_method == "OLS") {
@@ -181,7 +188,9 @@ optimise_region <- function(HSrunoff,
             weights[ mod[1] ] +
             intercept + 
             bias
-        optimflow <- cbind(Date = statflow$discharge[[ mod[1] ]][,"Date"], optimflow) 
+        optimflow <- data.frame(Date = statflow$discharge[[ mod[1] ]][,"Date"], 
+                                optimflow) 
+        colnames(optimflow) <- colnames(statflow$discharge[[ mod[1] ]])
         n <- ncol(optimflow)
         for (rts in 2:length(mod)) {
                 temp <- statflow$discharge[[ mod[rts] ]][, -1] * 
@@ -201,7 +210,7 @@ optimise_region <- function(HSrunoff,
         
         
         if (station == 1) {
-            OptimizedIDs <- optimizedIDs[2:nrow(optimizedIDs),]
+            optimizedIDs <- optimizedIDs[2:nrow(optimizedIDs),]
             boundary <- create_HSobs(optimflow[,c("Date", 
                                                   as.character(upstations$riverID[station]) )],
                                         river$NEXT[upstations$rind[station]])
@@ -219,7 +228,7 @@ optimise_region <- function(HSrunoff,
     }
     
     
-    # after all stations, process each one of the others.
+    # after all stations are optimized, process the remaining segments
     
     if(no_station == "em") {
         # choose only upstream
@@ -235,14 +244,16 @@ optimise_region <- function(HSrunoff,
         # route
         statflow <- accumulate_runoff(statrunoff, 
                                       method = routing, 
-                                      boundary = boundary, 
+                                      boundary = boundary,
                                       ...)
 
         
         mod <- names(statrunoff$downscaled)
         weights <- 1/length(mod)
         optimflow <- statflow$discharge[[ mod[1] ]][, -1] * weights
-        optimflow <- cbind(Date = statflow$discharge[[ mod[1] ]][,"Date"], optimflow) 
+        optimflow <- data.frame(Date = statflow$discharge[[ mod[1] ]][,"Date"], 
+                                optimflow) 
+        colnames(optimflow) <- colnames(statflow$discharge[[ mod[1] ]])
         n <- ncol(optimflow)
         for (rts in 2:length(mod)) {
             temp <- statflow$discharge[[ mod[rts] ]][, -1] * weights
@@ -250,7 +261,8 @@ optimise_region <- function(HSrunoff,
         }
 
         
-        outdischarge <- suppressMessages(dplyr::left_join(outdischarge, optimflow,
+        outdischarge <- suppressMessages(dplyr::left_join(outdischarge, 
+                                                          optimflow,
                                                           by = "Date"))
         optimizedIDs <- rbind(optimizedIDs, 
                               data.frame(riverID = statriver$riverID, 
@@ -259,7 +271,7 @@ optimise_region <- function(HSrunoff,
         
     }
     
-    
+    if (verbose) setTxtProgressBar(pb, station+1)
     if (verbose) close(pb) 
     
     #temp <- as.numeric(colnames(outdischarge)[-1])
@@ -269,7 +281,7 @@ optimise_region <- function(HSrunoff,
     output <- list(river = river, 
                    discharge = list(optimized = outdischarge[,c(1,ord+1)]),
                    optim_info = comb)
-    class(output) <- append(class(output), "HSflow")
+    class(output) <- c("HSflow", class(output))
     if (verbose) message(paste0("Finished in ", Sys.time()-start))
     return(output)
     

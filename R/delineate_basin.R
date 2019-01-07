@@ -91,7 +91,7 @@ delineate_basin <- function(outlets,
         delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
             sf::st_as_sf()
         names(delbas)[1] <- "riverID"
-        areas <- st_area(delbas)
+        areas <- sf::st_area(delbas)
         cols <- cbind(riverID = ID, NCELLS = ncells, AREA_M2 = areas)
         delbas <- merge(delbas, cols)
     }

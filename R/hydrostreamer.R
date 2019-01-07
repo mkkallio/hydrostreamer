@@ -1,18 +1,23 @@
-#' hydrostreamer: A package for downscaling distributed runoff products in to 
+#' hydrostreamer: A package for downscaling distributed runoff products on to 
 #' explicit river segments.
 #'
 #' hydrostreamer provides functions to downscale distributed runoff data 
-#' into an explicitly represented river network. Downscaling is done by the spatial 
-#' relationship between an areal unit of runoff and an overlaid river network. 
-#' Value of the runoff unit is divided among intersecting river segments. hydrostreamer
-#' provides several methods for the assignment. Simple river routing algorithms 
-#' are also provided to estimate discharge at each segment.
+#' into an explicitly represented river network using. Downscaling is done by 
+#' the spatial #' relationship between an areal unit of runoff and an overlaid 
+#' river network. Value of the runoff unit is divided among intersecting river 
+#' segments. hydrostreamer provides several methods for the assignment. Simple 
+#' river routing algorithms are also provided to estimate discharge at each 
+#' segment.
+#'
+#' @import hydroGOF
 #' @importFrom dplyr %>%
 #' @importFrom utils setTxtProgressBar
 #' @importFrom utils txtProgressBar
 #' @importFrom quadprog solve.QP
 #' @importFrom dplyr bind_rows
-#' @import hydroGOF
+#' @importFrom lubridate %m+%
+#' @importFrom methods hasArg
+#' @importFrom graphics plot
 #' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer

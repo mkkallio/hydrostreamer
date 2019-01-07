@@ -18,7 +18,11 @@
 #' density of nodes in the river network. Consider densifying geometry e.g. 
 #' with \code{sf::st_segmentize()} function for higher accuracy.
 #'
-#' @inheritParams compute_HSweights
+#' @param river An 'sf' linestring feature representing a river network.
+#' @param aoi An area of interest. 'sf' polygon object. Optional.
+#' @param riverID A character string which specifies the name of the column in 
+#'   \code{river} containing unique river network identifiers. Defaults to "riverID".
+#' @param verbose Whether or not print progress indicators.
 #'
 #'
 #' @return Returns an 'sf' polygon object, with a column "ID" corresponding 
@@ -27,6 +31,8 @@
 #' @export
 river_voronoi<- function(river, aoi, riverID = "riverID", verbose=FALSE) {
     
+    ID <- NULL
+  
     if(is.null(river)) stop("river network is required")
     if(is.null(aoi)) stop("area of interest is required")
     

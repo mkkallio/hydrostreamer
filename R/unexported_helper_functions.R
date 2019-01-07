@@ -34,7 +34,7 @@ next_cell_up <- function(cell, drain.dir) {
 # moves starting and ending nodes either 0.0005 degrees, or 10 meters, depending on projection
 move_nodes <- function(river, verbose=FALSE) {
     
-    rivgeom <- st_geometry(river)
+    rivgeom <- sf::st_geometry(river)
     p4s <- sf::st_crs(river)[2]
     
     n <- nrow(river)
@@ -226,7 +226,14 @@ new_row_col <- function(bearing, prc) {
 
 
 
-do_summary_fun <- function (list, funs, monthly,...) {
+do_summary_fun <- function (list, 
+                            funs, 
+                            monthly,
+                            ...) {
+    
+    Date <- NULL
+    Month <- NULL
+    
     output <- list()
     for(i in seq_along(list)) {
         data <- list[[i]]
@@ -243,7 +250,8 @@ do_summary_fun <- function (list, funs, monthly,...) {
             # the output table has 2 or more times columns leading to problems 
             # later on in downscaling.
             if (fun == "quantile" ) {
-                if (!hasArg(probs)) stop('Argument probs for quantile missing')
+                if (!methods::hasArg("probs")) stop('Argument probs for quantile 
+                                                  missing')
                 p <- list(...)
 
                 p <- p[['probs']]

@@ -2,18 +2,15 @@
 #' 
 #' Computes downscaled, unrouted, river segment specific runoff using 
 #' the given \code{HSweights} object. 
-#'
+#' 
+#' 
 #' @param HSweights An object of class 'HSweights', obtained with 
-#'   \code{\link{compute_HSweights}}, or constructed with function
-#'   \code{\link{create_HSweights}}.
-#' @param timesteps A logical vector of the length of timesteps in x, 
-#'   or a numeric vector specifying which timesteps to process. If no 
-#'   timesteps are given, all will be processed.
+#'   \code{compute_HSweights}, or constructed with function
+#'   \code{create_HSweights}.
 #' @param unit Unit of runoff. Can be either "mm/s", or "m3/s". 
 #'   Defaults to mm/s (~ equivalent to kg/m2/s).
 #' @param rID Name of the column in river with unique IDs.
 #' @param wID Name of the column in weights with IDs corresponding to rID.
-#' @inheritParams compute_HSweights
 #'
 #' @return The routed river network object which has been enhanced with 
 #'   a runoff timeseries. Runoff is given in \eqn{m^3/s}.
@@ -50,6 +47,7 @@ downscale_runoff <- function(HSweights,
     
     area_m2 <- NULL
     gridID <- NULL
+    Date <- NULL
     
     river <- HSweights$river
     weights <- HSweights$weights

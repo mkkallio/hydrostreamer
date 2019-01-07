@@ -21,8 +21,8 @@
 #'   \item{128}{:Northeast}
 #' }
 #'
+#' @param river An 'sf' linestring feature representing a river network.
 #' @param drain.dir A RasterLayer object of drainage directions.
-#' @inheritParams compute_HSweights
 #'
 #' @return Returns an 'sf' point object of identified raster cell centers. Includes all the attributes in the 
 #' given \code{river} object.

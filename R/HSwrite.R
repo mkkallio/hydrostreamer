@@ -14,6 +14,9 @@ HSwrite <- function(x, filename, ...) {
 #' @export
 HSwrite.HSgrid <- function(x, filename, ...) {
     
+    Date <- NULL
+    Month <- NULL
+    
     n <- length(x$runoff)
     names <- names(x$runoff)
     if(is.null(names)){
@@ -40,15 +43,27 @@ HSwrite.HSgrid <- function(x, filename, ...) {
         layer <- cbind(x$grid, rdata)
        
         if(i == 1) {
-            sf::st_write(layer, filename, layer=names[[i]], driver="GPKG", ...)
+            sf::st_write(layer, 
+                         filename, 
+                         layer=names[[i]], 
+                         driver="GPKG", 
+                         ...)
         } else {
-            sf::st_write(layer, filename, layer=names[[i]], update=TRUE, driver="GPKG", ...)
+            sf::st_write(layer, 
+                         filename, 
+                         layer=names[[i]], 
+                         update=TRUE, 
+                         driver="GPKG", 
+                         ...)
         }
     }
 }
 
 #' @export
 HSwrite.HSrunoff <- function(x, filename, ...) {
+    
+    Date <- NULL
+    Month <- NULL
     
     n <- length(x$downscaled)
     names <- names(x$downscaled)
@@ -76,9 +91,18 @@ HSwrite.HSrunoff <- function(x, filename, ...) {
         layer <- cbind(x$river, rdata)
         
         if(i == 1) {
-            sf::st_write(layer, filename, layer=names[[i]], driver="GPKG", ...)
+            sf::st_write(layer, 
+                         filename, 
+                         layer=names[[i]], 
+                         driver="GPKG", 
+                         ...)
         } else {
-            sf::st_write(layer, filename, layer=names[[i]], update=TRUE, driver="GPKG", ...)
+            sf::st_write(layer, 
+                         filename, 
+                         layer=names[[i]], 
+                         update=TRUE, 
+                         driver="GPKG", 
+                         ...)
         }
     }
 }
@@ -86,6 +110,9 @@ HSwrite.HSrunoff <- function(x, filename, ...) {
 
 #' @export
 HSwrite.HSflow <- function(x, filename, ...) {
+    
+    Date <- NULL
+    Month <- NULL
     
     n <- length(x$discharge)
     names <- names(x$discharge)
@@ -113,9 +140,18 @@ HSwrite.HSflow <- function(x, filename, ...) {
         layer <- cbind(x$river, rdata)
         
         if(i == 1) {
-            sf::st_write(layer, filename, layer=names[[i]], driver="GPKG", ...)
+            sf::st_write(layer, 
+                         filename, 
+                         layer=names[[i]], 
+                         driver="GPKG", 
+                         ...)
         } else {
-            sf::st_write(layer, filename, layer=names[[i]], update=TRUE, driver="GPKG", ...)
+            sf::st_write(layer, 
+                         filename, 
+                         layer=names[[i]], 
+                         update=TRUE, 
+                         driver="GPKG",
+                         ...)
         }
     }
 }

@@ -5,7 +5,9 @@
 #' @export
 plot.HSflow <- function(HSflow, HSobs, ...) {
     
-    if (!require(ggplot2) ) stop('Package "ggplot2" is required for the plot function. Please install ggplot2.')
+    if (!requireNamespace(ggplot2) ) stop('Package "ggplot2" is required for 
+                                          the plot function. Please install 
+                                          ggplot2.')
     
     stations <- HSobs$riverIDs
     ind <- vector()
@@ -40,8 +42,13 @@ plot.HSflow <- function(HSflow, HSobs, ...) {
     data <- tidyr::gather(data, Station, Q, -Type, -Date)
     
     p <- ggplot() +
-        geom_line(data = data[data$Type != "Observations",], aes(x=Date, y=Q), color="grey80") +
-        geom_line(data = data[data$Type == "Observations",], aes(x=Date, y=Q), color="red", size=1) +
+        geom_line(data = data[data$Type != "Observations",], 
+                  aes(x=Date, y=Q), 
+                  color="grey80") +
+        geom_line(data = data[data$Type == "Observations",], 
+                  aes(x=Date, y=Q), 
+                  color="red", 
+                  size=1) +
         facet_wrap(~Station, scales="free_y") + 
         theme_bw() +
         ylab('Q m3/s') +

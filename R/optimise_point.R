@@ -46,6 +46,7 @@ optimise_point <- function(HSflow,
                            optim_method="CLS",
                            train=0.5, 
                            bias_correction=FALSE) {
+  
     riverIDs <- HSobs$riverIDs
     #nstat <- length(HSobs$riverIDs)
     
@@ -79,7 +80,7 @@ optimise_point <- function(HSflow,
         colnames(flow) <- c("Date", "Obs", fnames)
         colremove <- apply(flow,2,FUN=function(x) all(is.na(x)))
         flow <- flow[,!colremove]
-        flow <- flow[complete.cases(flow),]
+        flow <- flow[stats::complete.cases(flow),]
         
         if(nrow(flow) < 12) {
             warning("At least one of optimized stations have not enough (10) matching 
@@ -100,7 +101,7 @@ optimise_point <- function(HSflow,
             # because the original unfactorized ForecastComb function results often 
             # in no solutions error in solve.QP(). The fix is sourced from 
             # StackOverflow: https://stackoverflow.com/a/28388394
-            combs[[rID]] <- hydrostreamer:::forecastcomb_comb_CLS(fcast) 
+            combs[[rID]] <- forecastcomb_comb_CLS(fcast) 
         } else if (optim_method == "CLS") {
             combs[[rID]] <- ForecastComb::comb_CLS(fcast)
         } else if (optim_method == "OLS") {

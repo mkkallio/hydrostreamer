@@ -31,7 +31,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
     if(test) stop("Please provide timestep")
     test <- length(date) != 1 && length(date) != raster::nlayers(raster)
     if(test) stop("length(date) != nlayers(raster)")
-    test <- !is.null(timestep) && !timestep %in% c("day","month")
+    test <- !is.null(timestep) && !timestep %in% c("day","month","hour")
     if(test) stop("Only 'day' or 'month' timesteps supported.")
     
     
@@ -77,7 +77,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
     output[["grid"]] <- dplyr::select(grid, gridID, area_m2)
     
     data <- dplyr::select(grid, -area_m2, -gridID) %>% 
-        st_set_geometry(NULL) %>% 
+        sf::st_set_geometry(NULL) %>% 
         t() %>% 
         data.frame()
     colnames(data) <- grid$gridID
@@ -85,7 +85,13 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
     
     # process dates
     if(length(date) == 1) {
-        enddate <- date %m+% months(raster::nlayers(raster) -1)
+        if(timestep == "month") {
+            enddate <- date %m+% lubridate::months(raster::nlayers(raster) -1)
+        } else if(timestep == "day") {
+            enddate <- date %m+% lubridate::days(raster::nlayers(raster) -1)
+        } else if(timestep == "hour") {
+            enddate <- date %m+% lubridate::hours(raster::nlayers(raster) -1)
+        }
         date <- seq(date, enddate, by = timestep)
     } 
     data$Date <- date

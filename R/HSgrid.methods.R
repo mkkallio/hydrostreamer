@@ -1,24 +1,20 @@
 ######
-# constructor and methods for HS grid object
+# Methods for HS grid object
 ######
 
-# constructor function to be added
-HSgrid <- function(river, runoff) {
-    
-}
 
 #' @export
-print.HSgrid <- function(HSgrid) {
+print.HSgrid <- function(x,...) {
     print(HSgrid[["grid"]])
 }
 
 #' @export
-plot.HSgrid <- function(HSgrid, ...) {
+plot.HSgrid <- function(x, ...) {
     plot(HSgrid[["grid"]], ...)
 }
 
 #' @export
-summary.HSgrid <- function(HSgrid) {
+summary.HSgrid <- function(object, ...) {
     print(HSgrid[["grid"]])
     print(summary(HSgrid[["runoff"]][[1]]))
 }

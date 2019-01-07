@@ -29,7 +29,7 @@ plot.HSoptim <- function(HSoptim,
                                                  stringsAsFactors = FALSE))
         ## hack because tibble:add_column commented below throws a weird error 
         # that an atomic character vector would not be atomic.
-        temp <- as.tibble(data.frame(t(HSoptim[[i]]$Goodness_of_fit)))
+        temp <- tibble::as.tibble(data.frame(t(HSoptim[[i]]$Goodness_of_fit)))
         temp$Period <- colnames(HSoptim[[i]]$Goodness_of_fit)
         temp$Station <- rep(stat_names[i], nrow(temp))
         gofs [[ stat_names[i] ]] <- temp

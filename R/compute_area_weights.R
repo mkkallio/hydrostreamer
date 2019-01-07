@@ -2,8 +2,8 @@
 #' features.
 #' 
 #' Computes weights for each individual river segment specific catchments 
-#' falling in the areal units of the runoff \emph{grid}. Function first 
-#' takes a union between \emph{basins} and \emph{grid} (creating new 
+#' falling in the areal units of the runoff \emph{HSgrid}. Function first 
+#' takes a union between \emph{basins} and \emph{HSgrid} (creating new 
 #' catchment units which fall inside only one runoff unit), and calculating 
 #' the area for each individual catchment unit. The weight is assigned by 
 #' dividing the area of sub-catchment with the area of runoff unit.
@@ -13,7 +13,7 @@
 #'   specific catchments.
 #' @inheritParams compute_HSweights
 #'
-#' @return Returns an 'sf' polygon feature (a union of basins, and grid) 
+#' @return Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
 #'   with attributes:
 #'   \itemize{
 #'     \item \emph{ID}. Unique ID of the feature.
@@ -52,11 +52,10 @@
 #'   
 #' @export
 compute_area_weights <- function(basins, 
-                                 grid, 
+                                 HSgrid, 
                                  riverID = "riverID", 
                                  gridID = "gridID") {
     
-    gridID <- NULL
     area_m2 <- NULL
     weights <- NULL
     ID <- NULL
@@ -77,11 +76,11 @@ compute_area_weights <- function(basins,
     if(!riverID == "riverID") basins <- dplyr::rename_(basins, 
                                                        riverID = riverID)  
     
-    grid <- grid %>% dplyr::select(gridID, g_area_m2 = area_m2)
+    HSgrid <- HSgrid %>% dplyr::select(gridID, g_area_m2 = area_m2)
     
     basins <- suppressWarnings(
         suppressMessages(
-            sf::st_intersection(basins,grid)
+            sf::st_intersection(basins,HSgrid)
         )
     )
 

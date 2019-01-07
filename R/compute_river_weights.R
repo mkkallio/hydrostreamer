@@ -1,9 +1,9 @@
 #' Compute weights for river segments within runoff area features.
 #' 
 #' Computes weights for each individual river segments falling in the 
-#' areal units of the runoff \emph{grid}. Weight is computed from a 
+#' areal units of the runoff \emph{HSgrid}. Weight is computed from a 
 #' numerical property of segments by \emph{x/sum(x)} where x are the 
-#' river segments contained in a areal unit of runoff (\emph{grid}). 
+#' river segments contained in a areal unit of runoff (\emph{HSgrid}). 
 #' This function is called by \code{\link{compute_HSweights}}.
 #' 
 #' \emph{seg_weights} should be one of the following: "equal", "length", 
@@ -58,7 +58,7 @@
 #' 
 #' @export
 compute_river_weights <- function(river, 
-                                  grid, 
+                                  HSgrid, 
                                   seg_weights = "length", 
                                   riverID = "riverID", 
                                   split=FALSE) {
@@ -76,9 +76,9 @@ compute_river_weights <- function(river,
 
     #river <- dplyr::select_(river, riverID)
     if(seg_weights == "strahler") river <- river_hierarchy(river)
-    if(split) river <- split_river_with_grid(river, grid, riverID = riverID)
+    if(split) river <- split_river_with_grid(river, HSgrid, riverID = riverID)
     #get elements of rivers intersecting polygons
-    riverIntsc <- suppressWarnings(suppressMessages(sf::st_contains(grid,river, 
+    riverIntsc <- suppressWarnings(suppressMessages(sf::st_contains(HSgrid,river, 
                                                                     sparse=FALSE)))
     
     
