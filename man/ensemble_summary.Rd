@@ -4,8 +4,9 @@
 \alias{ensemble_summary}
 \title{Computes summaries from hydrostreamer::HS* objects}
 \usage{
-ensemble_summary(HS, summarise_over_all = TRUE, aggregate_monthly = FALSE,
-  funs = c("min", "mean", "median", "max"), ...)
+ensemble_summary(HS, summarise_over_all = TRUE,
+  aggregate_monthly = FALSE, funs = c("min", "mean", "median", "max"),
+  ...)
 }
 \arguments{
 \item{HS}{Any HS* object, or a list of tables with column \code{Date}.}

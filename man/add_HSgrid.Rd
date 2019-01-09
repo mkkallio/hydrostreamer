@@ -14,12 +14,18 @@ add_HSgrid(HSgrid, from = NULL, raster = NULL, date = NULL,
 
 \item{raster}{A Raster* object.}
 
-\item{timestep}{Length of timestep in raster, e.g. \code{"hour"}, 
-\code{"day"}, \code{"month"}}
+\item{date}{Date of the first layer in \code{raster}, or a vector of dates 
+with the length of layers in \code{raster}.}
+
+\item{timestep}{Length of timestep in raster. Currently supporting 
+\code{"hour"}, \code{"day"}, \code{"month"}. Only needed if \code{date} is
+not a vector of dates.}
 
 \item{aoi}{Area of interest as an 'sf' polygon object, 
 'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
 recommended for all applications.}
+
+\item{name}{A name for the runoff timeseries. If \code{NULL},}
 }
 \value{
 Returns the input \code{HSgrid} object with added runoff.

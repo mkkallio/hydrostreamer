@@ -11,6 +11,7 @@
 #'
 #' @param basins An 'sf' polygon feature specifying the river segment 
 #'   specific catchments.
+#' @param gridID Column in HSgrid with unique IDs.
 #' @inheritParams compute_HSweights
 #'
 #' @return Returns an 'sf' polygon feature (a union of basins, and HSgrid) 

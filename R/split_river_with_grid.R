@@ -3,8 +3,9 @@
 #' Splits an 'sf' linestring object at the boundaries of 
 #' runoff units (polygons). 
 #'
+#' @param gridID Name of the column in \code{HSgrid} with unique IDs.
 #' @inheritParams compute_HSweights
-#'
+#' 
 #' @return Returns an 'sf' linestring object which has been split at 
 #'   the polygon (grid) boundaries with attributes:
 #'   \itemize{
@@ -36,13 +37,14 @@
 #' 
 #' @export
 split_river_with_grid <- function(river, 
-                                  grid, 
+                                  HSgrid, 
                                   riverID = "riverID", 
                                   gridID = "gridID") {
     
     ID <- NULL
-
-    grid <- dplyr::select_(grid, gridID)
+    
+    if("HSgrid" %in% class(HSgrid)) HSgrid <- HSgrid$grid
+    grid <- HSgrid %>% dplyr::select_(gridID)
     
     river <- suppressMessages(suppressWarnings(sf::st_intersection(river, grid)))
     

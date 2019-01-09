@@ -4,14 +4,19 @@
 \alias{create_HSweights}
 \title{Creates a \code{HSweights} object}
 \usage{
-create_HSweights(river, weights, grid, riverID = "riverID")
+create_HSweights(river, weights, HSgrid, riverID = "riverID")
 }
 \arguments{
 \item{river}{A river network as an \code{sf LINESTGRING} object}
 
-\item{weights}{Weights with riverID, gridID and weight information.}
+\item{weights}{A data.frame with columns "riverID" in "gridID", and "weight"
+corresponding to riverID in \code{river}, gridID in \code{HSgrid} and 
+a numeric weight.}
 
-\item{grid}{A \code{HSgrid} object.}
+\item{HSgrid}{A \code{HSgrid} object.}
+
+\item{riverID}{A character string which specifies the name of the column in 
+\code{river} containing unique river network identifiers. Defaults to "riverID".}
 }
 \value{
 Returns a \code{HSweights} object, which is a list of three 

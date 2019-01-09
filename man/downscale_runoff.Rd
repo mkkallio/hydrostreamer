@@ -9,8 +9,8 @@ downscale_runoff(HSweights, rID = "riverID", wID = "riverID",
 }
 \arguments{
 \item{HSweights}{An object of class 'HSweights', obtained with 
-\code{\link{compute_HSweights}}, or constructed with function
-\code{\link{create_HSweights}}.}
+\code{compute_HSweights}, or constructed with function
+\code{create_HSweights}.}
 
 \item{rID}{Name of the column in river with unique IDs.}
 
@@ -18,10 +18,6 @@ downscale_runoff(HSweights, rID = "riverID", wID = "riverID",
 
 \item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". 
 Defaults to mm/s (~ equivalent to kg/m2/s).}
-
-\item{timesteps}{A logical vector of the length of timesteps in x, 
-or a numeric vector specifying which timesteps to process. If no 
-timesteps are given, all will be processed.}
 }
 \value{
 The routed river network object which has been enhanced with 

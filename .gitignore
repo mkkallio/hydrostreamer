@@ -2,10 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+..Rcheck
 README.Rmd
-devdata
 todo.txt
-stream_sims_0.zip
-NAMESPACE-old
 *.o
 *.dll

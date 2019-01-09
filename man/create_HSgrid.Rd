@@ -14,7 +14,7 @@ correspond to specific polygons in \code{grid}.}
 
 \item{name}{Name of the runoff timeseries. If multiple runoff timeseries
 are added to the same \code{HSgrid} object using \code{\link{add_HSgrid}}, 
-each timeseries must have a unique name.}
+each timeseries must have a unique name, or else they are replaced.}
 }
 \value{
 Returns a \code{HSgrid} object which is a list of:

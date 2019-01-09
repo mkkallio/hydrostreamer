@@ -4,8 +4,8 @@
 \alias{accumulate_runoff}
 \title{Apply river routing based on selected routing method.}
 \usage{
-accumulate_runoff(HSrunoff, method = c("instant", "simple", "muskingum"), ...,
-  verbose = FALSE)
+accumulate_runoff(HSrunoff, method = c("instant", "simple", "muskingum"),
+  ..., verbose = FALSE)
 }
 \arguments{
 \item{HSrunoff}{A 'HSrunoff' object obtained by \code{\link{downscale_runoff}}}

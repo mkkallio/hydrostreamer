@@ -191,7 +191,9 @@ compute_HSweights <- function(river,
         }
 
         # 3. compute basin weights
-        basins <- compute_area_weights(basins, HSgrid[["grid"]], riverID = riverID)
+        basins <- compute_area_weights(basins, 
+                                       HSgrid$grid, 
+                                       riverID = riverID)
 
         # create output list and class it
         HSweights <- list(river = river, weights = basins, grid = HSgrid)
@@ -212,7 +214,7 @@ compute_HSweights <- function(river,
 
         # 2. compute weights based on river lines
         splitriver <- compute_river_weights(river, 
-                                            HSgrid[["grid"]], 
+                                            HSgrid$grid, 
                                             seg_weights = weights,
                                             split=TRUE)
 
@@ -222,9 +224,8 @@ compute_HSweights <- function(river,
                           grid = HSgrid)
         
     }
-    class(HSweights) <-  c("HSweights", class(HSweights))
     
-    #return
+    class(HSweights) <-  c("HSweights", class(HSweights))
     return(HSweights)
 
 }

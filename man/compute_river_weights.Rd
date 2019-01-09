@@ -10,6 +10,9 @@ compute_river_weights(river, grid, seg_weights = "length",
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
+\item{grid}{A \code{HSgrid} object or an \code{sf POLYGON} object used for
+areal interpolation.}
+
 \item{seg_weights}{A character vector specifying type of weights, or a 
 numerical vector. See Details. Defaults to "length".}
 
@@ -31,9 +34,9 @@ Returns an 'sf' linestring feature with attributes:
 }
 \description{
 Computes weights for each individual river segments falling in the 
-areal units of the runoff \emph{grid}. Weight is computed from a 
+areal units of the runoff \emph{HSgrid}. Weight is computed from a 
 numerical property of segments by \emph{x/sum(x)} where x are the 
-river segments contained in a areal unit of runoff (\emph{grid}). 
+river segments contained in a areal unit of runoff (\emph{HSgrid}). 
 This function is called by \code{\link{compute_HSweights}}.
 }
 \details{

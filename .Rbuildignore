@@ -1,23 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-NAMESPACE-old
 README.Rmd
-devdata
 todo.txt
-stream_sims_0.zip
-NAMESPACE-old
-v.gpkg
-v1.gpkg
 README_files
-R/old_functions_not_included_in_package.R
-R/dev.R
-src/del.R
-src/fort.R
 News.md
-src
-fort.6
 docs
 sticker.ai
-3S relief correct extent.tif
-script.R
-script2.R
+sticker.png

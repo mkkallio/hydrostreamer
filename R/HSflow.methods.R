@@ -3,11 +3,31 @@
 #######
 
 #' @export
-plot.HSflow <- function(HSflow, HSobs, ...) {
-    
-    if (!requireNamespace(ggplot2) ) stop('Package "ggplot2" is required for 
+plot.HSflow <- function(x, ...) {
+    if(!hasArg("HSobs")) {
+        stop("Plotting HSflow requires HSobs.")
+        HSobs <- NULL
+    }
+    plot_HSflow(x,HSobs)
+}
+
+#' Plot HSflow
+#' 
+#' Plots a timeseries of all predictions in HSflow.
+#' 
+#' @param HSflow An \code{HSflow} object
+#' @param HSobs An \code{HSobs} object
+#' 
+#' @export
+plot_HSflow <- function(HSflow, HSobs) { 
+    if (!requireNamespace("ggplot2") ) stop('Package "ggplot2" is required for 
                                           the plot function. Please install 
                                           ggplot2.')
+    
+    Type <- NULL
+    Date <- NULL
+    Station <- NULL
+    Q <- NULL
     
     stations <- HSobs$riverIDs
     ind <- vector()
@@ -41,18 +61,18 @@ plot.HSflow <- function(HSflow, HSobs, ...) {
     
     data <- tidyr::gather(data, Station, Q, -Type, -Date)
     
-    p <- ggplot() +
-        geom_line(data = data[data$Type != "Observations",], 
-                  aes(x=Date, y=Q), 
+    p <- ggplot2::ggplot() +
+        ggplot2::geom_line(data = data[data$Type != "Observations",], 
+                           ggplot2::aes(x=Date, y=Q), 
                   color="grey80") +
-        geom_line(data = data[data$Type == "Observations",], 
-                  aes(x=Date, y=Q), 
+        ggplot2::geom_line(data = data[data$Type == "Observations",], 
+                           ggplot2::aes(x=Date, y=Q), 
                   color="red", 
                   size=1) +
-        facet_wrap(~Station, scales="free_y") + 
-        theme_bw() +
-        ylab('Q m3/s') +
-        ggtitle('Observations against Hydrostreamer discharge estimate')
+        ggplot2::facet_wrap(~Station, scales="free_y") + 
+        ggplot2::theme_bw() +
+        ggplot2::ylab('Q m3/s') +
+        ggplot2::ggtitle('Observations against Hydrostreamer discharge estimate')
     
     print(p)
     return(p)

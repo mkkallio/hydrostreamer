@@ -20,6 +20,8 @@
 #'       in \emph{river}. 
 #' }
 #' 
+#' @param grid A \code{HSgrid} object or an \code{sf POLYGON} object used for
+#'   areal interpolation.
 #' @param seg_weights A character vector specifying type of weights, or a 
 #'   numerical vector. See Details. Defaults to "length".
 #' @param split Whether or not to use \code{\link{split_river_with_grid}} 
@@ -58,7 +60,7 @@
 #' 
 #' @export
 compute_river_weights <- function(river, 
-                                  HSgrid, 
+                                  grid, 
                                   seg_weights = "length", 
                                   riverID = "riverID", 
                                   split=FALSE) {
@@ -66,19 +68,21 @@ compute_river_weights <- function(river,
     weights <- NULL
     ID <- NULL
     gridID <- NULL
-    
 
     if(!any(colnames(river) == riverID)) stop("riverID column '", 
                                            riverID, "' does not exist in river input")
     if(!riverID == "riverID") river <- dplyr::rename_(river, 
                                                       riverID = riverID)  
     
+    if("HSgrid" %in% class(grid)) grid <- grid$grid
 
     #river <- dplyr::select_(river, riverID)
     if(seg_weights == "strahler") river <- river_hierarchy(river)
-    if(split) river <- split_river_with_grid(river, HSgrid, riverID = riverID)
+    if(split) river <- split_river_with_grid(river, 
+                                             grid, 
+                                             riverID = riverID)
     #get elements of rivers intersecting polygons
-    riverIntsc <- suppressWarnings(suppressMessages(sf::st_contains(HSgrid,river, 
+    riverIntsc <- suppressWarnings(suppressMessages(sf::st_contains(grid,river, 
                                                                     sparse=FALSE)))
     
     

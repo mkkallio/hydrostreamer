@@ -35,7 +35,7 @@ flow_gof.list <- function(HSflow, HSobs, weights=NULL) {
         for(i in seq_along(HSflow)) {
             HSflow[[i]] <- HSflow[[i]][,c(1,colinds[[i]])]
         }
-        HSflow <- combine_discharge(HSflow, weights)
+        HSflow <- combine_runoff(HSflow, weights)
     }
     
     ndis <- length(HSflow)

@@ -6,8 +6,8 @@
 timeseries against observed streamflow}
 \usage{
 optimise_region(HSrunoff, HSobs, routing = "simple", train = 0.5,
-  optim_method = "CLS", bias_correction = FALSE, region_type = "upstream",
-  no_station = "em", ..., verbose = FALSE)
+  optim_method = "CLS", bias_correction = FALSE,
+  region_type = "upstream", no_station = "em", ..., verbose = FALSE)
 }
 \arguments{
 \item{HSrunoff}{An \code{HSrunoff} object containing  runoff

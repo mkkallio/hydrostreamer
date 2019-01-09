@@ -2,11 +2,15 @@
 #' an 'sf' polygon object.
 #'
 #' @param raster A Raster* object.
+#' @param date Date of the first layer in \code{raster}, or a vector of dates 
+#'   with the length of layers in \code{raster}.
+#' @param timestep Length of timestep in raster. Currently supporting 
+#'   \code{"hour"}, \code{"day"}, \code{"month"}. Only needed if \code{date} is
+#'   not a vector of dates.
 #' @param aoi Area of interest as an 'sf' polygon object, 
 #'   'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
 #'   recommended for all applications.
-#' @param timestep Length of timestep in raster, e.g. \code{"hour"}, 
-#' \code{"day"}, \code{"month"}
+#' @param name A name for the runoff timeseries. If \code{NULL}, 
 #'
 #' @return Returns an 'sf' polygon object, with each polygon representing 
 #'   a raster cell, and which has been cropped to the area of interest. 
@@ -14,9 +18,14 @@
 #'   column. Output has class 'HSgrid'.
 #'   
 #' @export
-raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NULL) {
+raster_to_HSgrid <- function(raster, 
+                             date, 
+                             timestep = NULL, 
+                             aoi = NULL, 
+                             name="runoff1") {
     
     . <- NULL
+    Date <- NULL
     gridID <- NULL
     area_m2 <- NULL
     
@@ -97,11 +106,7 @@ raster_to_HSgrid <- function(raster, date, timestep = NULL, aoi = NULL, name=NUL
     data$Date <- date
     
     output[["runoff"]] <- list()
-    if(is.null(name)) {
-        output[["runoff"]][[1]] <- dplyr::select(data, Date, dplyr::everything())
-    } else {
-        output[["runoff"]][[name]] <- dplyr::select(data, Date, dplyr::everything())
-    }
+    output[["runoff"]][[name]] <- dplyr::select(data, Date, dplyr::everything())
 
     
     # assign class

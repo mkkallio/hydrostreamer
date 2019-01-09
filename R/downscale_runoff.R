@@ -94,19 +94,19 @@ downscale_runoff <- function(HSweights,
         if (unit == "mm/s") convert <- TRUE
         if (unit == "m3/s") convert <- FALSE
         
-        QTS <- .Fortran("compute_runoff", 
-                        PACKAGE = "hydrostreamer",
-                        as.integer(nriv),
-                        as.integer(nseg),
-                        as.integer(ng),
-                        as.integer(nts),
-                        as.integer(wrIDs),
-                        as.integer(wgIDs),
-                        as.double(weightvec),
-                        as.double(gridareas),
-                        runoffTS,
-                        QTS,
-                        as.logical(convert))[[10]]
+        if(convert) {
+            for (seg in 1:nseg) {
+                QTS[, wrIDs[seg] ] <- weightvec[seg] * 
+                    runoffTS[, wgIDs[seg] ] * 
+                    gridareas[ wgIDs[seg] ] / 1000
+                
+            }
+        } else {
+            for (seg in 1:nseg) {
+                QTS[, wrIDs[seg] ] <- weightvec[seg] * 
+                    runoffTS[, wgIDs[seg] ]
+            }
+        }
         
         
         QTS <- QTS %>% data.frame()

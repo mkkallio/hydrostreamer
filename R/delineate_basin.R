@@ -59,7 +59,7 @@ delineate_basin <- function(outlets,
     drdir <- raster::values(drain.dir)
     delbas <- vector("numeric", raster::ncell(drain.dir))
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
-    delbas <- .Fortran("delineate", 
+    delbas <- .Fortran("delineate_basin", 
                        as.integer(nx), 
                        as.integer(ny), 
                        as.integer(nseeds), 

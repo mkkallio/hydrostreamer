@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generates neighbour information from a connected, directed river network. — river_network • hydrostreamer</title>
+<title>Combines runoff in HS* objects — combine_runoff • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,11 @@
 
 
 
-<meta property="og:title" content="Generates neighbour information from a connected, directed river network. — river_network" />
+<meta property="og:title" content="Combines runoff in HS* objects — combine_runoff" />
 
-<meta property="og:description" content="The function adds connectivity information to the input river object. The function assumes 
-that the input river is a &quot;clean&quot; river network: connected segments share a node at the start or 
-end of the segment. Digitizing direction is required to be the direction of flow." />
+<meta property="og:description" content="The function provides the ability to combine runoff from HSgrid, 
+HSweights, HSrunoff, or HSflow using user provided
+weights. Function can process several input weight sets at once." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -111,61 +111,61 @@ end of the segment. Digitizing direction is required to be the direction of flow
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generates neighbour information from a connected, directed river network.</h1>
+    <h1>Combines runoff in HS* objects</h1>
     
-    <div class="hidden name"><code>river_network.Rd</code></div>
+    <div class="hidden name"><code>combine_runoff.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The function adds connectivity information to the input <em>river</em> object. The function assumes 
-that the input river is a "clean" river network: connected segments share a node at the start or 
-end of the segment. Digitizing direction is required to be the direction of flow.</p>
+    <p>The function provides the ability to combine runoff from <code>HSgrid</code>, 
+<code>HSweights</code>, <code>HSrunoff</code>, or <code>HSflow</code> using user provided
+weights. Function can process several input weight sets at once.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>river_network</span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>combine_runoff</span>(<span class='no'>HS</span>, <span class='kw'>weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>river</th>
-      <td><p>An 'sf' linestring feature representing a river network.</p></td>
+      <th>HS</th>
+      <td><p>An <code>HS*</code> object</p></td>
     </tr>
     <tr>
-      <th>riverID</th>
-      <td><p>A character string which specifies the name of the column in 
-<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
-    </tr>
-    <tr>
-      <th>verbose</th>
-      <td><p>Whether or not print progress indicators.</p></td>
+      <th>weights</th>
+      <td><p>A vector of weights with the same length as the number of
+runoff timeseries in <code>HS</code>, or a list of weight vectors.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns the river network with class 'HSnetwork' with the following attributes:</p><ul>
-<li><p>riverID: Unique (renamed) river segment identifier.</p></li>
-<li><p>PREVIOUS: a list of riverID(s) of the previous river segment(s).</p></li>
-<li><p>NEXT: riverID of the segment where the river flows to.</p></li>
-<li><p>DOWNSTREAM: A list of riverID(s) of all the river segments downstream for the current segment.</p></li>
-<li><p>UP_SEGMENTS: the number of river segments upstream.</p></li>
-</ul>
+    <p>Returns the input <code>HS</code> object where runoff timeseries is 
+  replaced by the the combined timeseries'.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
+    <p>If a named list of weights is provided to the function, their names will be 
+preserved in the output. Otherwise the combinations are named in a running
+order.</p>
+<p>Note that if the timeseries of dates is different in each runoff timeseries
+in the input, the output includes only those dates which are present in 
+every input timeseries.</p>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><span class='co'># NOT RUN {</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>hydrostreamer</span>)
+  <span class='no'>weights</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>0.2</span>,<span class='fl'>0.2</span>,<span class='fl'>0.3</span>,<span class='fl'>0.3</span>,<span class='fl'>0</span>)
+  <span class='no'>combined</span> <span class='kw'>&lt;-</span> <span class='fu'>combine_runoff</span>(<span class='no'>HSgrid</span>, <span class='no'>weights</span>)
 
-<span class='co'># load data</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>river</span>)
-
-<span class='no'>routed_river</span> <span class='kw'>&lt;-</span> <span class='fu'>river_network</span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>, <span class='kw'>verbose</span><span class='kw'>=</span><span class='fl'>TRUE</span>)
-
+  <span class='no'>listweights</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/list'>list</a></span>(<span class='kw'>weights1</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>0.2</span>,<span class='fl'>0.2</span>,<span class='fl'>0.3</span>,<span class='fl'>0.3</span>,<span class='fl'>0</span>),
+                  <span class='kw'>weights2</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>0.1</span>,<span class='fl'>0.2</span>,<span class='fl'>0.3</span>,<span class='fl'>0.2</span>,<span class='fl'>0.2</span>),
+                  <span class='kw'>thirdw</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='fl'>0</span>,<span class='fl'>0</span>,<span class='fl'>0</span>,<span class='fl'>0.5</span>,<span class='fl'>0.5</span>))
+ <span class='no'>combined2</span> <span class='kw'>&lt;-</span> <span class='fu'>combine_runoff</span>(<span class='no'>HSgrid</span>, <span class='no'>listweights</span>)
 <span class='co'># }</span><div class='input'>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
@@ -174,6 +174,8 @@ end of the segment. Digitizing direction is required to be the direction of flow
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
       
       <li><a href="#examples">Examples</a></li>
     </ul>

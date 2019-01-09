@@ -5,17 +5,22 @@
 \title{Compute weights for river catchment areas within the runoff area 
 features.}
 \usage{
-compute_area_weights(basins, grid, riverID = "riverID", gridID = "gridID")
+compute_area_weights(basins, HSgrid, riverID = "riverID",
+  gridID = "gridID")
 }
 \arguments{
 \item{basins}{An 'sf' polygon feature specifying the river segment 
 specific catchments.}
 
+\item{HSgrid}{A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.}
+
 \item{riverID}{A character string which specifies the name of the column in 
 \code{river} containing unique river network identifiers. Defaults to "riverID".}
+
+\item{gridID}{Column in HSgrid with unique IDs.}
 }
 \value{
-Returns an 'sf' polygon feature (a union of basins, and grid) 
+Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
   with attributes:
   \itemize{
     \item \emph{ID}. Unique ID of the feature.
@@ -32,8 +37,8 @@ Returns an 'sf' polygon feature (a union of basins, and grid)
 }
 \description{
 Computes weights for each individual river segment specific catchments 
-falling in the areal units of the runoff \emph{grid}. Function first 
-takes a union between \emph{basins} and \emph{grid} (creating new 
+falling in the areal units of the runoff \emph{HSgrid}. Function first 
+takes a union between \emph{basins} and \emph{HSgrid} (creating new 
 catchment units which fall inside only one runoff unit), and calculating 
 the area for each individual catchment unit. The weight is assigned by 
 dividing the area of sub-catchment with the area of runoff unit.

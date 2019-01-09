@@ -6,8 +6,11 @@
 #' and grid with \code{\link{raster_to_HSgrid}}.
 #' 
 #' @param river A river network as an \code{sf LINESTGRING} object
-#' @param weights Weights with riverID, gridID and weight information.
-#' @param grid A \code{HSgrid} object.
+#' @param weights A data.frame with columns "riverID" in "gridID", and "weight"
+#'   corresponding to riverID in \code{river}, gridID in \code{HSgrid} and 
+#'   a numeric weight.
+#' @param HSgrid A \code{HSgrid} object.
+#' @inheritParams compute_HSweights
 #' 
 #' @return Returns a \code{HSweights} object, which is a list of three 
 #'   components:

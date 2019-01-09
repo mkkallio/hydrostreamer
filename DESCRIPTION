@@ -1,9 +1,10 @@
 Package: hydrostreamer
 Type: Package
 Title: A package for downscaling distributed runoff products in to 
-  explicit river segments.
-Version: 0.3.1
+  explicit river segments
+Version: 0.3.2
 Date: 2018-09-17
+Author: Marko Kallio
 Authors@R: person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 
                   comment = c(ORCID = "0000-0002-6917-7790"))
@@ -19,29 +20,27 @@ Depends:
 Encoding: UTF-8
 Imports:
     dplyr,
+    hydroGOF,
     geosphere,
     lwgeom,
     methods,
-    raster,
     sf,
     tibble,
-    units,
     rgdal,
     lubridate,
     ggplot2,
     quadprog,
-    hydroGOF
+    ForecastComb,
+    forecast,
+    tidyr
 Suggests:
     knitr,
     rmarkdown,
-    plotly
+    plotly,
+    raster
 LazyData: true
 License: MIT + file LICENSE
 URL: https://mkkallio.github.io/hydrostreamer/
 BugReports: https://github.com/mkkallio/hydrostreamer/issues
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
-
-
-
-
+RoxygenNote: 6.1.1

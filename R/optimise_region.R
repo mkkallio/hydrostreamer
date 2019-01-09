@@ -60,6 +60,8 @@ optimise_region <- function(HSrunoff,
                            ...,
                            verbose = FALSE) {
 
+    . <- NULL
+    
     start <- Sys.time()
     if(verbose) message("Initializing..")
     river <- HSrunoff$river

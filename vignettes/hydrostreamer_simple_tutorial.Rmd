@@ -29,8 +29,8 @@ Fictional example data is provided with the package for tutorial purposes. It co
 
 ```{r message=FALSE, warning=FALSE}
 library(sf)
-library(raster)
 library(hydrostreamer)
+library(raster)
 library(lubridate)
 library(rgdal)
 library(dplyr)
@@ -40,7 +40,7 @@ data(basin)
 runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
 
 plot(runoff[[1]])
-plot(st_geometry(river), add=TRUE)
+plot(st_geometry(river))
 plot(st_geometry(basin), add=TRUE)
 ```
 

@@ -5,16 +5,16 @@
 
 #' @export
 print.HSgrid <- function(x,...) {
-    print(HSgrid[["grid"]])
+    print(x[["grid"]])
 }
 
 #' @export
 plot.HSgrid <- function(x, ...) {
-    plot(HSgrid[["grid"]], ...)
+    plot(x[["grid"]], ...)
 }
 
 #' @export
 summary.HSgrid <- function(object, ...) {
-    print(HSgrid[["grid"]])
-    print(summary(HSgrid[["runoff"]][[1]]))
+    print(object[["grid"]])
+    print(summary(object[["runoff"]][[1]]))
 }
