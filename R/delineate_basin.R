@@ -58,8 +58,10 @@ delineate_basin <- function(outlets,
     nseeds <- nrow(outlets)
     drdir <- raster::values(drain.dir)
     delbas <- vector("numeric", raster::ncell(drain.dir))
+    delbas[outlets$cell] <- ID
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
-    delbas <- .Fortran("delineate_basin", 
+    
+    delbas <- .Fortran("delineate", 
                        as.integer(nx), 
                        as.integer(ny), 
                        as.integer(nseeds), 
@@ -74,8 +76,7 @@ delineate_basin <- function(outlets,
     
     
     if (output %in% c("vector","v")) {
-        if (verbose) message("Converting to vector. This may take considerable 
-                             amount of time.")
+        if (verbose) message("Converting to vector. This may take long.")
         
         # count cells in each basin
         ncells <- rep(0, length(ID))
@@ -91,9 +92,9 @@ delineate_basin <- function(outlets,
         delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
             sf::st_as_sf()
         names(delbas)[1] <- "riverID"
-        areas <- sf::st_area(delbas)
-        cols <- cbind(riverID = ID, NCELLS = ncells, AREA_M2 = areas)
+        cols <- cbind(riverID = ID, NCELLS = ncells)
         delbas <- merge(delbas, cols)
+        delbas$AREA_M2 <- sf::st_area(delbas)
     }
     
     if(output %in% c("raster", "r")) {

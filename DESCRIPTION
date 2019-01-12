@@ -26,6 +26,7 @@ Imports:
     methods,
     sf,
     tibble,
+    raster,
     rgdal,
     lubridate,
     ggplot2,
@@ -36,8 +37,7 @@ Imports:
 Suggests:
     knitr,
     rmarkdown,
-    plotly,
-    raster
+    plotly
 LazyData: true
 License: MIT + file LICENSE
 URL: https://mkkallio.github.io/hydrostreamer/

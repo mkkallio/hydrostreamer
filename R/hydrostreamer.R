@@ -9,6 +9,7 @@
 #' river routing algorithms are also provided to estimate discharge at each 
 #' segment.
 #'
+#' @import raster
 #' @import hydroGOF
 #' @importFrom dplyr %>%
 #' @importFrom utils setTxtProgressBar
@@ -17,7 +18,6 @@
 #' @importFrom dplyr bind_rows
 #' @importFrom lubridate %m+%
 #' @importFrom methods hasArg
-#' @importFrom graphics plot
 #' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer

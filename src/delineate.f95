@@ -95,4 +95,9 @@ subroutine delineate(nx, ny, nseeds, seeds, basID, drdir, delbas)
 		end do
 	end do
 	
+	! make sure that seed cells belong to a basin of the seed
+	do i=1, nseeds(1)
+	 	delbas(seeds(i)) = basID(i)
+	end do 
+	
 end subroutine delineate
