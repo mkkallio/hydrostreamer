@@ -14,17 +14,16 @@ specific catchments.}
 
 \item{HSgrid}{A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.}
 
-\item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\item{riverID}{Column in \code{basins} containing unique IDs.}
 
-\item{gridID}{Column in HSgrid with unique IDs.}
+\item{gridID}{Column in  \code{HSgrid} with unique IDs.}
 }
 \value{
 Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
-  with attributes:
+  with added attributes (columns):
   \itemize{
     \item \emph{ID}. Unique ID of the feature.
-    \item \emph{riverID}. ID of the river each sub-catchment is 
+    \item \emph{riverID}. ID of the river segment each sub-catchment is 
       associated to.
     \item \emph{gridID}. ID of the runoff unit the sub-catchment 
       is contained in.
@@ -43,27 +42,4 @@ catchment units which fall inside only one runoff unit), and calculating
 the area for each individual catchment unit. The weight is assigned by 
 dividing the area of sub-catchment with the area of runoff unit.
 This function is called by \code{\link{compute_HSweights}}.
-}
-\examples{
-\dontrun{
-library(raster)
-library(hydrostreamer)
-
-# load data
-data(river)
-data(basin)
-runoff <- brick(system.file("extdata", "runoff.tif", 
-                            package = "hydrostreamer"))
-
-# create HSgrid
-grid <- polygrid_timeseries(grid, aoi=basin)
-
-# create basins
-basins <- river_voronoi(river, aoi=basin, riverID = "ID")
-
-# compute weights
-weighted_basins <- compute_area_weights(basins, grid, 
-                                        riverID="ID")
-}
-  
 }

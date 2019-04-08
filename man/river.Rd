@@ -6,13 +6,13 @@
 \title{Example river network}
 \format{An 'sf' LINESTRING object with one attribute.
 \describe{
-  \item{ID}{unique river segment ID}
+  \item{SEGMENT_ID}{unique ID}
   \item{geometry}{'sfc' geometry column}
 }}
 \usage{
 river
 }
 \description{
-A river network of 71 segments used in the vignette of hydrostreamer.
+A river network of 216 segments used in the vignette of hydrostreamer.
 }
 \keyword{datasets}

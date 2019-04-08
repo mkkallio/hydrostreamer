@@ -2,20 +2,22 @@
 % Please edit documentation in R/add_HSgrid.R
 \name{add_HSgrid}
 \alias{add_HSgrid}
-\title{Combine \code{HSgrid} objects or addnew runoff input from raster.}
+\title{Combine \code{HSgrid} objects or add new runoff input from raster.}
 \usage{
-add_HSgrid(HSgrid, from = NULL, raster = NULL, date = NULL,
-  timestep = NULL, aoi = NULL, name = NULL)
+add_HSgrid(HSgrid, from = NULL, rasters = NULL, date = NULL,
+  timestep = NULL, aoi = NULL, names = NULL)
 }
 \arguments{
 \item{HSgrid}{an existing \code{HSgrid} object.}
 
 \item{from}{A \code{HSgrid} object to add from. Optional.}
 
-\item{raster}{A Raster* object.}
+\item{rasters}{A raster object, or a list of raster objects, or a list of
+URIs to files readable by \code{raster} package.}
 
 \item{date}{Date of the first layer in \code{raster}, or a vector of dates 
-with the length of layers in \code{raster}.}
+with the length of layers in \code{raster}, or a list of vectors of dates,
+corresponding to the dates in each raster layer.}
 
 \item{timestep}{Length of timestep in raster. Currently supporting 
 \code{"hour"}, \code{"day"}, \code{"month"}. Only needed if \code{date} is
@@ -25,13 +27,14 @@ not a vector of dates.}
 'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
 recommended for all applications.}
 
-\item{name}{A name for the runoff timeseries. If \code{NULL},}
+\item{names}{A name (names) for the runoff timeserie(s).}
 }
 \value{
-Returns the input \code{HSgrid} object with added runoff.
+Returns the input \code{HSgrid} object with added columns in 
+  runoff_ts column.
 }
 \description{
-Combines the runoff lists from two HSgrid objects, or adds a new
-runoff table from a raster. \emph{Warning: The geometries of the
-combined grids must be identical.}
+Combines the \code{runoff_ts} columns from two HSgrid objects, or adds new
+runoff timeseries from a raster. **All** geometries in HSgrid must be present
+in the object to be added, or combination will not done.
 }

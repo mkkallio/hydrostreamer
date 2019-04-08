@@ -12,7 +12,8 @@ river_voronoi(river, aoi, riverID = "riverID", verbose = FALSE)
 \item{aoi}{An area of interest. 'sf' polygon object. Optional.}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. 
+Defaults to "riverID".}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
@@ -23,13 +24,14 @@ Returns an 'sf' polygon object, with a column "ID" corresponding
 \description{
 The function creates Voronoi diagram for each segment in a directed 
 connected river network (\code{sf LINESTRING}), where the Voronoi 
-polygons join together at network segment intersections.
+polygons join together at network segment intersections. The function 
+requires package \code{lwgeom} and will not work without it.
 }
 \details{
 Creating the segment Voronoi diagram is done in the following steps:
 \enumerate{
   \item Move starting and ending nodes forward or backwards (respectively) 
-  for a small amount to ensure there are no identical nodes.
+  for a small amount to ensure there are no identically placed nodes.
   \item Compute a Voronoi diagram from point cloud of river segment nodes.
   \item Union the individual polygons using river segment ID.
   \item Clip the polygons to the area of interest.

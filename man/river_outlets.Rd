@@ -12,21 +12,24 @@ river_outlets(river, drain.dir)
 \item{drain.dir}{A RasterLayer object of drainage directions.}
 }
 \value{
-Returns an 'sf' point object of identified raster cell centers. Includes all the attributes in the 
-given \code{river} object.
+Returns an 'sf' point object of identified raster cell centers. 
+Includes all the attributes in the given \code{river} object.
 }
 \description{
-The function identifies the coordinates of raster cells which are just upstream from river confluence
-points identified from a river network layer. The cell just upstream from confluence allows delineation
-of segment specific catchments.
+The function identifies the coordinates of raster cells which are just 
+upstream from river confluence points identified from a river network layer. 
+The cell just upstream from confluence allows delineation of segment specific
+catchments.
 }
 \details{
-The function logic is such that it looks at the last node-pair of each segment in the river network. The angle
-of the last node pair is computed, and the raster cell from where the last node-pair originated is identified. 
-Note that the logic of the function requires that the river network is derived from the same raster than the 
-drainage directions input to the function.
+The function logic is such that it looks at the last node-pair of each 
+segment in the river network. The angle of the last node pair is computed, 
+and the raster cell from where the last node-pair originated is identified. 
+Note that the logic of the function requires that the river network is 
+derived from the same raster than the drainage directions input to the 
+function.
 
-Note: Drainage directions must be in coded 1-128:
+Note: Drainage directions must be coded in 1-128:
 \itemize{
   \item{1}{:East}
   \item{2}{:Southeast}
@@ -37,10 +40,4 @@ Note: Drainage directions must be in coded 1-128:
   \item{64}{:North}
   \item{128}{:Northeast}
 }
-}
-\examples{
-\dontrun{
-# to be added
-}
- 
 }

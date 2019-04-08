@@ -67,7 +67,7 @@ This function is called by compute_HSweights." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -129,7 +129,7 @@ This function is called by <code><a href='compute_HSweights.html'>compute_HSweig
     </div>
 
     <pre class="usage"><span class='fu'>compute_river_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='kw'>seg_weights</span> <span class='kw'>=</span> <span class='st'>"length"</span>,
-  <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>split</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+  <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>split</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -156,14 +156,14 @@ numerical vector. See Details. Defaults to "length".</p></td>
     <tr>
       <th>split</th>
       <td><p>Whether or not to use <code><a href='split_river_with_grid.html'>split_river_with_grid</a></code> 
-before computing weights. Default is FALSE (assuming the river has already 
-been split)</p></td>
+before computing weights. Default is TRUE (assuming the river has not
+already been split)</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an 'sf' linestring feature with attributes:</p><ul>
+    <p>Returns an 'sf' linestring object with attributes:</p><ul>
 <li><p><em>ID</em>. Unique ID of the feature.</p></li>
 <li><p><em>riverID</em>. ID of the river each segment is associated to.</p></li>
 <li><p><em>gridID</em>. ID of the runoff unit the river segment is contained in.</p></li>
@@ -187,26 +187,6 @@ been split)</p></td>
 </ul>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='co'># NOT RUN {</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>raster</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>hydrostreamer</span>)
-
-<span class='co'># load data</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>river</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>basin</span>)
-<span class='no'>runoff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/raster/topics/brick'>brick</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.file'>system.file</a></span>(<span class='st'>"extdata"</span>, <span class='st'>"runoff.tif"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"hydrostreamer"</span>))
-
-<span class='co'># create HSgrid</span>
-<span class='no'>grid</span> <span class='kw'>&lt;-</span> <span class='fu'>polygrid_timeseries</span>(<span class='no'>grid</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>)
-
-<span class='co'># create basins</span>
-<span class='no'>basins</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='river_voronoi.html'>river_voronoi</a></span>(<span class='no'>river</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>)
-
-<span class='co'># compute weights</span>
-<span class='no'>weighted_basins</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='compute_area_weights.html'>compute_area_weights</a></span>(<span class='no'>basins</span>, <span class='no'>grid</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-<span class='co'># }</span><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -216,16 +196,14 @@ been split)</p></td>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#details">Details</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+          </ul>
 
   </div>
 </div>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

@@ -2,19 +2,25 @@
 % Please edit documentation in R/HSwrite.R
 \name{HSwrite}
 \alias{HSwrite}
-\title{Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer.}
+\title{Writes an HS object to disk.}
 \usage{
-HSwrite(x, filename, ...)
+HSwrite(x, filename, what = "geometry", ...)
 }
 \arguments{
-\item{x}{A \code{HSgrid}, \code{HSrunoff}, or a \code{HSflow} object.}
+\item{x}{A \code{HSgrid}, or a \code{HS} object.}
 
 \item{filename}{Filename to write to.}
+
+\item{what}{What to write. Accepts \code{"geometry"} for writing the river
+network or the runoff grid, or \code{"discharge_ts", "runoff_ts", 
+"control_ts"} for writing out a .csv table of the associated timeseries.}
 
 \item{...}{options passed to \code{\link[sf]{st_write}}.}
 }
 \description{
-Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer.
+Writes out \code{HS} objects in order to use them outside R. By default
+the function writes the geometry using \code{\link[sf]{st_write}}, but where
+list columns are modified since they cannot be written by st_write. 
+Alternatively the function can output a timeseries specified by the user 
+(runoff, discharge, or control).
 }

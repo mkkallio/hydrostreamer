@@ -33,10 +33,8 @@
 <meta property="og:title" content="Constructs a <code>HSgrid</code> object from given input — create_HSgrid" />
 
 <meta property="og:description" content="Creates a HSgrid from input where grid is a polygon grid
-representing the units of runoff. It must include a column 'gridID'
-with unique IDs. Runoff must contain column 'Date', and value for 
-runoff in columns, where the column name is the ID of the corresponding 
-polygon in grid." />
+representing the spatialunits of runoff, and /coderunoff is a data frame
+containing column 'Date', and where column names match the grid IDs." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -67,7 +65,7 @@ polygon in grid." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -120,15 +118,13 @@ polygon in grid." />
 
     <div class="ref-description">
     
-    <p>Creates a <code>HSgrid</code> from input where grid is a polygon grid
-representing the units of runoff. It must include a column 'gridID'
-with unique IDs. Runoff must contain column 'Date', and value for 
-runoff in columns, where the column name is the ID of the corresponding 
-polygon in grid.</p>
+    <p>Creates a <code>HSgrid</code> from input where <code>grid</code> is a polygon grid
+representing the spatialunits of runoff, and /coderunoff is a data frame
+containing column 'Date', and where column names match the grid IDs.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>create_HSgrid</span>(<span class='no'>grid</span>, <span class='no'>runoff</span>, <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"runoff"</span>)</pre>
+    <pre class="usage"><span class='fu'>create_HSgrid</span>(<span class='no'>grid</span>, <span class='no'>runoff</span>, <span class='kw'>gridID</span> <span class='kw'>=</span> <span class='st'>"gridID"</span>, <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"runoff_1"</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,6 +139,10 @@ polygon in grid.</p>
 correspond to specific polygons in <code>grid</code>.</p></td>
     </tr>
     <tr>
+      <th>gridID</th>
+      <td><p>Column name with unique IDs in <code>grid</code>.</p></td>
+    </tr>
+    <tr>
       <th>name</th>
       <td><p>Name of the runoff timeseries. If multiple runoff timeseries
 are added to the same <code>HSgrid</code> object using <code><a href='add_HSgrid.html'>add_HSgrid</a></code>, 
@@ -152,9 +152,12 @@ each timeseries must have a unique name, or else they are replaced.</p></td>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns a <code>HSgrid</code> object which is a list of:</p><ul>
-<li><p>grid: polygon grid with areal units of runoff</p></li>
-<li><p>runoff: a list of runoff values for each polygon.</p></li>
+    <p>Returns a <code>HSgrid</code> object with columns</p><ul>
+<li><p>gridID: unique ID</p></li>
+<li><p>area_m2: area in square meters.</p></li>
+<li><p>n_ts: number of runoff timeseries in the object.</p></li>
+<li><p>runoff_ts: a list column containing a <code>tsibble</code> of
+      runoff timeseries.</p></li>
 </ul>
 
     
@@ -173,7 +176,7 @@ each timeseries must have a unique name, or else they are replaced.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

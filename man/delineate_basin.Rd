@@ -5,7 +5,7 @@
 \title{Delineate multiple catchments from multiple input points}
 \usage{
 delineate_basin(outlets, drain.dir, riverID = "riverID",
-  output = "vector", verbose = FALSE)
+  output = "vector", use_rsaga = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{outlets}{An 'sf' point object, with locations of the catchment 
@@ -17,6 +17,9 @@ outlets for delineation. Obtained e.g. with \code{\link{river_outlets}}}
 
 \item{output}{Whether to return a raster or vectors of delineated catchments. 
 Accepts "vector", "v", "raster", or "r".}
+
+\item{use_rsaga}{Whether to try using RSAGA for basin vectorization or not.
+Even if TRUE, requires RSAGA environment to be found.}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
@@ -43,4 +46,7 @@ given.
 # to be added
 }
 
+}
+\author{
+Vili Virkki, Marko Kallio
 }

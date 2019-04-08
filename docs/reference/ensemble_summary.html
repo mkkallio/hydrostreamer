@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes summaries from hydrostreamer::HS* objects — ensemble_summary • hydrostreamer</title>
+<title>Computes summary timeseries from HS* objects — ensemble_summary • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,11 @@
 
 
 
-<meta property="og:title" content="Computes summaries from hydrostreamer::HS* objects — ensemble_summary" />
+<meta property="og:title" content="Computes summary timeseries from HS* objects — ensemble_summary" />
 
 <meta property="og:description" content="Allows easy computation of summaries across runoff datasets with user defined 
 functions. The functions provided are run either individually for, or across, 
-each runoff/downscaled/flow sets in an HS* object." />
+each runoff/downscaled/discharge timeseries in an HS* object." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -65,7 +65,7 @@ each runoff/downscaled/flow sets in an HS* object." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -111,7 +111,7 @@ each runoff/downscaled/flow sets in an HS* object." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes summaries from hydrostreamer::HS* objects</h1>
+    <h1>Computes summary timeseries from HS* objects</h1>
     
     <div class="hidden name"><code>ensemble_summary.Rd</code></div>
     </div>
@@ -120,46 +120,61 @@ each runoff/downscaled/flow sets in an HS* object." />
     
     <p>Allows easy computation of summaries across runoff datasets with user defined 
 functions. The functions provided are run either individually for, or across, 
-each runoff/downscaled/flow sets in an HS* object.</p>
+each runoff/downscaled/discharge timeseries in an HS* object.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>ensemble_summary</span>(<span class='no'>HS</span>, <span class='kw'>summarise_over_all</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+    <pre class="usage"><span class='fu'>ensemble_summary</span>(<span class='no'>HS</span>, <span class='kw'>summarise_over_timeseries</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>aggregate_monthly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>funs</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"min"</span>, <span class='st'>"mean"</span>, <span class='st'>"median"</span>, <span class='st'>"max"</span>),
-  <span class='no'>...</span>)</pre>
+  <span class='kw'>drop</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='no'>...</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>HS</th>
-      <td><p>Any HS* object, or a list of tables with column <code>Date</code>.</p></td>
+      <td><p><code>HS</code> object, or a list of data frames with column <code>Date</code>.</p></td>
     </tr>
     <tr>
-      <th>summarise_over_all</th>
-      <td><p>Compute functions individually, or across all data.
-Defaults to <code>TRUE</code>.</p></td>
+      <th>summarise_over_timeseries</th>
+      <td><p>Apply function(s) to each column-wise (to
+each timeseries separately, <code>TRUE</code>), or row-wise for each date in 
+timeseries(<code>FALSE</code>, default).</p></td>
     </tr>
     <tr>
       <th>aggregate_monthly</th>
-      <td><p>Summarise over the timestamps in data, or aggregate
-results to the 12 months of the year.</p></td>
+      <td><p>Apply results to the 12 months of the year. Defaults
+to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>funs</th>
-      <td><p>Functions to evaluate. By default, computes <code>min, mean, median and 
-max.</code></p></td>
+      <td><p>Functions to evaluate. By default, computes <code>min, mean, 
+median and max</code>.</p></td>
+    </tr>
+    <tr>
+      <th>drop</th>
+      <td><p>Drop existing timeseries in <code>runoff_ts</code>, <code>discharge_ts</code>,
+or not.</p></td>
     </tr>
     <tr>
       <th>...</th>
       <td><p>Additional arguments passed to <code>funs</code>.</p></td>
     </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Indicate progress, or not. Defaults to <code>FALSE</code>.</p></td>
+    </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns the input HS* object, or a list, where runoff/downscaled/discharge
-  is replaced with the computed summaries.</p>
+    <p>Returns the input <code>HS</code> object, or a list, where 
+  runoff/downscaled/discharge is replaced with the computed summaries.</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Applicable functions take a vector of numeric values as input, and return 
+a single numerical value.</p>
     
 
   </div>
@@ -169,6 +184,8 @@ max.</code></p></td>
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
+
+      <li><a href="#details">Details</a></li>
           </ul>
 
   </div>
@@ -176,7 +193,7 @@ max.</code></p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

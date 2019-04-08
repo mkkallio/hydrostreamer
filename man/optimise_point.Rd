@@ -2,23 +2,28 @@
 % Please edit documentation in R/optimise_point.R
 \name{optimise_point}
 \alias{optimise_point}
-\title{Computes optimal estimate from multiple input discharge timeseries}
+\title{Computes optimal estimate at a specific river segment}
 \usage{
-optimise_point(HSflow, HSobs, optim_method = "CLS", train = 0.5,
-  bias_correction = FALSE)
+optimise_point(HS, optim_method = "CLS", combination = "ts",
+  sampling = "series", train = 0.5, bias_correction = FALSE)
 }
 \arguments{
-\item{HSflow}{An \code{HSflow} object}
-
-\item{HSobs}{An \code{HSobs} object containing observations at the
-locations to optimise.}
+\item{HS}{An \code{HS} object with observation_ts and discharge_ts}
 
 \item{optim_method}{Method used to optimise. Default uses constrained
 linear regression. See details.}
 
+\item{combination}{Whether to do the forecast combination for the entire
+timeseries, or each month of the year individually. Accepts 
+\code{"timeseries"}, \code{"ts"}, \code{"monthly"} or \code{"mon"}.}
+
+\item{sampling}{How to sample training and testing periods. \code{"series"}
+for training serially from beginning, or \code{"random"} for a random
+sample for both training and testing periods.}
+
 \item{train}{The share of timeseries used for training period.}
 
-\item{bias_correction}{Apply (constant) bias correction. Defaults to FALSE.}
+\item{bias_correction}{Apply bias correction. Defaults to FALSE.}
 }
 \value{
 Returns an object of class \code{HSoptim}, which is a list of
@@ -39,8 +44,9 @@ results from observation stations. Each list item contains:
 }
 }
 \description{
-Function performs timeseries optimisation of discharge estimates against
-observed streamflow timeseries at specific river segments.
+Function performs data assimilation by combining timeseries of downscaled 
+discharge estimates against observed streamflow timeseries at all river 
+segments with observations.
 }
 \details{
 Optimisation of the input timeseries against observations makes use of 
@@ -53,6 +59,6 @@ constraints the coefficients to add to unity, and all weights are between
 find a unique solution. In those cases, you can try the factorized
 CLS.
 
-If bias correction is set to TRUE, a constant bias correction is applied
-to the entire timeseries so that mean error in the training period is 0.
+If bias correction is set to TRUE, bias correction is applied
+to the entire timeseries so that bias % in the training period is 0.
 }

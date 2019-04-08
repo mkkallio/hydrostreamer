@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Apply river routing based on selected routing method. — accumulate_runoff • hydrostreamer</title>
+<title>Apply river routing — accumulate_runoff • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,10 +30,10 @@
 
 
 
-<meta property="og:title" content="Apply river routing based on selected routing method. — accumulate_runoff" />
+<meta property="og:title" content="Apply river routing — accumulate_runoff" />
 
 <meta property="og:description" content="Apply river routing using any of the provided methods. The function takes 
-HSrunoff object as an input." />
+HS object with runoff timeseries as an input." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -64,7 +64,7 @@ HSrunoff object as an input." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -110,7 +110,7 @@ HSrunoff object as an input." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Apply river routing based on selected routing method.</h1>
+    <h1>Apply river routing</h1>
     
     <div class="hidden name"><code>accumulate_runoff.Rd</code></div>
     </div>
@@ -118,19 +118,19 @@ HSrunoff object as an input." />
     <div class="ref-description">
     
     <p>Apply river routing using any of the provided methods. The function takes 
-<code>HSrunoff</code> object as an input.</p>
+<code>HS</code> object with runoff timeseries as an input.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>accumulate_runoff</span>(<span class='no'>HSrunoff</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"instant"</span>, <span class='st'>"simple"</span>, <span class='st'>"muskingum"</span>),
-  <span class='no'>...</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>accumulate_runoff</span>(<span class='no'>HS</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/c'>c</a></span>(<span class='st'>"instant"</span>, <span class='st'>"simple"</span>, <span class='st'>"muskingum"</span>), <span class='no'>...</span>,
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>HSrunoff</th>
-      <td><p>A 'HSrunoff' object obtained by <code><a href='downscale_runoff.html'>downscale_runoff</a></code></p></td>
+      <th>HS</th>
+      <td><p>A 'HS' object obtained by <code><a href='downscale_runoff.html'>downscale_runoff</a></code></p></td>
     </tr>
     <tr>
       <th>method</th>
@@ -142,31 +142,33 @@ HSrunoff object as an input." />
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Whether or not print progress indicators.</p></td>
+      <td><p>Whether or not to print progress information. Defaults to 
+<code>FALSE</code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an object of class <code>HSflow</code>) with</p><ul>
-<li><p><code>river</code> River network inherited from input <code>HSrunoff</code>.</p></li>
-<li><p><code>discharge</code> A list of tables with estimated discharge for each 
-    river segment and each timestep.</p></li>
-<li><p><code>Routing_Method</code> The algorithm used for routing.</p></li>
-</ul>
-
+    <p>Returns the input object <code>HS</code>) with an added list column
+  <code>discharge_ts</code> containing routed discharge estimates for each river
+   segment.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>There are currently three routing algorithms implemented: <code>'instant'</code>aneous
-flow, where all runoff is routed through the entire river network at every 
-timestep. There is no lag in instantaneous routing, which  means it may not be
-reasonable for large river networks. 'simple' river routing contains a simple lag 
-based on given flow velocity and river segment lengths. 'muskingum' implements 
-a muskingum river routing algorithm where k (storage) parameter is computed from 
-given flow velocity and river segment length. Large difference in timesteps of 
-runoff may result in computational instability. See further details from the 
-documentation of each method.</p>
+    <p>There are currently three routing algorithms implemented: 
+<code>'instant'</code>aneous flow, where all runoff is routed through the entire 
+river network at every timestep. There is no lag in instantaneous routing, 
+which  means it may not be reasonable for large river networks. 
+<code>'simple'</code> river routing contains a simple lag based on given flow 
+velocity and river segment lengths. <code>'muskingum'</code> implements a muskingum
+river routing algorithm where k (storage) parameter is computed from given 
+flow velocity and river segment length. Large difference in timesteps of 
+runoff may result in computational instability. See further details from 
+the documentation of each method:</p><ul>
+<li><p><code><a href='accumulate_runoff_instant.html'>accumulate_runoff_instant</a></code></p></li>
+<li><p><code><a href='accumulate_runoff_simple.html'>accumulate_runoff_simple</a></code></p></li>
+<li><p><code><a href='accumulate_runoff_muskingum.html'>accumulate_runoff_muskingum</a></code></p></li>
+</ul>
     
 
   </div>
@@ -185,7 +187,7 @@ documentation of each method.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

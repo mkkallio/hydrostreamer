@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object. — raster_to_HSgrid • hydrostreamer</title>
+<title>Create HSgrid from a raster — raster_to_HSgrid • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,11 +30,10 @@ an 'sf' polygon object. — raster_to_HSgrid • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object. — raster_to_HSgrid" />
+<meta property="og:title" content="Create HSgrid from a raster — raster_to_HSgrid" />
 
-<meta property="og:description" content="Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object." />
+<meta property="og:description" content="Polygonizes a raster and adds the values in the raster stack to a data frame
+in list column runoff_ts." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -66,7 +64,7 @@ an 'sf' polygon object." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -112,33 +110,34 @@ an 'sf' polygon object." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object.</h1>
+    <h1>Create HSgrid from a raster</h1>
     
     <div class="hidden name"><code>raster_to_HSgrid.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object.</p>
+    <p>Polygonizes a raster and adds the values in the raster stack to a data frame
+in list column <code>runoff_ts</code>.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>raster_to_HSgrid</span>(<span class='no'>raster</span>, <span class='no'>date</span>, <span class='kw'>timestep</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>name</span> <span class='kw'>=</span> <span class='st'>"runoff1"</span>)</pre>
+    <pre class="usage"><span class='fu'>raster_to_HSgrid</span>(<span class='no'>rasters</span>, <span class='no'>date</span>, <span class='kw'>timestep</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>raster</th>
-      <td><p>A Raster* object.</p></td>
+      <th>rasters</th>
+      <td><p>A raster object, or a list of raster objects, or a list of
+URIs to files readable by <code>raster</code> package.</p></td>
     </tr>
     <tr>
       <th>date</th>
       <td><p>Date of the first layer in <code>raster</code>, or a vector of dates 
-with the length of layers in <code>raster</code>.</p></td>
+with the length of layers in <code>raster</code>, or a list of vectors of dates,
+corresponding to the dates in each raster layer.</p></td>
     </tr>
     <tr>
       <th>timestep</th>
@@ -153,17 +152,18 @@ not a vector of dates.</p></td>
 recommended for all applications.</p></td>
     </tr>
     <tr>
-      <th>name</th>
-      <td><p>A name for the runoff timeseries. If <code>NULL</code>,</p></td>
+      <th>names</th>
+      <td><p>A name (names) for the runoff timeserie(s).</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Print progress indication or not.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an 'sf' polygon object, with each polygon representing 
-  a raster cell, and which has been cropped to the area of interest. 
-  Columns are ID, area of the polygon in m^2, and each timestep as separate
-  column. Output has class 'HSgrid'.</p>
+    <p>See <code><a href='create_HSgrid.html'>create_HSgrid</a></code>.</p>
     
 
   </div>
@@ -180,7 +180,7 @@ recommended for all applications.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

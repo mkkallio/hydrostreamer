@@ -2,41 +2,44 @@
 % Please edit documentation in R/accumulate_runoff.R
 \name{accumulate_runoff}
 \alias{accumulate_runoff}
-\title{Apply river routing based on selected routing method.}
+\title{Apply river routing}
 \usage{
-accumulate_runoff(HSrunoff, method = c("instant", "simple", "muskingum"),
-  ..., verbose = FALSE)
+accumulate_runoff(HS, method = c("instant", "simple", "muskingum"), ...,
+  verbose = FALSE)
 }
 \arguments{
-\item{HSrunoff}{A 'HSrunoff' object obtained by \code{\link{downscale_runoff}}}
+\item{HS}{A 'HS' object obtained by \code{\link{downscale_runoff}}}
 
 \item{method}{Character string specifying the method to be used.}
 
 \item{...}{Arguments passed to the routing algorithm.}
 
-\item{verbose}{Whether or not print progress indicators.}
+\item{verbose}{Whether or not to print progress information. Defaults to 
+\code{FALSE}.}
 }
 \value{
-Returns an object of class \code{HSflow}) with 
-\itemize{
-  \item \code{river} River network inherited from input \code{HSrunoff}.
-  \item \code{discharge} A list of tables with estimated discharge for each 
-    river segment and each timestep.
-  \item \code{Routing_Method} The algorithm used for routing.
-}
+Returns the input object \code{HS}) with an added list column
+  \code{discharge_ts} containing routed discharge estimates for each river
+   segment.
 }
 \description{
 Apply river routing using any of the provided methods. The function takes 
-\code{HSrunoff} object as an input.
+\code{HS} object with runoff timeseries as an input.
 }
 \details{
-There are currently three routing algorithms implemented: \code{'instant'}aneous
-flow, where all runoff is routed through the entire river network at every 
-timestep. There is no lag in instantaneous routing, which  means it may not be
-reasonable for large river networks. 'simple' river routing contains a simple lag 
-based on given flow velocity and river segment lengths. 'muskingum' implements 
-a muskingum river routing algorithm where k (storage) parameter is computed from 
-given flow velocity and river segment length. Large difference in timesteps of 
-runoff may result in computational instability. See further details from the 
-documentation of each method.
+There are currently three routing algorithms implemented: 
+\code{'instant'}aneous flow, where all runoff is routed through the entire 
+river network at every timestep. There is no lag in instantaneous routing, 
+which  means it may not be reasonable for large river networks. 
+\code{'simple'} river routing contains a simple lag based on given flow 
+velocity and river segment lengths. \code{'muskingum'} implements a muskingum
+river routing algorithm where k (storage) parameter is computed from given 
+flow velocity and river segment length. Large difference in timesteps of 
+runoff may result in computational instability. See further details from 
+the documentation of each method:
+\itemize{
+  \item \code{\link{accumulate_runoff_instant}}
+  \item \code{\link{accumulate_runoff_simple}}
+  \item \code{\link{accumulate_runoff_muskingum}}
+}
 }

@@ -27,15 +27,15 @@ create_HSweights <- function(river, weights, HSgrid, riverID = "riverID") {
     test <- all(c(riverID,"NEXT", "PREVIOUS") %in% colnames(river))
     if (!test) stop("river input must have columns riverID, NEXT, PREVIOUS")
     
-    test <- all(c("riverID", "gridID", "weight") %in% colnames(weights))
-    if (!test) stop("river input must have columns riverID, gridID, weight")
+    test <- all(c("riverID", "gridID", "weights") %in% colnames(weights))
+    if (!test) stop("weights input must have columns riverID, gridID, weights")
     
-    test <- class(HSgrid) == "HSgrid"
+    test <- "HSgrid" %in% class(HSgrid)
     if (!test) stop("grid input must be of class HSgrid")
     
     output <- list(river = river,
                    weights = weights,
                    grid = HSgrid)
-    class(output) <- c("HSweights", class(output))
-    
+    output <- assign_class(output, "HSweights")
+    return(output)
 }

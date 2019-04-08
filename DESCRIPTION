@@ -1,30 +1,33 @@
 Package: hydrostreamer
 Type: Package
-Title: A package for downscaling distributed runoff products in to 
+Title: A package for downscaling distributed runoff products on to 
   explicit river segments
-Version: 0.3.2
-Date: 2018-09-17
+Version: 0.4.0
+Date: 2019-04-08
 Author: Marko Kallio
-Authors@R: person("Marko", "Kallio", email = "marko@markokallio.fi", 
+Authors@R: c(person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 
-                  comment = c(ORCID = "0000-0002-6917-7790"))
-Maintainer: The package maintainer <marko@markokallio.fi>
-Description: hydrostreamer provides functions to downscale distributed runoff data 
-  into an explicitly represented river network. Downscaling is done by the spatial 
-  relationship between an areal unit of runoff and an overlaid river network. 
-  Value of the runoff unit is divided among intersecting river segments. hydrostreamer
-  provides several methods for the assignment. Simple river routing algorithms 
-  are also provided to estimate discharge at each segment.
+                  comment = c(ORCID = "0000-0002-6917-7790")),
+             person("Vili", "Virkki", email = "vili.virkki@aalto.fi",
+                  role = c("aut"),
+                  comment = c(ORCID = "0000-0002-2603-3420")))
+Maintainer: Marko Kallio <marko@markokallio.fi>
+Description: hydrostreamer provides functions to downscale distributed runoff 
+  data on to an explicitly represented river network. Downscaling is done by the 
+  spatial relationship between an areal unit of runoff and an overlaid river 
+  network. Value of the runoff unit is divided among intersecting river segments
+  using weighted interpolation. hydrostreamer provides several methods for the 
+  assignment. Simple river routing algorithms are also provided to estimate 
+  discharge at arbitrary segment.
 Depends: 
-    R (>= 3.4.0)
+    R (>= 3.4.0),
+    sf
 Encoding: UTF-8
 Imports:
     dplyr,
     hydroGOF,
     geosphere,
-    lwgeom,
     methods,
-    sf,
     tibble,
     raster,
     rgdal,
@@ -33,11 +36,15 @@ Imports:
     quadprog,
     ForecastComb,
     forecast,
-    tidyr
+    tidyr,
+    tsibble,
+    stringr
 Suggests:
     knitr,
     rmarkdown,
-    plotly
+    lwgeom,
+    readr,
+    RSAGA
 LazyData: true
 License: MIT + file LICENSE
 URL: https://mkkallio.github.io/hydrostreamer/

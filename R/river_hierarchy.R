@@ -1,9 +1,8 @@
 #' Computes river hierarchies for a HSnetwork object.
 #'
-#' Computes river hierarchies from a routed river network (\emph{HSnetwork} 
-#' object), or from an unrouted, connected river network. In case the input 
-#' river network is unrouted, \code{\link{river_network}} is run before 
-#' computing river hierarchy.
+#' Computes river hierarchies from a routed river network, or from an unrouted,
+#'  connected river network. In case the input river network is unrouted, 
+#'  \code{\link{river_network}} is run before computing river hierarchy.
 #'
 #' @param type Type hierarchy to compute. Currently only \code{strahler} 
 #'   stream order implemented.
@@ -24,7 +23,7 @@
 #' river <- river_hierarchy(river, riverID="ID")
 #' 
 #' # with routed network
-#' routed_river <- flow_network(river, riverID = "ID") %>%
+#' routed_river <- river_network(river, riverID = "ID") %>%
 #'     river_hierarchy()
 #' }
 #' 
@@ -50,9 +49,9 @@ river_hierarchy <- function(river, type="strahler", riverID = "riverID") {
     rounds_with_no_edits <- 0
     edits <- 1
     
-    while (rounds_with_no_edits < 5) {
+    while (rounds_with_no_edits < 2) {
         if (edits == 0) rounds_with_no_edits <- rounds_with_no_edits+1
-        if (rounds_with_no_edits == 5) break
+        if (rounds_with_no_edits == 2) break
         edits <- 1
         # run for every river segment
         for (seg in 1:n_seg) {

@@ -1,15 +1,13 @@
-#' Computes weights to assign runoff from runoff area features to the 
-#' supplied river network.
-#' 
+#' Computes weights \code{HSweights} from \code{HSgrid} and a river network
 #'   
 #' The function computes weights either based on catchment areas (polygons), 
 #' or line segments which intersect a polygon with runoff information. Weights 
 #' are assigned so that the sum of weights for area or line features within a 
 #' polygon equal to 1.
 #' 
-#' The river network needs to be connected, so that connected river segments 
-#' share a node, and all linestrings are cut at segment intersections (a "
-#' clean" network).
+#' The river network needs to be a "clean", connected network. This means that 
+#' connected river segments share a node at the point of confluence, and all 
+#' linestrings are cut at segment intersections.
 #'
 #' Weights should be one of the following: "equal", "length", "strahler", "area", 
 #' or a numeric vector which specifies the weight for each river segment. 
@@ -27,31 +25,27 @@
 #'   catchment area falling inside a polygon. See more details below.
 #' }
 #' 
-#' If line-based weights (equal, length, strahler, user specified vector) are used, 
-#' the river network is split at grid cell boundaries before determining 
+#' If line-based weights (equal, length, strahler, user specified vector) are 
+#' used, the river network is split at grid cell boundaries before determining 
 #' polygon-segment relationship.
 #'
 #' "area" weights can be used when catchment-based weighting is desired. If no 
-#' further data is supplied, the function computes a Voronoi diagram from the river 
-#' network (see \code{\link{river_voronoi}} for details). By providing a drainage 
-#' direction raster, segment specific catchment are delineated based on it (see
-#' \code{\link{delineate_basin}} for details). If the basins are known, they can be 
-#' supplied which allows skipping the delineation step entirely.
+#' further data is supplied, the function computes a Voronoi diagram from the 
+#' river network (see \code{\link{river_voronoi}} for details). If the basins 
+#' are known, they can be supplied which allows skipping the delineation step 
+#' entirely.
 #'
 #' Area of interest is optional. If provided, the river network will be clipped using 
 #' the supplied AoI.
 #'
-#' @param river An 'sf' linestring feature representing a river network.
 #' @param HSgrid  A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.
+#' @param river An 'sf' linestring feature representing a river network.
 #' @param weights A character vector specifying type of weights, or a vector of user-
 #'   specified weights. See Details.
 #' @param aoi An area of interest. 'sf' polygon object. Optional.
 #' @param basins An 'sf' polygon object. If weights are set to "area", providing basins 
 #'   skips the delineation process. ID column must have the name as \code{riverID} See 
 #'   Details. Optional.
-#' @param drain.dir A RasterLayer object. If weights are set to "area", providing a 
-#'   drainage direction raster enables delineation of drainage basins for the provided 
-#'   river network. Optional.
 #' @param riverID A character string which specifies the name of the column in 
 #'   \code{river} containing unique river network identifiers. Defaults to "riverID".
 #' @param verbose Whether or not print progress indicators.
@@ -60,54 +54,22 @@
 #' @return Returns a list object with class 'HSweights', containing the following 
 #'   elements:
 #'   \itemize{
-#'     \item \code{river}. The supplied river network with routing information. See 
-#'       \code{\link{river_network}} for details.
-#'     \item \code{weights}. River network lines or catchment polygon network which was 
-#'       used as the basis of weighting. See \code{\link{compute_area_weights}} or 
-#'       \code{\link{compute_river_weights}} for details.
+#'     \item \code{river}. The supplied river network with routing information. 
+#'       See \code{\link{river_network}} for details.
+#'     \item \code{weights}. River network lines or catchment polygon network 
+#'       which was used as the basis of weighting. See 
+#'       \code{\link{compute_area_weights}} or \code{\link{compute_river_weights}} 
+#'       for details.
 #'     \item \code{HSgrid}. HSgrid object containing runoff information. See 
 #'       \code{\link{raster_to_HSgrid}} for details.
 #' }
-#' 
-#' @examples
-#' \dontrun{
-#' library(raster)
-#' library(hydrostreamer)
-#' 
-#' # load data
-#' data(river)
-#' data(basin)
-#' runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
-#' 
-#' # create HSgrid
-#' grid <- raster_to_HSgrid(HSgrid, aoi=basin)
-#' 
-#' # weights based on line segments
-#' # equal
-#' eq <- compute_weights(river, grid, "equal", aoi=basin, riverID="ID")
-#' # length
-#' len <- compute_weights(river, grid, "length", aoi=basin, riverID="ID")
-#' # strahler
-#' str <- compute_weights(river, grid, "strahler", aoi=basin, riverID="ID")
-#' # vector of weights
-#' w <- rnorm(nrow(river))
-#' vec <- compute_weights(river, grid, w, aoi=basin, riverID="ID")
-#' 
-#' # catchment based weights
-#' # Voronoi diagram
-#' vor <- compute_weights(river, grid, "area", aoi=basin, riverID="ID")
-#' # using predefined basins
-#' basins <- river_voronoi(river, aoi=basin, riverID = "ID")
-#' bas <- compute_weights(river, grid, "area", basins=basins, aoi=basin, riverID="ID")
-#' }
-#' 
+#'  
 #' @export
-compute_HSweights <- function(river, 
-                              HSgrid, 
+compute_HSweights <- function(HSgrid, 
+                              river,
                               weights, 
                               aoi=NULL, 
                               basins=NULL, 
-                              drain.dir=NULL, 
                               riverID = "riverID", 
                               verbose=FALSE) {
 
@@ -123,10 +85,10 @@ compute_HSweights <- function(river,
     # check if 'sf'
     test <- any(class(river) == 'sf')
     if(!test) river <- sf::st_as_sf(river)
-    if(!is.null(aoi)) {
-        test <- any(class(aoi) == 'sf')
-        if(!test) aoi <- sf::st_as_sf(aoi)
-    }
+    # if(!is.null(aoi)) {
+    #     test <- 'sf' %in% class(aoi)
+    #     if(!test) aoi <- sf::st_as_sf(aoi)
+    # }
     
     # check the weights input to determine which track to take (area or line)
     if(is.character(weights)) {
@@ -154,9 +116,7 @@ compute_HSweights <- function(river,
     #############
     
     if (track == "area") {
-        if(!is.null(drain.dir)) {
-            track <- "delineate"
-        } else if (!is.null(basins)) {
+        if (!is.null(basins)) {
             track <- "user"
         } else {
             track <- "voronoi"
@@ -180,10 +140,10 @@ compute_HSweights <- function(river,
         river <- river_network(river, riverID = riverID, verbose = verbose)
 
         # 2. create basins
-        if (track == "delineate") {
-            outlets <- river_outlets(river, drain.dir)
-            basins <- delineate_basin(outlets, drain.dir, verbose = verbose)
-        }
+        # if (track == "delineate") {
+        #     outlets <- river_outlets(river, drain.dir)
+        #     basins <- delineate_basin(outlets, drain.dir, verbose = verbose)
+        # }
         if (track == "voronoi") {
             message("No predefined basins or drainage direction raster given: 
                     creating a river Voronoi diagram.")
@@ -192,11 +152,11 @@ compute_HSweights <- function(river,
 
         # 3. compute basin weights
         basins <- compute_area_weights(basins, 
-                                       HSgrid$grid, 
+                                       HSgrid, 
                                        riverID = riverID)
 
-        # create output list and class it
-        HSweights <- list(river = river, weights = basins, grid = HSgrid)
+        # create output 
+        HSweights <- create_HSweights(river, basins, HSgrid)
     }
 
     ############
@@ -206,7 +166,10 @@ compute_HSweights <- function(river,
     if (track == "line") {
         # crop river network to aoi
         if(!is.null(aoi)) {
-            river <- sf::st_intersection(river, sf::st_geometry(aoi))
+            select <- sf::st_intersects(river, 
+                                        sf::st_geometry(sf::st_union(aoi)), 
+                                        sparse=FALSE)
+            river <- river[select,]
         }
 
         # 1. create flow paths
@@ -214,18 +177,16 @@ compute_HSweights <- function(river,
 
         # 2. compute weights based on river lines
         splitriver <- compute_river_weights(river, 
-                                            HSgrid$grid, 
+                                            HSgrid, 
                                             seg_weights = weights,
                                             split=TRUE)
 
-        # create output list and class it
-        HSweights <- list(river = river, 
-                          weights = splitriver, 
-                          grid = HSgrid)
+        # create output
+        HSweights <- create_HSweights(river = river, 
+                                      weights = splitriver, 
+                                      HSgrid = HSgrid)
         
     }
     
-    class(HSweights) <-  c("HSweights", class(HSweights))
     return(HSweights)
-
 }

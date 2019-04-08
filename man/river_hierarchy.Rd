@@ -20,10 +20,9 @@ Returns the river network with added column with the selected river
   hierarchy.
 }
 \description{
-Computes river hierarchies from a routed river network (\emph{HSnetwork} 
-object), or from an unrouted, connected river network. In case the input 
-river network is unrouted, \code{\link{river_network}} is run before 
-computing river hierarchy.
+Computes river hierarchies from a routed river network, or from an unrouted,
+ connected river network. In case the input river network is unrouted, 
+ \code{\link{river_network}} is run before computing river hierarchy.
 }
 \examples{
 \dontrun{
@@ -37,7 +36,7 @@ data(river)
 river <- river_hierarchy(river, riverID="ID")
 
 # with routed network
-routed_river <- flow_network(river, riverID = "ID") \%>\%
+routed_river <- river_network(river, riverID = "ID") \%>\%
     river_hierarchy()
 }
 

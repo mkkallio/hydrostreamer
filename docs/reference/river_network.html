@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generates neighbour information from a connected, directed river network. — river_network • hydrostreamer</title>
+<title>Generates routing information for river routing algorithms — river_network • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,12 @@
 
 
 
-<meta property="og:title" content="Generates neighbour information from a connected, directed river network. — river_network" />
+<meta property="og:title" content="Generates routing information for river routing algorithms — river_network" />
 
-<meta property="og:description" content="The function adds connectivity information to the input river object. The function assumes 
-that the input river is a &quot;clean&quot; river network: connected segments share a node at the start or 
-end of the segment. Digitizing direction is required to be the direction of flow." />
+<meta property="og:description" content="The function adds connectivity information to the input river object. 
+The function assumes that the input river is a &quot;clean&quot; river network: 
+connected segments share a node at the start or end of the segment. 
+Digitizing direction is required to be the direction of flow." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -65,7 +66,7 @@ end of the segment. Digitizing direction is required to be the direction of flow
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -111,16 +112,17 @@ end of the segment. Digitizing direction is required to be the direction of flow
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generates neighbour information from a connected, directed river network.</h1>
+    <h1>Generates routing information for river routing algorithms</h1>
     
     <div class="hidden name"><code>river_network.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The function adds connectivity information to the input <em>river</em> object. The function assumes 
-that the input river is a "clean" river network: connected segments share a node at the start or 
-end of the segment. Digitizing direction is required to be the direction of flow.</p>
+    <p>The function adds connectivity information to the input <em>river</em> object. 
+The function assumes that the input river is a "clean" river network: 
+connected segments share a node at the start or end of the segment. 
+Digitizing direction is required to be the direction of flow.</p>
     
     </div>
 
@@ -150,7 +152,6 @@ end of the segment. Digitizing direction is required to be the direction of flow
 <li><p>riverID: Unique (renamed) river segment identifier.</p></li>
 <li><p>PREVIOUS: a list of riverID(s) of the previous river segment(s).</p></li>
 <li><p>NEXT: riverID of the segment where the river flows to.</p></li>
-<li><p>DOWNSTREAM: A list of riverID(s) of all the river segments downstream for the current segment.</p></li>
 <li><p>UP_SEGMENTS: the number of river segments upstream.</p></li>
 </ul>
 
@@ -183,7 +184,7 @@ end of the segment. Digitizing direction is required to be the direction of flow
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

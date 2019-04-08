@@ -1,5 +1,5 @@
 #' Compute weights for river catchment areas within the runoff area 
-#' features.
+#' features. 
 #' 
 #' Computes weights for each individual river segment specific catchments 
 #' falling in the areal units of the runoff \emph{HSgrid}. Function first 
@@ -11,14 +11,15 @@
 #'
 #' @param basins An 'sf' polygon feature specifying the river segment 
 #'   specific catchments.
-#' @param gridID Column in HSgrid with unique IDs.
+#' @param riverID Column in \code{basins} containing unique IDs.
+#' @param gridID Column in  \code{HSgrid} with unique IDs.
 #' @inheritParams compute_HSweights
 #'
 #' @return Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
-#'   with attributes:
+#'   with added attributes (columns):
 #'   \itemize{
 #'     \item \emph{ID}. Unique ID of the feature.
-#'     \item \emph{riverID}. ID of the river each sub-catchment is 
+#'     \item \emph{riverID}. ID of the river segment each sub-catchment is 
 #'       associated to.
 #'     \item \emph{gridID}. ID of the runoff unit the sub-catchment 
 #'       is contained in.
@@ -29,28 +30,6 @@
 #'       contained in. In \eqn{m^2}.
 #' }
 #' 
-#' @examples 
-#' \dontrun{
-#' library(raster)
-#' library(hydrostreamer)
-#' 
-#' # load data
-#' data(river)
-#' data(basin)
-#' runoff <- brick(system.file("extdata", "runoff.tif", 
-#'                             package = "hydrostreamer"))
-#' 
-#' # create HSgrid
-#' grid <- polygrid_timeseries(grid, aoi=basin)
-#' 
-#' # create basins
-#' basins <- river_voronoi(river, aoi=basin, riverID = "ID")
-#' 
-#' # compute weights
-#' weighted_basins <- compute_area_weights(basins, grid, 
-#'                                         riverID="ID")
-#' }
-#'   
 #' @export
 compute_area_weights <- function(basins, 
                                  HSgrid, 
@@ -63,15 +42,6 @@ compute_area_weights <- function(basins,
     b_area_m2 <- NULL
     g_area_m2 <- NULL
     
-    # accepted <- c("POLYGON", "MULTIPOLYGON", "GEOMETRY")
-    # if(!any(class(grid) %in% accepted) && !any(class(grid) == "sf")) {
-    #     stop("grid input should be sf class POLYGON or MULTIPOLYGON")
-    # }
-    # 
-    # #inspect input
-    # if(!any(class(basins) %in% "sf")) {
-    #     stop("basins input should be sf class POLYGON")
-    # }
     if(!any(names(basins) == riverID)) stop("riverID column '", 
                                             riverID, "' does not exist in basins input")
     if(!riverID == "riverID") basins <- dplyr::rename_(basins, 

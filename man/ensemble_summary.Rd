@@ -2,32 +2,42 @@
 % Please edit documentation in R/ensemble_summary.R
 \name{ensemble_summary}
 \alias{ensemble_summary}
-\title{Computes summaries from hydrostreamer::HS* objects}
+\title{Computes summary timeseries from HS* objects}
 \usage{
-ensemble_summary(HS, summarise_over_all = TRUE,
+ensemble_summary(HS, summarise_over_timeseries = FALSE,
   aggregate_monthly = FALSE, funs = c("min", "mean", "median", "max"),
-  ...)
+  drop = FALSE, ..., verbose = FALSE)
 }
 \arguments{
-\item{HS}{Any HS* object, or a list of tables with column \code{Date}.}
+\item{HS}{\code{HS} object, or a list of data frames with column \code{Date}.}
 
-\item{summarise_over_all}{Compute functions individually, or across all data.
-Defaults to \code{TRUE}.}
+\item{summarise_over_timeseries}{Apply function(s) to each column-wise (to
+each timeseries separately, \code{TRUE}), or row-wise for each date in 
+timeseries(\code{FALSE}, default).}
 
-\item{aggregate_monthly}{Summarise over the timestamps in data, or aggregate
-results to the 12 months of the year.}
+\item{aggregate_monthly}{Apply results to the 12 months of the year. Defaults
+to \code{FALSE}.}
 
-\item{funs}{Functions to evaluate. By default, computes \code{min, mean, median and 
-max.}}
+\item{funs}{Functions to evaluate. By default, computes \code{min, mean, 
+median and max}.}
+
+\item{drop}{Drop existing timeseries in \code{runoff_ts}, \code{discharge_ts},
+or not.}
 
 \item{...}{Additional arguments passed to \code{funs}.}
+
+\item{verbose}{Indicate progress, or not. Defaults to \code{FALSE}.}
 }
 \value{
-Returns the input HS* object, or a list, where runoff/downscaled/discharge
-  is replaced with the computed summaries.
+Returns the input \code{HS} object, or a list, where 
+  runoff/downscaled/discharge is replaced with the computed summaries.
 }
 \description{
 Allows easy computation of summaries across runoff datasets with user defined 
 functions. The functions provided are run either individually for, or across, 
-each runoff/downscaled/flow sets in an HS* object.
+each runoff/downscaled/discharge timeseries in an HS* object.
+}
+\details{
+Applicable functions take a vector of numeric values as input, and return 
+a single numerical value.
 }

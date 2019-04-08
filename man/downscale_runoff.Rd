@@ -5,7 +5,7 @@
 \title{Computes specific runoff generated in the river segment.}
 \usage{
 downscale_runoff(HSweights, rID = "riverID", wID = "riverID",
-  unit = "mm/s")
+  unit = "mm/s", verbose = FALSE)
 }
 \arguments{
 \item{HSweights}{An object of class 'HSweights', obtained with 
@@ -18,33 +18,15 @@ downscale_runoff(HSweights, rID = "riverID", wID = "riverID",
 
 \item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". 
 Defaults to mm/s (~ equivalent to kg/m2/s).}
+
+\item{verbose}{Print progress indication or not.}
 }
 \value{
-The routed river network object which has been enhanced with 
-  a runoff timeseries. Runoff is given in \eqn{m^3/s}.
+The routed river network object with class \code{HS}, which has been 
+  enhanced with a runoff timeseries (list column \code{runoff_ts}. Runoff is 
+  given in \eqn{m^3/s}.
 }
 \description{
-Computes downscaled, unrouted, river segment specific runoff using 
+Computes downscaled, river segment specific, runoff using 
 the given \code{HSweights} object.
-}
-\examples{
-\dontrun{
-library(raster)
-library(hydrostreamer)
-
-# load data
-data(river)
-data(basin)
-runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
-
-# create HSgrid
-grid <- polygrid_timeseries(grid, aoi=basin)
-
-# weights based on length of river segments
-len <- compute_weights(river, grid, "length", aoi=basin, riverID="ID")
-
-# compute segment specific runoff
-runoff <- compute_segment_runoff(len, verbose=TRUE)
-}
-
 }

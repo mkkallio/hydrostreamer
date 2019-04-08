@@ -1,8 +1,9 @@
-#' Generates neighbour information from a connected, directed river network.
+#' Generates routing information for river routing algorithms
 #'
-#' The function adds connectivity information to the input \emph{river} object. The function assumes 
-#' that the input river is a "clean" river network: connected segments share a node at the start or 
-#' end of the segment. Digitizing direction is required to be the direction of flow.
+#' The function adds connectivity information to the input \emph{river} object. 
+#' The function assumes that the input river is a "clean" river network: 
+#' connected segments share a node at the start or end of the segment. 
+#' Digitizing direction is required to be the direction of flow.
 #'
 #' @inheritParams compute_HSweights
 #'
@@ -11,7 +12,6 @@
 #'   \item riverID: Unique (renamed) river segment identifier.
 #'   \item PREVIOUS: a list of riverID(s) of the previous river segment(s).
 #'   \item NEXT: riverID of the segment where the river flows to.
-#'   \item DOWNSTREAM: A list of riverID(s) of all the river segments downstream for the current segment.
 #'   \item UP_SEGMENTS: the number of river segments upstream.
 #' }
 #' 
@@ -57,19 +57,18 @@ river_network <- function(river, riverID = "riverID", verbose=FALSE) {
     FROM <- vector("list", nSegments)
     #FROM_ALL <- vector("list", nSegments)
     TO <- vector("list", nSegments)
-    TO_ALL <- vector("list", nSegments)
+    #TO_ALL <- vector("list", nSegments)
     nup <- rep(1, nrow(river))
     
     
     #First part: get starting and ending coordinates
-    if(verbose) message("Processing part 1/3: seeking adjacent segments")
     p <- 0
     start <- list()
     end <- list()
     
     
     coords <- river %>% 
-        sf::st_cast("LINESTRING") %>% 
+        sf::st_cast("LINESTRING", warn=FALSE) %>% 
         sf::st_coordinates()
     
     for (i in 1:nSegments) {
@@ -80,8 +79,8 @@ river_network <- function(river, riverID = "riverID", verbose=FALSE) {
     start <- t(as.data.frame(start))
     end <- t(as.data.frame(end))
     
-    #First part: match the coordinates to find previous and next segments
-    total <- nSegments
+    #Second part: match the coordinates to find previous and next segments
+    total <- nSegments+1
     if(verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
     for (i in 1:nSegments) {
         # to which river segments river flows from
@@ -109,12 +108,10 @@ river_network <- function(river, riverID = "riverID", verbose=FALSE) {
     }
     if(verbose) close(pb)
     
-    # collect ALL from and ALL to nodes for each river segment
-    if(verbose) cat("\n")
-    if(verbose) message("Processing part 2/3: collecting all upstream and downstream segments")
-    total <- nSegments
-    if(verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
-    for (i in 1:nSegments) {
+    river$NEXT <- unlist(TO)
+    river$PREVIOUS <- FROM
+    
+    for(i in 1:nSegments) {
         to <- TO[[i]]
         n <- 0
         all <- list()
@@ -130,39 +127,28 @@ river_network <- function(river, riverID = "riverID", verbose=FALSE) {
             }
         }
         all <- unlist(all)
-        TO_ALL[[i]] <- all
-        
         all <- which(IDs %in% all)
         nup[all] <- nup[all] +1
         
         if(verbose) setTxtProgressBar(pb, i)
     }
-    
-    if(verbose) close(pb)
-    
-    TO <- unlist(TO)
-    
-    # if the last features in river are river outlets (next ID == -9999), the TO_ALL list will be shorter
-    # than nrow(river). If this is the case, grow TO_ALL with lists containing NULL
-    if(length(TO_ALL) != nrow(river)) {
-        for (i in 1:(nrow(river)-length(TO_ALL)))
-            ind <- length(TO_ALL)
-            TO_ALL[[ ind+i ]] <- list(NULL)
-    }
-    
-    #  process output
-    #cat("\n")
-    if(verbose) message("Processing part 3/3: output")
-    remove <- c(riverID, "NEXT", "PREVIOUS", "DOWNSTREAM")
+
+    remove <- c(riverID)
     remove <- names(river) %in% remove
     river <- river[, !remove]
     river$riverID <- IDs
-    river$PREVIOUS <- FROM
-    river$NEXT <- TO
-    river$DOWNSTREAM <- TO_ALL
     river$UP_SEGMENTS <- nup
-    river <- dplyr::select(river, riverID, PREVIOUS, NEXT, DOWNSTREAM, UP_SEGMENTS, dplyr::everything())
-    class(river) <- append(class(river), "HSnetwork")
+    river <- dplyr::select(river, riverID, PREVIOUS, NEXT, 
+                           UP_SEGMENTS, dplyr::everything()) %>%
+        tibble::as_tibble(river) %>%
+        sf::st_as_sf()
+    
+    if(verbose) setTxtProgressBar(pb, nSegments+1)
+    if(verbose) close(pb)
+    
+    
+    river <- reorder_cols(river)
+    river <- assign_class(river, c("HSnetwork", "HS"))
     
     return(river)
 }

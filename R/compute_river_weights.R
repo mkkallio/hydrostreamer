@@ -25,12 +25,12 @@
 #' @param seg_weights A character vector specifying type of weights, or a 
 #'   numerical vector. See Details. Defaults to "length".
 #' @param split Whether or not to use \code{\link{split_river_with_grid}} 
-#'   before computing weights. Default is FALSE (assuming the river has already 
-#'   been split)
+#'   before computing weights. Default is TRUE (assuming the river has not
+#'   already been split)
 #' @inheritParams compute_HSweights
 #'
 #'
-#' @return Returns an 'sf' linestring feature with attributes:
+#' @return Returns an 'sf' linestring object with attributes:
 #'   \itemize{
 #'     \item \emph{ID}. Unique ID of the feature.
 #'     \item \emph{riverID}. ID of the river each segment is associated to.
@@ -38,43 +38,24 @@
 #'     \item \emph{weights}. Weights computed for each river segment.
 #' }
 #'   
-#' @examples 
-#' \dontrun{
-#' library(raster)
-#' library(hydrostreamer)
-#' 
-#' # load data
-#' data(river)
-#' data(basin)
-#' runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
-#' 
-#' # create HSgrid
-#' grid <- polygrid_timeseries(grid, aoi=basin)
-#' 
-#' # create basins
-#' basins <- river_voronoi(river, aoi=basin, riverID = "ID")
-#' 
-#' # compute weights
-#' weighted_basins <- compute_area_weights(basins, grid, riverID="ID")
-#' }
-#' 
 #' @export
 compute_river_weights <- function(river, 
                                   grid, 
                                   seg_weights = "length", 
                                   riverID = "riverID", 
-                                  split=FALSE) {
+                                  split=TRUE) {
     
     weights <- NULL
     ID <- NULL
     gridID <- NULL
+    runoff_ts <- NULL
 
     if(!any(colnames(river) == riverID)) stop("riverID column '", 
                                            riverID, "' does not exist in river input")
     if(!riverID == "riverID") river <- dplyr::rename_(river, 
                                                       riverID = riverID)  
     
-    if("HSgrid" %in% class(grid)) grid <- grid$grid
+    if("runoff_ts" %in% colnames(grid)) grid <- dplyr::select(grid, -runoff_ts)
 
     #river <- dplyr::select_(river, riverID)
     if(seg_weights == "strahler") river <- river_hierarchy(river)
@@ -95,13 +76,6 @@ compute_river_weights <- function(river,
             input <- seq(1,NROW(river))
             
         } else if(seg_weights == "strahler") {
-            # test <- any(names(river) == "STRAHLER")
-            # if (test) {
-            #     input <- river$STRAHLER
-            # } else {
-            #     #river <- river_hierarchy(river)
-            #     input <- river$STRAHLER
-            # }
             input <- river$STRAHLER
             
         } else {
@@ -138,6 +112,9 @@ compute_river_weights <- function(river,
     }
     
     river$weights  <- weight
-    river <- river %>% dplyr::select(ID, riverID, gridID, weights)
+    river <- river %>% 
+        dplyr::select(ID, riverID, gridID, weights) %>%
+        tibble::as_tibble(river) %>%
+        sf::st_as_sf()
     return(river)
 }

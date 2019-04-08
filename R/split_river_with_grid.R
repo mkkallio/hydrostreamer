@@ -7,7 +7,7 @@
 #' @inheritParams compute_HSweights
 #' 
 #' @return Returns an 'sf' linestring object which has been split at 
-#'   the polygon (grid) boundaries with attributes:
+#'   the polygon (grid) boundaries with attributes (columns):
 #'   \itemize{
 #'     \item \emph{ID}. Unique ID of the split river segments.
 #'     \item \emph{riverID}. ID of the original river segment prior 
@@ -43,7 +43,7 @@ split_river_with_grid <- function(river,
     
     ID <- NULL
     
-    if("HSgrid" %in% class(HSgrid)) HSgrid <- HSgrid$grid
+    #if("HSgrid" %in% class(HSgrid)) HSgrid <- HSgrid$grid
     grid <- HSgrid %>% dplyr::select_(gridID)
     
     river <- suppressMessages(suppressWarnings(sf::st_intersection(river, grid)))
@@ -54,6 +54,9 @@ split_river_with_grid <- function(river,
     }
     river$ID <- 1:NROW(river)
     river <- river %>% dplyr::select(ID, riverID, gridID, dplyr::everything())
+    
+    river <- tibble::as_tibble(river) %>%
+        sf::st_as_sf()
     
     return(river)
 }

@@ -60,7 +60,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -129,37 +129,49 @@
         <td>
           <p><code><a href="accumulate_runoff.html">accumulate_runoff()</a></code> </p>
         </td>
-        <td><p>Apply river routing based on selected routing method.</p></td>
+        <td><p>Apply river routing</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="accumulate_runoff_instant.html">accumulate_runoff_instant()</a></code> </p>
         </td>
-        <td><p>Compute instantaneous flow for each timestep</p></td>
+        <td><p>Apply instantaneous river routing</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="accumulate_runoff_muskingum.html">accumulate_runoff_muskingum()</a></code> </p>
         </td>
-        <td><p>Implements 'muskingum' routing algorithm for vector river network</p></td>
+        <td><p>Apply Muskingum river routing</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="accumulate_runoff_simple.html">accumulate_runoff_simple()</a></code> </p>
         </td>
-        <td><p>Implements a simple lagged river routing algorithm.</p></td>
+        <td><p>Apply simple lag river routing</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="add_control.html">add_control()</a></code> </p>
+        </td>
+        <td><p>Adds flow controls to a 'HS' object</p></td>
       </tr><tr>
         
         <td>
           <p><code><a href="add_HSgrid.html">add_HSgrid()</a></code> </p>
         </td>
-        <td><p>Combine <code>HSgrid</code> objects or addnew runoff input from raster.</p></td>
+        <td><p>Combine <code>HSgrid</code> objects or add new runoff input from raster.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="basin.html">basin</a></code> </p>
+          <p><code><a href="add_observations.html">add_observations()</a></code> </p>
         </td>
-        <td><p>Area of Interest polygon</p></td>
+        <td><p>Adds observation timeseries to a 'HS' object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="basins.html">basins</a></code> </p>
+        </td>
+        <td><p>Catchment areas for 41 river segments</p></td>
       </tr><tr>
         
         <td>
@@ -178,8 +190,12 @@ features.</p></td>
         <td>
           <p><code><a href="compute_HSweights.html">compute_HSweights()</a></code> </p>
         </td>
-        <td><p>Computes weights to assign runoff from runoff area features to the 
-supplied river network.</p></td>
+        <td><p>Computes weights <code>HSweights</code> from <code>HSgrid</code> and a river network
+  
+The function computes weights either based on catchment areas (polygons), 
+or line segments which intersect a polygon with runoff information. Weights 
+are assigned so that the sum of weights for area or line features within a 
+polygon equal to 1.</p></td>
       </tr><tr>
         
         <td>
@@ -195,15 +211,15 @@ supplied river network.</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="create_HSobs.html">create_HSobs()</a></code> </p>
-        </td>
-        <td><p>Constructor for <code>HSobs</code> object</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="create_HSweights.html">create_HSweights()</a></code> </p>
         </td>
         <td><p>Creates a <code>HSweights</code> object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="create_river.html">create_river()</a></code> </p>
+        </td>
+        <td><p>Creates a river network and river segment drainage basins from a DEM</p></td>
       </tr><tr>
         
         <td>
@@ -213,15 +229,27 @@ supplied river network.</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="dem.html">dem</a></code> </p>
+        </td>
+        <td><p>DEM for examples</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="downscale_runoff.html">downscale_runoff()</a></code> </p>
         </td>
         <td><p>Computes specific runoff generated in the river segment.</p></td>
       </tr><tr>
         
         <td>
+          <p><code><a href="downstream.html">downstream()</a></code> </p>
+        </td>
+        <td><p>Find all downstream segments from a specified river segment.</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="ensemble_summary.html">ensemble_summary()</a></code> </p>
         </td>
-        <td><p>Computes summaries from hydrostreamer::HS* objects</p></td>
+        <td><p>Computes summary timeseries from HS* objects</p></td>
       </tr><tr>
         
         <td>
@@ -234,8 +262,7 @@ against observed streamflow</p></td>
         <td>
           <p><code><a href="HSwrite.html">HSwrite()</a></code> </p>
         </td>
-        <td><p>Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer.</p></td>
+        <td><p>Writes an HS object to disk.</p></td>
       </tr><tr>
         
         <td>
@@ -248,7 +275,7 @@ explicit river segments.</p></td>
         <td>
           <p><code><a href="optimise_point.html">optimise_point()</a></code> </p>
         </td>
-        <td><p>Computes optimal estimate from multiple input discharge timeseries</p></td>
+        <td><p>Computes optimal estimate at a specific river segment</p></td>
       </tr><tr>
         
         <td>
@@ -259,22 +286,9 @@ timeseries against observed streamflow</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="plot_HSflow.html">plot_HSflow()</a></code> </p>
-        </td>
-        <td><p>Plot HSflow</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_HSoptim.html">plot_HSoptim()</a></code> </p>
-        </td>
-        <td><p>Plot HSoptim</p></td>
-      </tr><tr>
-        
-        <td>
           <p><code><a href="raster_to_HSgrid.html">raster_to_HSgrid()</a></code> </p>
         </td>
-        <td><p>Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object.</p></td>
+        <td><p>Create HSgrid from a raster</p></td>
       </tr><tr>
         
         <td>
@@ -292,7 +306,7 @@ an 'sf' polygon object.</p></td>
         <td>
           <p><code><a href="river_network.html">river_network()</a></code> </p>
         </td>
-        <td><p>Generates neighbour information from a connected, directed river network.</p></td>
+        <td><p>Generates routing information for river routing algorithms</p></td>
       </tr><tr>
         
         <td>
@@ -305,6 +319,12 @@ an 'sf' polygon object.</p></td>
           <p><code><a href="river_voronoi.html">river_voronoi()</a></code> </p>
         </td>
         <td><p>Create a segment-specific Voronoi diagram from an sf LINESTRING object.</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="runoff.html">runoff</a></code> </p>
+        </td>
+        <td><p>Runoff timeseries for examples</p></td>
       </tr><tr>
         
         <td>
@@ -332,7 +352,7 @@ an 'sf' polygon object.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

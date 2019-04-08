@@ -5,16 +5,14 @@
 \title{Computes and regionalizes optimal estimate from multiple discharge 
 timeseries against observed streamflow}
 \usage{
-optimise_region(HSrunoff, HSobs, routing = "simple", train = 0.5,
-  optim_method = "CLS", bias_correction = FALSE,
-  region_type = "upstream", no_station = "em", ..., verbose = FALSE)
+optimise_region(HS, routing = "simple", train = 0.5,
+  optim_method = "CLS", bias_correction = FALSE, combination = "ts",
+  sampling = "series", region_type = "upstream", no_station = "em",
+  drop = TRUE, ..., verbose = FALSE)
 }
 \arguments{
-\item{HSrunoff}{An \code{HSrunoff} object containing  runoff
+\item{HS}{An \code{HS} object containing runoff
 estimates.}
-
-\item{HSobs}{An \code{HSobs} object containing the observed timeseries
-for all stations.}
 
 \item{routing}{Routing algorithm to use. See 
 \code{\link{accumulate_runoff}} for options.}
@@ -24,14 +22,23 @@ for all stations.}
 \item{optim_method}{Method used to optimise. Default uses constrained
 linear regression. See details.}
 
-\item{bias_correction}{Whether to apply bias correction. Default FALSE.
-If TRUE, constant bias correction is applied to all river segments.
-See details.}
+\item{bias_correction}{Whether to apply bias correction. Default FALSE.}
+
+\item{combination}{Whether to do the forecast combination for the entire
+timeseries, or each month of the year individually. Accepts 
+\code{"timeseries"}, \code{"ts"}, \code{"monthly"} or \code{"mon"}.}
+
+\item{sampling}{How to sample training and testing periods. \code{"series"}
+for training serially from beginning, or \code{"random"} for a random
+sample for both training and testing periods.}
 
 \item{region_type}{How to regionalize combination weights. See details.}
 
 \item{no_station}{How to handle river segments with no downstream 
 stations. See details.}
+
+\item{drop}{Drop existing timeseries (columns) in \code{runoff_ts}, 
+\code{discharge_ts}, or not.}
 
 \item{...}{Additional parameters passed to the \code{routing} algorithm.}
 
@@ -51,8 +58,9 @@ Returns an \code{HSflow} object with one discharge layer (the
 \description{
 Algorithm routes runoff using user specified routing algorithm, for
 each observation point in sequence starting from the most upstream
-point. The optimum weight combination is regionalized to the other
-river segments which do not contain observation information.
+point. The optimum weight combination is regionalized to the river segments 
+upstream from the optimisation point which do not contain observation 
+information.
 }
 \details{
 Currently only one regionalization type is implemented: \code{
@@ -61,13 +69,7 @@ station for the river segment.
 
 Options for \code{no_station} is currently only one: \code{"em"}, 
 which stands for "ensemble mean". For those river segments with no
-weights assigned from a station, an ensemble mean (each discharge
-prediction is given equal weight) is computed.
-
-If \code{bias_correction} is set to \code{TRUE}, constant bias 
-correction is applied. Bias is divided equally among all river
-segments which are being optimised within a region. For example,
-if the sub-basin being optimised has 10 river segments, and bias
-(mean error) at the station being optimised is 10 m3/s, each
-river segment is added with a constant 1 m3/s runoff.
+weights assigned from a station (segments with no downstream observation 
+station), an ensemble mean (each discharge prediction is given equal weight) 
+is computed.
 }

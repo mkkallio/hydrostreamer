@@ -1,163 +1,133 @@
-#' Writes any HS* object as a single geopackage where each input 
-#' runoff is written as it's own layer.
+#' Writes an HS object to disk.
+#' 
+#' Writes out \code{HS} objects in order to use them outside R. By default
+#' the function writes the geometry using \code{\link[sf]{st_write}}, but where
+#' list columns are modified since they cannot be written by st_write. 
+#' Alternatively the function can output a timeseries specified by the user 
+#' (runoff, discharge, or control).
 #'
-#' @param x A \code{HSgrid}, \code{HSrunoff}, or a \code{HSflow} object.
+#' @param x A \code{HSgrid}, or a \code{HS} object.
 #' @param filename Filename to write to.
+#' @param what What to write. Accepts \code{"geometry"} for writing the river
+#'   network or the runoff grid, or \code{"discharge_ts", "runoff_ts", 
+#'   "control_ts"} for writing out a .csv table of the associated timeseries. 
 #' @param ... options passed to \code{\link[sf]{st_write}}.
 #' 
 #' @export
-HSwrite <- function(x, filename, ...) {
+HSwrite <- function(x, filename, what = "geometry", ...) {
     UseMethod("HSwrite")
 }
 
-
 #' @export
-HSwrite.HSgrid <- function(x, filename, ...) {
+HSwrite.HS <- function(x, filename, what = "geometry", ...) {
     
-    Date <- NULL
-    Month <- NULL
+    Optimisation_info <- NULL
+    observation_ts <- NULL
     
-    n <- length(x$runoff)
-    names <- names(x$runoff)
-    if(is.null(names)){
-        names <- paste0("runoff", seq(1,n,by=1))
-    }
-    
-    for (i in seq_along(x$runoff)) {
+    ##################
+    # WRITE OUT GEOMETRY
+    if (what == "geometry") {
+        test <- hasName(x, "PREVIOUS")
+        if(test) x$PREVIOUS <- lapply(x$PREVIOUS, 
+                                      function(x) {
+                                          paste(x, collapse=" ")
+                                      }) %>% unlist()
         
-        if (any(colnames(x$runoff[[i]]) == "Date")) {
-            dates <- x$runoff[[i]]$Date
-            rdata <- x$runoff[[i]] %>% 
-                dplyr::select(-Date) %>%
-                t()
-            colnames(rdata) <- as.character(dates)
+        test <- hasName(x, "runoff_ts") 
+        if (test) {
+            x$runoff_ts <- rep(TRUE, nrow(x))
+        }
+        
+        test <- hasName(x, "discharge_ts") 
+        if (test) {
+            x$discharge_ts <- rep(TRUE, nrow(x))
+        }
+        
+        test <- hasName(x, "Optimisation_info") 
+        if (test) {
+            x <- dplyr::select(x, -Optimisation_info)
+        }
+        
+        test <- hasName(x, "observation_ts") 
+        if (test) {
+            x <- dplyr::select(x, -observation_ts)
+        }
+        
+        test <- hasName(x, "control_ts") 
+        if (test) {
+            replace <- !sapply(x$control_ts, is.null)
+            x$control_ts <- replace 
+        } 
+        
+        sf::st_write(x, filename, ...)
+        
+        
+    ######################
+    # WRITE OUT A TABLE OF RUNOFF_TS
+    } else if (what == "runoff") {
+        
+        test <- hasName(x, "runoff_ts")
+        if(test) {
+            data <- collect_listc(x$runoff_ts, acc=TRUE)
             
+            for(pred in seq_along(data)) {
+                name <- paste0(filename, "_", names(data)[pred], ".csv")
+                
+                test <- requireNamespace("readr") 
+                if(test) {
+                    readr::write_csv(data[[pred]], name)
+                } else {
+                    write.csv(data[[pred]], file = name)
+                }
+            }
         } else {
-            dates <- x$runoff[[i]]$Month
-            rdata <- x$runoff[[i]] %>% 
-                dplyr::select(-Month) %>%
-                t()
-            colnames(rdata) <- as.character(dates)
+            stop("No runoff timeseries in the input - no output written")
         }
         
-        layer <- cbind(x$grid, rdata)
-       
-        if(i == 1) {
-            sf::st_write(layer, 
-                         filename, 
-                         layer=names[[i]], 
-                         driver="GPKG", 
-                         ...)
+    
+    ######################
+    # WRITE OUT A TABLE OF DISCHARGE_TS
+    } else if (what == "discharge") {
+        
+        test <- hasName(x, "discharge_ts")
+        if(test) {
+            data <- collect_listc(x$discharge_ts, acc=TRUE)
+            
+            for(pred in seq_along(data)) {
+                name <- paste0(filename, "_", names(data)[pred], ".csv")
+                
+                test <- requireNamespace("readr") 
+                if(test) {
+                    readr::write_csv(as.data.frame(data[[pred]]), name)
+                } else {
+                    write.csv(as.data.frame(data[[pred]]), file = name)
+                }
+            }
         } else {
-            sf::st_write(layer, 
-                         filename, 
-                         layer=names[[i]], 
-                         update=TRUE, 
-                         driver="GPKG", 
-                         ...)
+            stop("No discharge timeseries in the input - no output written")
         }
+        
+    ######################
+    # WRITE OUT A TABLE OF CONTROL_TS
+    } else if (what == "control") {
+        
+        test <- hasName(x, "control_ts")
+        if(test) {
+            data <- collect_listc(x$control_ts, acc=TRUE)
+            
+            for(pred in seq_along(data)) {
+                name <- paste0(filename, "_", names(data)[pred], ".csv")
+                
+                test <- requireNamespace("readr") 
+                if(test) {
+                    readr::write_csv(data[[pred]], name)
+                } else {
+                    write.csv(data[[pred]], file = name)
+                }
+            }
+        } else {
+            stop("No runoff timeseries in the input - no output written")
+        }
+        
     }
 }
-
-#' @export
-HSwrite.HSrunoff <- function(x, filename, ...) {
-    
-    Date <- NULL
-    Month <- NULL
-    
-    n <- length(x$downscaled)
-    names <- names(x$downscaled)
-    if(is.null(names)){
-        names <- paste0("downscaled_runoff", seq(1,n,by=1))
-    }
-    
-    for (i in seq_along(x$downscaled)) {
-        
-        if (any(colnames(x$downscaled[[i]]) == "Date")) {
-            dates <- x$downscaled[[i]]$Date
-            rdata <- x$downscaled[[i]] %>% 
-                dplyr::select(-Date) %>%
-                t()
-            colnames(rdata) <- as.character(dates)
-            
-        } else {
-            dates <- x$downscaled[[i]]$Month
-            rdata <- x$downscaled[[i]] %>% 
-                dplyr::select(-Month) %>%
-                t()
-            colnames(rdata) <- as.character(dates)
-        }
-        
-        layer <- cbind(x$river, rdata)
-        
-        if(i == 1) {
-            sf::st_write(layer, 
-                         filename, 
-                         layer=names[[i]], 
-                         driver="GPKG", 
-                         ...)
-        } else {
-            sf::st_write(layer, 
-                         filename, 
-                         layer=names[[i]], 
-                         update=TRUE, 
-                         driver="GPKG", 
-                         ...)
-        }
-    }
-}
-
-
-#' @export
-HSwrite.HSflow <- function(x, filename, ...) {
-    
-    Date <- NULL
-    Month <- NULL
-    
-    n <- length(x$discharge)
-    names <- names(x$discharge)
-    if(is.null(names)){
-        names <- paste0("discharge", seq(1,n,by=1))
-    }
-    
-    for (i in seq_along(x$discharge)) {
-        
-        if (any(colnames(x$discharge[[i]]) == "Date")) {
-            dates <- x$discharge[[i]]$Date
-            rdata <- x$discharge[[i]] %>% 
-                dplyr::select(-Date) %>%
-                t()
-            colnames(rdata) <- as.character(dates)
-            
-        } else {
-            dates <- x$discharge[[i]]$Month
-            rdata <- x$discharge[[i]] %>% 
-                dplyr::select(-Month) %>%
-                t()
-            colnames(rdata) <- as.character(dates)
-        }
-        
-        layer <- cbind(x$river, rdata)
-        
-        if(i == 1) {
-            sf::st_write(layer, 
-                         filename, 
-                         layer=names[[i]], 
-                         driver="GPKG", 
-                         ...)
-        } else {
-            sf::st_write(layer, 
-                         filename, 
-                         layer=names[[i]], 
-                         update=TRUE, 
-                         driver="GPKG",
-                         ...)
-        }
-    }
-}
-
-# to be added...
-HSwrite.HSobs <- function(x, filename, ...) {}
-
-# to be added...
-HSwrite.HSoptim <- function(x, filename, ...) {}

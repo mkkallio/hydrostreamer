@@ -1,116 +1,179 @@
-#' Polygonizes a raster and adds cell values as attribute columns to 
-#' an 'sf' polygon object.
+#' Create HSgrid from a raster
+#' 
+#' Polygonizes a raster and adds the values in the raster stack to a data frame
+#' in list column \code{runoff_ts}.
 #'
-#' @param raster A Raster* object.
+#' @param rasters A raster object, or a list of raster objects, or a list of
+#'   URIs to files readable by \code{raster} package.
 #' @param date Date of the first layer in \code{raster}, or a vector of dates 
-#'   with the length of layers in \code{raster}.
+#'   with the length of layers in \code{raster}, or a list of vectors of dates,
+#'   corresponding to the dates in each raster layer.
 #' @param timestep Length of timestep in raster. Currently supporting 
 #'   \code{"hour"}, \code{"day"}, \code{"month"}. Only needed if \code{date} is
 #'   not a vector of dates.
 #' @param aoi Area of interest as an 'sf' polygon object, 
 #'   'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
 #'   recommended for all applications.
-#' @param name A name for the runoff timeseries. If \code{NULL}, 
+#' @param names A name (names) for the runoff timeserie(s).
+#' @param verbose Print progress indication or not.
 #'
-#' @return Returns an 'sf' polygon object, with each polygon representing 
-#'   a raster cell, and which has been cropped to the area of interest. 
-#'   Columns are ID, area of the polygon in m^2, and each timestep as separate
-#'   column. Output has class 'HSgrid'.
+#' @return See \code{\link{create_HSgrid}}.
 #'   
 #' @export
-raster_to_HSgrid <- function(raster, 
+raster_to_HSgrid <- function(rasters, 
                              date, 
                              timestep = NULL, 
                              aoi = NULL, 
-                             name="runoff1") {
+                             names = NULL,
+                             verbose = FALSE) {
     
     . <- NULL
     Date <- NULL
     gridID <- NULL
     area_m2 <- NULL
     
-    # test input
-    test <- !any(class(raster) %in% c("RasterLayer", "RasterStack", "RasterBrick"))
-    if (test) stop("raster needs to be a Raster* object")
-    test <- class(date) != "Date"
-    if(test) stop("date input should be a 'Date' object (use e.g. 
-                   date('2000/01/01') ), or a vector of dates with 
-                   length equal to number of timesteps in runoff")
+    # test rasters input
+    test <- is.list(rasters)
+    if(!test) {
+        test2 <- is.character(rasters)
+        if(test2) {
+            rasters <- as.list(rasters)
+        } else {
+            test3 <- any(class(rasters) %in% 
+                             c("RasterStack", "RasterBrick", "RasterLayer"))
+            if(test3) {
+                rasters <- list(rasters)
+            } else {
+                stop("rasters input must be either a raster or an URI to a raster")
+            }
+        }
+    }
+    
+    
+    # test date and timestep object
     test <- length(date) == 1 && is.null(timestep)
     if(test) stop("Please provide timestep")
-    test <- length(date) != 1 && length(date) != raster::nlayers(raster)
-    if(test) stop("length(date) != nlayers(raster)")
-    test <- !is.null(timestep) && !timestep %in% c("day","month","hour")
-    if(test) stop("Only 'day' or 'month' timesteps supported.")
     
+    test <- length(date) == 1 && class(date) != "Date"
+    if(test) stop("date input should be a 'Date' object (use e.g. 
+                  date('2000/01/01') ), or a vector of dates with 
+                  length equal to number of timesteps in runoff")
     
+    test <- !is.list(date) && length(date) == 1
+    if(test) date <- as.list(rep(date, length(rasters)))
     
-    # see if aoi exists, whether it is an 'sf' or 'sp', and crop
-    if (!is.null(aoi)) {
-        
-        # if aoi is an 'sf' object, else if its an 'sp' object, else stop
-        accepted <- c("sf", "sfc", "sfg")
-        if( any(class(aoi) %in% accepted) ) {
-            aoi <- methods::as(aoi, "Spatial")
-            raster <- raster::crop(raster, aoi, snap="out")
-            aoi <- sf::st_as_sf(aoi)
-        } else if ( grepl("Spatial", class(aoi), fixed=TRUE) ) {
-            raster <- raster::crop(raster, aoi)
-            aoi <- sf::st_as_sf(aoi)
-        } else {
-            stop("Input area of interest should be an object of spatial class 
-                 from either 'sf' or 'sp' packages")
-        }
+    test <- !is.list(date) && length(date) != 1
+    if(test) date <- as.list(date)
+    
+    test <- length(date) == length(rasters)
+    if(!test) stop("length(date) != length(rasters)")
+    
+    test <- !is.null(timestep) && !timestep %in% c("day","month")
+    if(test) stop("Only 'day' or 'month' currently timesteps supported.")
+    
+    # test names
+    nrasters <- length(rasters)
+    test <- is.null(names) 
+    if(test) {
+        names <- paste0("runoff_", seq(1,nrasters,by=1))
+    } else {
+        test2 <- length(names) == nrasters
+        if(!test2) stop("length(names) != length(rasters)")
     }
     
-    grid <- raster::rasterToPolygons(raster)
-
+    total <- length(rasters)
+    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3) 
     
-    # change class to 'sf', intersect grid to aoi, if exists
-    if(!is.null(aoi)) {
-        grid <- suppressWarnings(
-            suppressMessages(
-                methods::as(grid, "sf") %>%
-                    sf::st_intersection(., sf::st_union(aoi))
+    # process all rasters
+    for(rast in seq_along(rasters)) {
+        
+        # load the raster in question
+        test3 <- any(class(rasters[[rast]]) %in% 
+                         c("RasterStack", "RasterBrick", "RasterLayer"))
+        if(!test3) {
+            raster <- raster::brick(rasters[[rast]])
+        } else {
+            raster <- rasters[[rast]]
+        }
+        
+        # see if aoi exists, whether it is an 'sf' or 'sp', and crop
+        if (!is.null(aoi)) {
+            
+            # if aoi is an 'sf' object, else if its an 'sp' object, else stop
+            accepted <- c("sf", "sfc", "sfg")
+            if( any(class(aoi) %in% accepted) ) {
+                aoi <- methods::as(aoi, "Spatial")
+                raster <- raster::crop(raster, aoi, snap="out")
+                aoi <- sf::st_as_sf(aoi)
+            } else if ( grepl("Spatial", class(aoi), fixed=TRUE) ) {
+                raster <- raster::crop(raster, aoi)
+                aoi <- sf::st_as_sf(aoi)
+            } else {
+                stop("Input area of interest should be an object of spatial class 
+                     from either 'sf' or 'sp' packages")
+            }
+        }
+        
+        # polygonize
+        grid <- raster::rasterToPolygons(raster)
+        
+        
+        # change class to 'sf', intersect grid to aoi, if exists
+        if(!is.null(aoi)) {
+            grid <- suppressWarnings(
+                suppressMessages(
+                    methods::as(grid, "sf") %>%
+                        sf::st_intersection(., sf::st_union(aoi))
                 )
             )
-    } else {
-        grid <- methods::as(grid, "sf")
-    }
-
-    # create the output
-    grid$gridID <- 1:NROW(grid)
-    grid$area_m2 <- sf::st_area(grid)
-    
-    output <- list()
-    output[["grid"]] <- dplyr::select(grid, gridID, area_m2)
-    
-    data <- dplyr::select(grid, -area_m2, -gridID) %>% 
-        sf::st_set_geometry(NULL) %>% 
-        t() %>% 
-        data.frame()
-    colnames(data) <- grid$gridID
-    rownames(data) <- NULL
-    
-    # process dates
-    if(length(date) == 1) {
-        if(timestep == "month") {
-            enddate <- date %m+% months(raster::nlayers(raster) -1)
-        } else if(timestep == "day") {
-            enddate <- date %m+% lubridate::days(raster::nlayers(raster) -1)
-        } else if(timestep == "hour") {
-            enddate <- date %m+% lubridate::hours(raster::nlayers(raster) -1)
+        } else {
+            grid <- methods::as(grid, "sf")
         }
-        date <- seq(date, enddate, by = timestep)
-    } 
-    data$Date <- date
+        
+        # create the output
+        grid$gridID <- 1:NROW(grid)
+        grid$area_m2 <- sf::st_area(grid)
+        
+        data <- dplyr::select(grid, -area_m2, -gridID) %>% 
+            sf::st_set_geometry(NULL) %>% 
+            t() %>% 
+            data.frame()
+        colnames(data) <- grid$gridID
+        rownames(data) <- NULL
+        
+        # process dates
+        dates <- date[[rast]]
+        
+        if(length(dates) == 1) {
+            if(timestep == "month") {
+                enddate <- dates %m+% months(raster::nlayers(raster) -1)
+            } else if(timestep == "day") {
+                enddate <- dates %m+% lubridate::days(raster::nlayers(raster) -1)
+            } else if(timestep == "hour") {
+                enddate <- dates %m+% lubridate::hours(raster::nlayers(raster) -1)
+            }
+            dates <- seq(dates, enddate, by = timestep)
+        }  else {
+            test <- length(dates) == nlayers(raster)
+            if(test) stop(paste0("length(dates) != nlayers(raster) for raster",
+                                 " number ",rast))
+        }
+        data$Date <- dates
+        
+        grid <-  dplyr::select(grid, gridID, area_m2)
+        
+        if(rast == 1) {
+            output <- create_HSgrid(grid, data, name = names[[rast]])
+        } else {
+            add <- create_HSgrid(grid, data, name = names[[rast]])
+            output <- add_HSgrid(output, add)
+         
+            
+        }
+        if (verbose) setTxtProgressBar(pb, rast)
+        }
+    if(verbose) close(pb)
     
-    output[["runoff"]] <- list()
-    output[["runoff"]][[name]] <- dplyr::select(data, Date, dplyr::everything())
-
-    
-    # assign class
-    class(output) <- c("HSgrid", class(output))
     
     #return
     return(output)

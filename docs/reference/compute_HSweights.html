@@ -6,8 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes weights to assign runoff from runoff area features to the 
-supplied river network. — compute_HSweights • hydrostreamer</title>
+<title>Computes weights <code>HSweights</code> from <code>HSgrid</code> and a river network
+  
+The function computes weights either based on catchment areas (polygons), 
+or line segments which intersect a polygon with runoff information. Weights 
+are assigned so that the sum of weights for area or line features within a 
+polygon equal to 1. — compute_HSweights • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,13 +35,16 @@ supplied river network. — compute_HSweights • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="Computes weights to assign runoff from runoff area features to the 
-supplied river network. — compute_HSweights" />
-
-<meta property="og:description" content="The function computes weights either based on catchment areas (polygons), 
+<meta property="og:title" content="Computes weights <code>HSweights</code> from <code>HSgrid</code> and a river network
+  
+The function computes weights either based on catchment areas (polygons), 
 or line segments which intersect a polygon with runoff information. Weights 
 are assigned so that the sum of weights for area or line features within a 
-polygon equal to 1." />
+polygon equal to 1. — compute_HSweights" />
+
+<meta property="og:description" content="The river network needs to be a &quot;clean&quot;, connected network. This means that 
+connected river segments share a node at the point of confluence, and all 
+linestrings are cut at segment intersections." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -68,7 +75,7 @@ polygon equal to 1." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -114,34 +121,37 @@ polygon equal to 1." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes weights to assign runoff from runoff area features to the 
-supplied river network.</h1>
+    <h1>Computes weights <code>HSweights</code> from <code>HSgrid</code> and a river network
+  
+The function computes weights either based on catchment areas (polygons), 
+or line segments which intersect a polygon with runoff information. Weights 
+are assigned so that the sum of weights for area or line features within a 
+polygon equal to 1.</h1>
     
     <div class="hidden name"><code>compute_HSweights.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The function computes weights either based on catchment areas (polygons), 
-or line segments which intersect a polygon with runoff information. Weights 
-are assigned so that the sum of weights for area or line features within a 
-polygon equal to 1.</p>
+    <p>The river network needs to be a "clean", connected network. This means that 
+connected river segments share a node at the point of confluence, and all 
+linestrings are cut at segment intersections.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>compute_HSweights</span>(<span class='no'>river</span>, <span class='no'>HSgrid</span>, <span class='no'>weights</span>, <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>basins</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>drain.dir</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>compute_HSweights</span>(<span class='no'>HSgrid</span>, <span class='no'>river</span>, <span class='no'>weights</span>, <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>basins</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>river</th>
-      <td><p>An 'sf' linestring feature representing a river network.</p></td>
-    </tr>
-    <tr>
       <th>HSgrid</th>
       <td><p>A 'HSgrid' object, obtained with <code><a href='raster_to_HSgrid.html'>raster_to_HSgrid</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>river</th>
+      <td><p>An 'sf' linestring feature representing a river network.</p></td>
     </tr>
     <tr>
       <th>weights</th>
@@ -159,12 +169,6 @@ skips the delineation process. ID column must have the name as <code>riverID</co
 Details. Optional.</p></td>
     </tr>
     <tr>
-      <th>drain.dir</th>
-      <td><p>A RasterLayer object. If weights are set to "area", providing a 
-drainage direction raster enables delineation of drainage basins for the provided 
-river network. Optional.</p></td>
-    </tr>
-    <tr>
       <th>riverID</th>
       <td><p>A character string which specifies the name of the column in 
 <code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
@@ -179,11 +183,12 @@ river network. Optional.</p></td>
 
     <p>Returns a list object with class 'HSweights', containing the following 
   elements:</p><ul>
-<li><p><code>river</code>. The supplied river network with routing information. See 
-      <code><a href='river_network.html'>river_network</a></code> for details.</p></li>
-<li><p><code>weights</code>. River network lines or catchment polygon network which was 
-      used as the basis of weighting. See <code><a href='compute_area_weights.html'>compute_area_weights</a></code> or 
-      <code><a href='compute_river_weights.html'>compute_river_weights</a></code> for details.</p></li>
+<li><p><code>river</code>. The supplied river network with routing information. 
+      See <code><a href='river_network.html'>river_network</a></code> for details.</p></li>
+<li><p><code>weights</code>. River network lines or catchment polygon network 
+      which was used as the basis of weighting. See 
+      <code><a href='compute_area_weights.html'>compute_area_weights</a></code> or <code><a href='compute_river_weights.html'>compute_river_weights</a></code> 
+      for details.</p></li>
 <li><p><code>HSgrid</code>. HSgrid object containing runoff information. See 
       <code><a href='raster_to_HSgrid.html'>raster_to_HSgrid</a></code> for details.</p></li>
 </ul>
@@ -191,10 +196,7 @@ river network. Optional.</p></td>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The river network needs to be connected, so that connected river segments 
-share a node, and all linestrings are cut at segment intersections (a "
-clean" network).</p>
-<p>Weights should be one of the following: "equal", "length", "strahler", "area", 
+    <p>Weights should be one of the following: "equal", "length", "strahler", "area", 
 or a numeric vector which specifies the weight for each river segment.</p><ul>
 <li><p><code>equal</code> option assigns equal weights to all river segments within 
   a polygon.</p></li>
@@ -208,51 +210,18 @@ or a numeric vector which specifies the weight for each river segment.</p><ul>
 <li><p><code>area</code> option weights the river segments based on segment-specific 
   catchment area falling inside a polygon. See more details below.</p></li>
 </ul>
-    <p>If line-based weights (equal, length, strahler, user specified vector) are used, 
-the river network is split at grid cell boundaries before determining 
+    <p>If line-based weights (equal, length, strahler, user specified vector) are 
+used, the river network is split at grid cell boundaries before determining 
 polygon-segment relationship.</p>
 <p>"area" weights can be used when catchment-based weighting is desired. If no 
-further data is supplied, the function computes a Voronoi diagram from the river 
-network (see <code><a href='river_voronoi.html'>river_voronoi</a></code> for details). By providing a drainage 
-direction raster, segment specific catchment are delineated based on it (see
-<code><a href='delineate_basin.html'>delineate_basin</a></code> for details). If the basins are known, they can be 
-supplied which allows skipping the delineation step entirely.</p>
+further data is supplied, the function computes a Voronoi diagram from the 
+river network (see <code><a href='river_voronoi.html'>river_voronoi</a></code> for details). If the basins 
+are known, they can be supplied which allows skipping the delineation step 
+entirely.</p>
 <p>Area of interest is optional. If provided, the river network will be clipped using 
 the supplied AoI.</p>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='co'># NOT RUN {</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>raster</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/library'>library</a></span>(<span class='no'>hydrostreamer</span>)
-
-<span class='co'># load data</span>
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>river</span>)
-<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/data'>data</a></span>(<span class='no'>basin</span>)
-<span class='no'>runoff</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/raster/topics/brick'>brick</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/system.file'>system.file</a></span>(<span class='st'>"extdata"</span>, <span class='st'>"runoff.tif"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"hydrostreamer"</span>))
-
-<span class='co'># create HSgrid</span>
-<span class='no'>grid</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='raster_to_HSgrid.html'>raster_to_HSgrid</a></span>(<span class='no'>HSgrid</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>)
-
-<span class='co'># weights based on line segments</span>
-<span class='co'># equal</span>
-<span class='no'>eq</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='st'>"equal"</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-<span class='co'># length</span>
-<span class='no'>len</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='st'>"length"</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-<span class='co'># strahler</span>
-<span class='no'>str</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='st'>"strahler"</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-<span class='co'># vector of weights</span>
-<span class='no'>w</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Normal'>rnorm</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/raster/topics/ncell'>nrow</a></span>(<span class='no'>river</span>))
-<span class='no'>vec</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='no'>w</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-
-<span class='co'># catchment based weights</span>
-<span class='co'># Voronoi diagram</span>
-<span class='no'>vor</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='st'>"area"</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-<span class='co'># using predefined basins</span>
-<span class='no'>basins</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='river_voronoi.html'>river_voronoi</a></span>(<span class='no'>river</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>)
-<span class='no'>bas</span> <span class='kw'>&lt;-</span> <span class='fu'>compute_weights</span>(<span class='no'>river</span>, <span class='no'>grid</span>, <span class='st'>"area"</span>, <span class='kw'>basins</span><span class='kw'>=</span><span class='no'>basins</span>, <span class='kw'>aoi</span><span class='kw'>=</span><span class='no'>basin</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
-<span class='co'># }</span><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -262,16 +231,14 @@ the supplied AoI.</p>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#details">Details</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+          </ul>
 
   </div>
 </div>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

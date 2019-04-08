@@ -32,10 +32,9 @@
 
 <meta property="og:title" content="Computes river hierarchies for a HSnetwork object. — river_hierarchy" />
 
-<meta property="og:description" content="Computes river hierarchies from a routed river network (HSnetwork 
-object), or from an unrouted, connected river network. In case the input 
-river network is unrouted, river_network is run before 
-computing river hierarchy." />
+<meta property="og:description" content="Computes river hierarchies from a routed river network, or from an unrouted,
+ connected river network. In case the input river network is unrouted, 
+ river_network is run before computing river hierarchy." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -66,7 +65,7 @@ computing river hierarchy." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -119,10 +118,9 @@ computing river hierarchy." />
 
     <div class="ref-description">
     
-    <p>Computes river hierarchies from a routed river network (<em>HSnetwork</em> 
-object), or from an unrouted, connected river network. In case the input 
-river network is unrouted, <code><a href='river_network.html'>river_network</a></code> is run before 
-computing river hierarchy.</p>
+    <p>Computes river hierarchies from a routed river network, or from an unrouted,
+ connected river network. In case the input river network is unrouted, 
+ <code><a href='river_network.html'>river_network</a></code> is run before computing river hierarchy.</p>
     
     </div>
 
@@ -165,7 +163,7 @@ stream order implemented.</p></td>
 <span class='no'>river</span> <span class='kw'>&lt;-</span> <span class='fu'>river_hierarchy</span>(<span class='no'>river</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
 
 <span class='co'># with routed network</span>
-<span class='no'>routed_river</span> <span class='kw'>&lt;-</span> <span class='fu'>flow_network</span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>) <span class='kw'>%&gt;%</span>
+<span class='no'>routed_river</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='river_network.html'>river_network</a></span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>) <span class='kw'>%&gt;%</span>
     <span class='fu'>river_hierarchy</span>()
 <span class='co'># }</span><div class='input'>
 </div></pre>
@@ -185,7 +183,7 @@ stream order implemented.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

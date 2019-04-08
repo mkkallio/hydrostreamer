@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer. — HSwrite • hydrostreamer</title>
+<title>Writes an HS object to disk. — HSwrite • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -31,11 +30,13 @@ runoff is written as it's own layer. — HSwrite • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer. — HSwrite" />
+<meta property="og:title" content="Writes an HS object to disk. — HSwrite" />
 
-<meta property="og:description" content="Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer." />
+<meta property="og:description" content="Writes out HS objects in order to use them outside R. By default
+the function writes the geometry using st_write, but where
+list columns are modified since they cannot be written by st_write. 
+Alternatively the function can output a timeseries specified by the user 
+(runoff, discharge, or control)." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -66,7 +67,7 @@ runoff is written as it's own layer." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -112,31 +113,39 @@ runoff is written as it's own layer." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer.</h1>
+    <h1>Writes an HS object to disk.</h1>
     
     <div class="hidden name"><code>HSwrite.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Writes any HS* object as a single geopackage where each input 
-runoff is written as it's own layer.</p>
+    <p>Writes out <code>HS</code> objects in order to use them outside R. By default
+the function writes the geometry using <code><a href='https://www.rdocumentation.org/packages/sf/topics/st_write'>st_write</a></code>, but where
+list columns are modified since they cannot be written by st_write. 
+Alternatively the function can output a timeseries specified by the user 
+(runoff, discharge, or control).</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>HSwrite</span>(<span class='no'>x</span>, <span class='no'>filename</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>HSwrite</span>(<span class='no'>x</span>, <span class='no'>filename</span>, <span class='kw'>what</span> <span class='kw'>=</span> <span class='st'>"geometry"</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>A <code>HSgrid</code>, <code>HSrunoff</code>, or a <code>HSflow</code> object.</p></td>
+      <td><p>A <code>HSgrid</code>, or a <code>HS</code> object.</p></td>
     </tr>
     <tr>
       <th>filename</th>
       <td><p>Filename to write to.</p></td>
+    </tr>
+    <tr>
+      <th>what</th>
+      <td><p>What to write. Accepts <code>"geometry"</code> for writing the river
+network or the runoff grid, or <code>"discharge_ts", "runoff_ts", 
+"control_ts"</code> for writing out a .csv table of the associated timeseries.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -157,7 +166,7 @@ runoff is written as it's own layer.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

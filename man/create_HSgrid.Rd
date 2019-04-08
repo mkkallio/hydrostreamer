@@ -4,7 +4,7 @@
 \alias{create_HSgrid}
 \title{Constructs a \code{HSgrid} object from given input}
 \usage{
-create_HSgrid(grid, runoff, name = "runoff")
+create_HSgrid(grid, runoff, gridID = "gridID", name = "runoff_1")
 }
 \arguments{
 \item{grid}{An \code{sf POLYGON} object}
@@ -12,21 +12,24 @@ create_HSgrid(grid, runoff, name = "runoff")
 \item{runoff}{a table of runoff where rows are timesteps and columns
 correspond to specific polygons in \code{grid}.}
 
+\item{gridID}{Column name with unique IDs in \code{grid}.}
+
 \item{name}{Name of the runoff timeseries. If multiple runoff timeseries
 are added to the same \code{HSgrid} object using \code{\link{add_HSgrid}}, 
 each timeseries must have a unique name, or else they are replaced.}
 }
 \value{
-Returns a \code{HSgrid} object which is a list of:
+Returns a \code{HSgrid} object with columns
   \itemize{
-    \item grid: polygon grid with areal units of runoff
-    \item runoff: a list of runoff values for each polygon.
+    \item gridID: unique ID
+    \item area_m2: area in square meters.
+    \item n_ts: number of runoff timeseries in the object.
+    \item runoff_ts: a list column containing a \code{tsibble} of
+      runoff timeseries.
   }
 }
 \description{
-Creates a \code{HSgrid} from input where grid is a polygon grid
-representing the units of runoff. It must include a column 'gridID'
-with unique IDs. Runoff must contain column 'Date', and value for 
-runoff in columns, where the column name is the ID of the corresponding 
-polygon in grid.
+Creates a \code{HSgrid} from input where \code{grid} is a polygon grid
+representing the spatialunits of runoff, and /code{runoff} is a data frame
+containing column 'Date', and where column names match the grid IDs.
 }

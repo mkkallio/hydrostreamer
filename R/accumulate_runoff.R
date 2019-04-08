@@ -1,462 +1,107 @@
-#' Apply river routing based on selected routing method.
+#' Apply river routing
 #' 
 #' Apply river routing using any of the provided methods. The function takes 
-#' \code{HSrunoff} object as an input.
+#' \code{HS} object with runoff timeseries as an input.
 #'
-#' There are currently three routing algorithms implemented: \code{'instant'}aneous
-#' flow, where all runoff is routed through the entire river network at every 
-#' timestep. There is no lag in instantaneous routing, which  means it may not be
-#' reasonable for large river networks. 'simple' river routing contains a simple lag 
-#' based on given flow velocity and river segment lengths. 'muskingum' implements 
-#' a muskingum river routing algorithm where k (storage) parameter is computed from 
-#' given flow velocity and river segment length. Large difference in timesteps of 
-#' runoff may result in computational instability. See further details from the 
-#' documentation of each method.
+#' There are currently three routing algorithms implemented: 
+#' \code{'instant'}aneous flow, where all runoff is routed through the entire 
+#' river network at every timestep. There is no lag in instantaneous routing, 
+#' which  means it may not be reasonable for large river networks. 
+#' \code{'simple'} river routing contains a simple lag based on given flow 
+#' velocity and river segment lengths. \code{'muskingum'} implements a muskingum
+#' river routing algorithm where k (storage) parameter is computed from given 
+#' flow velocity and river segment length. Large difference in timesteps of 
+#' runoff may result in computational instability. See further details from 
+#' the documentation of each method:
+#' \itemize{
+#'   \item \code{\link{accumulate_runoff_instant}}
+#'   \item \code{\link{accumulate_runoff_simple}}
+#'   \item \code{\link{accumulate_runoff_muskingum}}
+#' }
 #'
-#' @param HSrunoff A 'HSrunoff' object obtained by \code{\link{downscale_runoff}}
+#' @param HS A 'HS' object obtained by \code{\link{downscale_runoff}}
 #' @param method Character string specifying the method to be used. 
 #' @param ... Arguments passed to the routing algorithm.
-#' @inheritParams compute_HSweights
-#' @inheritParams accumulate_runoff_instant
-#' @inheritParams accumulate_runoff_muskingum
-#' @inheritParams accumulate_runoff_simple
+#' @param verbose Whether or not to print progress information. Defaults to 
+#'   \code{FALSE}.
 #'
-#' @return Returns an object of class \code{HSflow}) with 
-#' \itemize{
-#'   \item \code{river} River network inherited from input \code{HSrunoff}.
-#'   \item \code{discharge} A list of tables with estimated discharge for each 
-#'     river segment and each timestep.
-#'   \item \code{Routing_Method} The algorithm used for routing.
-#' }
+#' @return Returns the input object \code{HS}) with an added list column
+#'   \code{discharge_ts} containing routed discharge estimates for each river
+#'    segment. 
+#' 
 #' @export
-accumulate_runoff <- function(HSrunoff, 
+accumulate_runoff <- function(HS, 
                               method=c("instant", "simple", "muskingum"), 
                               ..., 
                               verbose = FALSE) {
   
-    class(HSrunoff) <- method[1]
-    UseMethod("accumulate_runoff", HSrunoff)
+    class(HS) <- method[1]
+    UseMethod("accumulate_runoff", HS)
   
 }
 
 #' @export
-accumulate_runoff.instant <- function(HSrunoff,
+accumulate_runoff.instant <- function(HS,
                                       method=c("instant", "simple", "muskingum"), 
                                       ..., 
                                       verbose = FALSE) {
     
-    if(!hasArg("boundary")) boundary <- NULL
+    output <- accumulate_runoff_instant(HS, 
+                                        verbose = verbose)
+    output <- assign_class(output, "HS")
     
-    output <- accumulate_runoff_instant(HSrunoff, 
-                              boundary,
-                              verbose)
-    return(output)
-}
-
-
-#' Compute instantaneous flow for each timestep
-#' 
-#' Applies the simplest possible river routing scheme, instantaenous flow, by 
-#' adding runoff from each river segment to all of the segments downstream, for 
-#' each timestep.
-#'
-#' @inheritParams accumulate_runoff
-#' @inheritParams accumulate_runoff_simple
-#'
-#' @return Returns an object of class \code{HSflow}) with 
-#' \itemize{
-#'   \item \code{river} River network inherited from input \code{HSrunoff}.
-#'   \item \code{discharge} A list of tables with estimated discharge for each 
-#'     river segment and each timestep.
-#'  \item \code{Routing_Method} The algorithm used for routing.
-#' }
-#' @export
-accumulate_runoff_instant <- function(HSrunoff, 
-                                      boundary = NULL,
-                                      verbose=FALSE) {
-    
-    riverID <- NULL
-    UP_SEGMENTS <- NULL
-    
-    #lengths <- sf::st_length(HSrunoff$river) %>% unclass()
-    IDs <- dplyr::select(HSrunoff$river, riverID) %>% 
-        sf::st_set_geometry(NULL) %>% 
-        unlist()
-    order <- HSrunoff$river %>%
-        dplyr::select(riverID, UP_SEGMENTS) %>%
-        sf::st_set_geometry(NULL) %>%
-        dplyr::arrange(UP_SEGMENTS) %>%
-        dplyr::select(riverID) %>%
-        unlist() %>%
-        match(IDs)
-
-    output <- list(river = HSrunoff$river, discharge = list())
-    
-    # process all of downscaled runoff
-    total <- length(HSrunoff$downscaled)*nrow(HSrunoff$downscales[[1]])
-    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
-    
-    for (d in seq_along(HSrunoff$downscaled)) {
-        
-        
-        dates <- HSrunoff$downscaled[[d]]$Date
-        Q <- HSrunoff$downscaled[[d]]
-        
-        # check boundary condition
-        if(!is.null(boundary)) {
-            bind <- which(boundary$riverIDs %in% IDs)
-            for(i in seq_along(bind)) {
-                rind <- which(colnames(Q) == boundary$riverIDs[bind[i]])
-                Q[, rind ] <- Q[, rind ] + boundary$Observations[,bind[i]+1]
-            }
-            
-        }
-        nextID <- HSrunoff$river$NEXT %>%
-            match(colnames(HSrunoff$downscaled[[d]]))
-        
-        
-        for (i in order) {
-            if(is.na(nextID[i])) {
-                next
-            }
-            
-            # # check boundary condition
-            if(!is.null(boundary)) {
-                if(nextID[i] %in% boundary$riverIDs) {
-                    next
-                }
-            }
-        
-            Q[, nextID[i] ] <- Q[, nextID[i] ] + Q[,i+1]
-            if (verbose) setTxtProgressBar(pb, (d-1)*nrow(HSrunoff$discharge[[1]]+i))
-        }
-        
-        if(is.null(names(HSrunoff$downscaled))) {
-            output$discharge[[d]] <- Q
-        } else {
-            name <- names(HSrunoff$downscaled)[d]
-            output$discharge[[ name ]] <- Q
-        }
-        
-    }
-    
-    if (verbose) close(pb)
-    output[["Routing_Method"]] <- "Instantaneous (accumulate_runoff.instant)"
-    class(output) <-  c("HSflow", class(output))
     return(output)
 }
 
 
 
+
+
 #' @export
-accumulate_runoff.muskingum <- function(HSrunoff,
-                                      method=c("instant", "simple", "muskingum"), 
-                                      ..., 
-                                      verbose = FALSE) {
+accumulate_runoff.muskingum <- function(HS,
+                                        method=c("instant", "simple", "muskingum"), 
+                                        ..., 
+                                        verbose = FALSE) {
     
-    if(!hasArg("boundary")) boundary <- NULL
-    if(!hasArg("velocity")) velocity <- 1
+    params <- list(...)
+   
     if(!hasArg("x")) {
         stop("Muskingum routing requires parameter x")
         x <- NULL
     }
-    
-    output <- accumulate_runoff_muskingum(HSrunoff, 
-                                          boundary,
-                                          velocity,
-                                          x,
-                                          verbose)
-    return(output)
-}
-
-#' Implements 'muskingum' routing algorithm for vector river network
-#' 
-#' The function implements 'muskingum' routing scheme where the storage parameter
-#' \emph{k} is computed using user input flow velocity, and the length of a 
-#' river segment. Using 'muskingum' for runoff data with time interval between
-#' runoff longer than day may cause instability in the output. If the interval is
-#' too high, use another algorithm.
-#' 
-#' Warning: The function is experimental and has not been thoroughly tested yet.
-#' 
-#' @param HSrunoff A \code{HSrunoff} object.
-#' @param velocity Flow velocity applied to compute parameter x. Can be a constant,
-#' or a vector of flow values at river segments.
-#' @param x Value for parameter x.
-#' @inheritParams compute_HSweights
-#' @inheritParams accumulate_runoff_simple
-#' 
-#' @return Returns an object of class \code{HSflow}) with 
-#' \itemize{
-#'   \item \code{river} River network inherited from input \code{HSrunoff}.
-#'   \item \code{discharge} A list of tables with estimated discharge for each 
-#'     river segment and each timestep.
-#'   \item \code{Routing_Method} The algorithm used for routing.
-#' }
-#' 
-#' @export
-accumulate_runoff_muskingum <- function(HSrunoff, 
-                                        boundary = NULL,
-                                        velocity = 1,
-                                        x,
-                                        verbose=FALSE) {
-    
-    if(!hasArg("boundary")) boundary <- NULL
-    if(!hasArg("velocity")) velocity <- 1
-    if(!hasArg("x")) {
-        stop("Muskingum routing requires parameter x")
-        x <- NULL
+    if(!hasArg("velocity")) {
+        params[["velocity"]] <- 1
     }
     
-    riverID <- NULL
-    UP_SEGMENTS <- NULL
+    output <- accumulate_runoff_muskingum(HS, 
+                                          velocity = params$velocity,
+                                          x = params$x,
+                                          verbose = verbose)
+    output <- assign_class(output, "HS")
     
-    lengths <- sf::st_length(HSrunoff$river) %>% unclass()
-    IDs <- dplyr::select(HSrunoff$river, riverID) %>% 
-        sf::st_set_geometry(NULL) %>% 
-        unlist()
-    order <- HSrunoff$river %>%
-        dplyr::select(riverID, UP_SEGMENTS) %>%
-        sf::st_set_geometry(NULL) %>%
-        dplyr::arrange(UP_SEGMENTS) %>%
-        dplyr::select(riverID) %>%
-        unlist() %>%
-        match(IDs)
-    
-    k <- lengths/velocity
-    
-    output <- list(river = HSrunoff$river, discharge = list())
-    
-    # process all of downscaled runoff
-    total <- length(HSrunoff$downscaled)*nrow(HSrunoff$downscales[[1]])
-    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
-    
-    for (d in seq_along(HSrunoff$downscaled)) {
-    
-        dates <- HSrunoff$downscaled[[d]]$Date
-        Q <- HSrunoff$downscaled[[d]]
-        
-        # check boundary condition
-        if(!is.null(boundary)) {
-            bind <- which(boundary$riverIDs %in% IDs)
-            for(i in seq_along(bind)) {
-                rind <- which(colnames(Q) == boundary$riverIDs[bind[i]])
-                Q[, rind ] <- Q[, rind ] + boundary$Observations[,bind[i]+1]
-            }
-        }
-        
-        nextID <- HSrunoff$river$NEXT %>%
-            match(colnames(HSrunoff$downscaled[[d]]))
-        
-        intervals <- vector("numeric", length(dates))
-        for (i in seq_along(intervals)) {
-            if (i == length(intervals)) {
-                intervals[i] <- lubridate::interval(dates[i], 
-                                    lubridate::ceiling_date(dates[i], 
-                                        unit="month")) / lubridate::seconds(1)
-            } else {
-                intervals[i] <- lubridate::interval(dates[i], 
-                                    dates[i+1]) / lubridate::seconds(1)
-            }
-        }
-        
-        krule <- mean(intervals) < 2*k*x
-        
-        if (any(krule == FALSE)) {
-            warning(paste0( (sum(krule == FALSE) / length(krule)), " % of river segments do not satisfy 
-                            'dt < 2kx' rule. Results may be unstable." ))
-        }
-        
-        for (i in order) {
-            if(is.na(nextID[i])) {
-                next
-            }
-            
-            # # check boundary condition
-            if(!is.null(boundary)) {
-                if(nextID[i] %in% boundary$riverIDs) {
-                    next
-                }
-            }
-            
-            mat <- matrix(0, nrow(Q)+1, 2)
-            mat[1:nrow(Q), 1] <- Q[,i+1]
-            mat[nrow(mat),1] <- mat[nrow(mat)-1,1]
-            for (t in 1:(nrow(mat)-1)) {
-                C0 <- -(k[i]*x - 0.5*intervals[t]) / 
-                       (k[i] - k[i]*x + 0.5*intervals[t])
-                C1 <- (k[i]*x + 0.5*intervals[t]) / 
-                      (k[i] - k[i]*x + 0.5*intervals[t])
-                C2 <- (k[i] - k[i]*x - 0.5*intervals[t]) / 
-                      (k[i] - k[i]*x + 0.5*intervals[t])
-                mat[t+1, 2] <- C0 * mat[t+1, 1] + 
-                               C1 * mat[t, 1] + 
-                               C2 * mat[t, 2]
-            }
-            mat[mat[, 2] < 0, 2] <- 0
-            Q[, nextID[i] ] <- Q[, nextID[i] ] + mat[1:(nrow(mat)-1),2]
-            if (verbose) setTxtProgressBar(pb, (d-1)*nrow(HSrunoff$discharge[[1]]+i))
-        }
-
-        if(is.null(names(HSrunoff$downscaled))) {
-            output$discharge[[d]] <- Q
-        } else {
-            name <- names(HSrunoff$downscaled)[d]
-            output$discharge[[ name ]] <- Q
-        }
-        
-    }
-    
-    if (verbose) close(pb)
-    output[["Routing_Method"]] <- "Muskingum (accumulate_runoff.muskingum)"
-    class(output) <-  c("HSflow", class(output))
     return(output)
-
 }
 
 
 
 #' @export
-accumulate_runoff.simple <- function(HSrunoff,
+accumulate_runoff.simple <- function(HS,
                                      method=c("instant", "simple", "muskingum"), 
                                      ..., 
                                      verbose = FALSE) {
     
-    if(!hasArg("boundary")) boundary <- NULL
-    if(!hasArg("velocity")) velocity <- 1
+    params <- list(...)
     
-    output <- accumulate_runoff_muskingum(HSrunoff, 
-                                          boundary,
-                                          velocity,
-                                          verbose)
+    if(!hasArg("velocity")) {
+        params[["velocity"]] <- 1
+    }
+    
+    output <- accumulate_runoff_simple(HS, 
+                                          velocity = params$velocity,
+                                          verbose = verbose)
+    output <- assign_class(output, "HS")
+    
     return(output)
 }
-
-#' Implements a simple lagged river routing algorithm.
-#' 
-#' Implements a simple lag-based routing algorithm which can be used with
-#' arbitrary intervals between runoff units. Includes a possibility to
-#' add boundary condition for river routing at certain river segments. 
-#' 
-#' If a boundary condition is supplied, inflow to the specified river segment 
-#' is set to the value provided in boundary condition. The boundary condition
-#' timeseries must equal the runoff timeseries being routed.
-#'
-#' @param boundary A \code{HSobs} object with boundary condition for routing.
-#' @inheritParams accumulate_runoff_muskingum
-#' @inheritParams compute_HSweights
-#'
-#' @return Returns an object of class \code{HSflow}) with 
-#' \itemize{
-#'   \item \code{river} River network inherited from input \code{HSrunoff}.
-#'   \item \code{discharge} A list of tables with estimated discharge for each 
-#'     river segment and each timestep.
-#'   \item \code{Routing_Method} The algorithm used for routing.
-#' }
-#' 
-#' @export 
-accumulate_runoff_simple <- function(HSrunoff, 
-                                     boundary = NULL,
-                                     velocity = 1,
-                                     verbose=FALSE) {
-    
-    if(!hasArg("boundary")) boundary <- NULL
-    if(!hasArg("velocity")) velocity <- 1
-    
-    riverID <- NULL
-    UP_SEGMENTS <- NULL
-    
-    lengths <- sf::st_length(HSrunoff$river) %>% unclass()
-    IDs <- dplyr::select(HSrunoff$river, riverID) %>% 
-        sf::st_set_geometry(NULL) %>% 
-        unlist()
-    order <- HSrunoff$river %>%
-        dplyr::select(riverID, UP_SEGMENTS) %>%
-        sf::st_set_geometry(NULL) %>%
-        dplyr::arrange(UP_SEGMENTS) %>%
-        dplyr::select(riverID) %>%
-        unlist() %>%
-        match(IDs)
-    
-    duration <- lengths/velocity
-    
-    output <- list(river = HSrunoff$river, discharge = list())
-    
-    # process all of downscaled runoff
-    total <- length(HSrunoff$downscaled)*nrow(HSrunoff$downscales[[1]])
-    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
-    
-    for (d in seq_along(HSrunoff$downscaled)) {
-        
-        
-        dates <- HSrunoff$downscaled[[d]]$Date
-        Q <- HSrunoff$downscaled[[d]]
-        
-        # check boundary condition
-        if(!is.null(boundary)) {
-          bind <- which(boundary$riverIDs %in% IDs)
-          for(i in seq_along(bind)) {
-            rind <- which(colnames(Q) == boundary$riverIDs[bind[i]])
-            Q[, rind ] <- Q[, rind ] + boundary$Observations[,bind[i]+1]
-          }
-        }
-        
-        nextID <- HSrunoff$river$NEXT %>%
-            match(colnames(HSrunoff$downscaled[[d]]))
-        
-        intervals <- vector("numeric", length(dates))
-        for (i in seq_along(intervals)) {
-            if (i == length(intervals)) {
-                intervals[i] <- lubridate::interval(dates[i], 
-                                    lubridate::ceiling_date(dates[i], 
-                                        unit="month")) / lubridate::seconds(1)
-            } else {
-                intervals[i] <- lubridate::interval(dates[i], 
-                                    dates[i+1]) / lubridate::seconds(1)
-            }
-        }
-      
-        for (i in order) {
-            if(is.na(nextID[i])) {
-                next
-            }
-            
-            # # check boundary condition
-            if(!is.null(boundary)) {
-                if(nextID[i] %in% boundary$riverIDs) {
-                  next
-                }
-            }
-            
-                    
-            mat <- matrix(0, nrow(Q)+1, 4)
-            mat[1:nrow(Q)+1, 1] <- intervals
-            mat[1:nrow(Q)+1, 2] <- Q[,i+1]
-            mat[1,] <- mat[2,]
-            for (t in 1:(nrow(mat))) {
-                outflow <- mat[t,2] * (1-duration[i]/mat[t,1])
-                mat[t,3] <- outflow
-                storage <- (mat[t,2] - outflow)*mat[t,1]
-                if(t != nrow(mat)) mat[t+1,2] <- mat[t+1,2] + (mat[t,2] - outflow)
-            }
-            Q[, nextID[i] ] <- Q[, nextID[i] ] + mat[2:(nrow(mat)),3]
-            if (verbose) setTxtProgressBar(pb, (d-1)*nrow(HSrunoff$discharge[[1]]+i))
-        }
-        
-        if(is.null(names(HSrunoff$downscaled))) {
-            output$discharge[[d]] <- Q
-        } else {
-            name <- names(HSrunoff$downscaled)[d]
-            output$discharge[[ name ]] <- Q
-        }
-        
-        }
-    
-    if (verbose) close(pb)
-    output[["Routing_Method"]] <- "Simple lag (accumulate_runoff.simple)"
-    class(output) <-  c("HSflow", class(output))
-    return(output)
-}
-
 
 

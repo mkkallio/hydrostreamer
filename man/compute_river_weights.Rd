@@ -5,7 +5,7 @@
 \title{Compute weights for river segments within runoff area features.}
 \usage{
 compute_river_weights(river, grid, seg_weights = "length",
-  riverID = "riverID", split = FALSE)
+  riverID = "riverID", split = TRUE)
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
@@ -20,11 +20,11 @@ numerical vector. See Details. Defaults to "length".}
 \code{river} containing unique river network identifiers. Defaults to "riverID".}
 
 \item{split}{Whether or not to use \code{\link{split_river_with_grid}} 
-before computing weights. Default is FALSE (assuming the river has already 
-been split)}
+before computing weights. Default is TRUE (assuming the river has not
+already been split)}
 }
 \value{
-Returns an 'sf' linestring feature with attributes:
+Returns an 'sf' linestring object with attributes:
   \itemize{
     \item \emph{ID}. Unique ID of the feature.
     \item \emph{riverID}. ID of the river each segment is associated to.
@@ -53,25 +53,4 @@ This function is called by \code{\link{compute_HSweights}}.
     \item A numeric vector with length equal to the number of features 
       in \emph{river}. 
 }
-}
-\examples{
-\dontrun{
-library(raster)
-library(hydrostreamer)
-
-# load data
-data(river)
-data(basin)
-runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
-
-# create HSgrid
-grid <- polygrid_timeseries(grid, aoi=basin)
-
-# create basins
-basins <- river_voronoi(river, aoi=basin, riverID = "ID")
-
-# compute weights
-weighted_basins <- compute_area_weights(basins, grid, riverID="ID")
-}
-
 }

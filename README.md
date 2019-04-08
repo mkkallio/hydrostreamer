@@ -1,29 +1,55 @@
-hydrostreamer
-=============
+hydrostreamer 0.4.0
+===================
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214523.svg)](https://doi.org/10.5281/zenodo.1214523)
 
 **hydrostreamer** is an R package to downscale distributed runoff data
 products by spatial relationship between the areal unit in runoff data,
-and an explicitly represented river network. In practise the downscaling
-occurs by dividing the value of runoff to all those river segments
-intersecting the areal unit (of runoff) using a numerical attribute for
-weighting. These attributes can be, for instance, length of the
-intersecting river segment, Strahler number, or area of the
-segment-specific catchment.
+and an explicitly represented river network.
+
+**hydrostreamer** has featured in a number of conference presentations:
+
+-   EGU 2018: Kallio et al, [Spatial allocation of low resolution runoff
+    model outputs to high resolution stream
+    network](https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network)
+
+-   AGU 2018: Kallio et al, [Generating improved estimates of streamflow
+    using model averaging of downscaled runoff products under
+    uncertainty](https://www.researchgate.net/publication/330213179_Generating_improved_estimates_of_streamflow_using_model_averaging_of_downscaled_runoff_products_under_uncertainty)
+
+-   AGU 2018: Virkki et al, [The value of open-source river discharge
+    estimation in the water governance context of the 3S river basin in
+    Southeast
+    Asia](https://www.researchgate.net/publication/331320855_AGU_2018_Poster_Presentation)
+
+-   EGU 2019: Nauditt et al, [Evaluating drought risk in data scarce
+    tropical
+    catchments](https://meetingorganizer.copernicus.org/EGU2019/EGU2019-18370.pdf)
+
+-   A research paper is currently under preparation.
+
+In practise the downscaling occurs by dividing the value of runoff to
+all those river segments intersecting the areal unit (of runoff) using a
+numerical attribute for weighting. These attributes can be, for
+instance, length of the intersecting river segment, Strahler number, or
+area of the segment-specific catchment.
 
 ![](http://markokallio.fi/hydrostreamer%20downscaling.png) *Downscaling
 in hydrostreamer can be done either using river segment lines, or by
 their catchment areas. This is an example in case of a gridded runoff
 product, but the areal units can be arbitrarily shaped*
 
+Installing
+----------
+
 **hydrostreamer** is not yet on CRAN, so to install, use
 *devtools::install\_github()* in RStudio. You should have R version
 higher than 3.4.0 for the package to work properly.
 
-``` r
-devtools::install_github("mkkallio/hydrostreamer")
-```
+Note that while **hydrostreamer** is already a useful package, it is
+under development and may change without prior notice.
+
+    # devtools::install_github("mkkallio/hydrostreamer")
 
 Basic usage
 -----------
@@ -32,30 +58,37 @@ Basic usage
 
 1.  Convert the runoff timeseries to a HSgrid object,
 2.  Compute weights for each river segment,
-3.  Downscale runoff, and optionally
+3.  Downscale runoff, and
 4.  Apply river routing.
 
-Minimum data requirement is a runoff timeseries, either as polygons or
-in raster format, and a river network. The river network needs to be a
-‘clean’ set of connected linestrings, meaning that connected river
-segments must share a node at either end of the segment. In addition,
-the digitizing direction is semantically important: the river segment
-must be drawnfrom upstream to downstream. Using a polygon of an area of
-interest is not an absolute requirement, but is recommended to avoid
-erroneous runoff assignments at the border areas.
+Minimum data requirement is a distributed runoff timeseries, either as
+polygons or in a raster format, and a river network. Alternatively,
+river network can be derived from a Digital Elevation Model (DEM).
 
-First, load exaple data to R:
+First, load example data to R:
 
-``` r
-library(sf)
-library(raster)
-library(hydrostreamer)
-library(lubridate)
+    library(raster)
 
-data(river)
-data(basin)
-runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
-```
+    ## Loading required package: sp
+
+    library(hydrostreamer)
+
+    ## Loading required package: sf
+
+    ## Linking to GEOS 3.6.1, GDAL 2.2.3, PROJ 4.9.3
+
+    library(lubridate)
+
+    ## 
+    ## Attaching package: 'lubridate'
+
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     date
+
+    data(example_rivers)
+    data(example_basins)
+    runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
 
 ### 1. Convert raster timeseries to a HSgrid
 
@@ -64,9 +97,11 @@ object. For a runoff input in a raster format, use
 *raster\_to\_HSgrid()* function. For input we need the raster, starting
 date of the timeseries and the granularity of input timesteps.
 
-``` r
-grid <- raster_to_HSgrid(runoff, date=ymd("1971-01-01"), timestep="month", aoi=basin)
-```
+    HSgrid <- raster_to_HSgrid(runoff, 
+                             date = ymd("1980-01-01"), 
+                             timestep = "month", 
+                             aoi = st_union(basins),
+                             names = "LORA")
 
 ### 2. Compute weights for each river segment
 
@@ -87,21 +122,24 @@ can be done by
     4.  user provided attributes
 3.  More complex downscaling
 
-Here, we use river segment Voronoi diagram as basins. For information on
-the other options, see *help(compute\_HSweights)*.
+Here, we use river segment specific catchment areas, which are provided
+in the example data. For information on the other options, see
+*help(compute\_HSweights)*.
 
-``` r
-weights <- compute_HSweights(river, grid, "area", aoi=basin, riverID = "ID")
-```
+    weights <- compute_HSweights(HSgrid, 
+                                 river, 
+                                 "area",
+                                 basins = basins,
+                                 aoi = st_union(basins), 
+                                 riverID = "SEGMENT_ID")
 
 ### 3. Downscale runoff
 
 With the weights computed, we can assign specific runoff to each river
-segment.
+segment. This means that we disaggregate the low resolution runoff into
+its components - the river segments.
 
-``` r
-downscaled_runoff <- downscale_runoff(weights)
-```
+    downscaled_runoff <- downscale_runoff(weights)
 
 ### 4. Apply river routing
 
@@ -116,28 +154,41 @@ every segment downstream, at each timestep. This is an overly simple
 scheme, and there are plans to add more sophisticated river routing
 algorithms to the package.
 
-``` r
-streamflow <- accumulate_runoff(downscaled_runoff)
-```
+    streamflow <- accumulate_runoff(downscaled_runoff)
 
-### Export
+### These functions are pipable
+
+The function usage has been developed so that they are all pipable.
+
+    streamflow <- raster_to_HSgrid(runoff, 
+                             date=ymd("1980-01-01"), 
+                             timestep="month", 
+                             aoi=st_union(basins),
+                             names="LORA") %>%
+        compute_HSweights(river,
+                          "area",
+                          aoi=st_union(basins),
+                          basins = basins,
+                          riverID = "SEGMENT_ID") %>%
+        downscale_runoff() %>%
+        accumulate_runoff()
+
+### Exporting
 
 **hydrostreamer** includes also a useful function to export the results
 to a GeoPackage, which can be viewed in any GIS software (such as
-ArcGIS, QGIS).
+ArcGIS, QGIS). We can also write the discharge (or runoff) as a table.
 
-``` r
-HSwrite(streamflow, "downscaled_streamflow.gpkg")
-```
+    HSwrite(streamflow, "downscaled_streamflow.gpkg")
 
-Development
------------
+    ## Writing layer `downscaled_streamflow' to data source `downscaled_streamflow.gpkg' using driver `GPKG'
+    ## features:       41
+    ## fields:         6
+    ## geometry type:  Line String
 
-**hydrostreamer** provides simple tools to downscale off-the-shelf
-runoff products without performing additional modelling. The package is
-under rapid development. The current version includes many improvements
-over the earlier 0.2.2 version. See News for more information. Also, see
-the additional vignettes for further information and usage.
+    HSwrite(streamflow, "downscaled_streamflow.csv", what = "discharge")
+
+    ## Loading required namespace: readr
 
 License
 -------

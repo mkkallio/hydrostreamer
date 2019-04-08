@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Combine <code>HSgrid</code> objects or addnew runoff input from raster. — add_HSgrid • hydrostreamer</title>
+<title>Combine <code>HSgrid</code> objects or add new runoff input from raster. — add_HSgrid • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,11 +30,11 @@
 
 
 
-<meta property="og:title" content="Combine <code>HSgrid</code> objects or addnew runoff input from raster. — add_HSgrid" />
+<meta property="og:title" content="Combine <code>HSgrid</code> objects or add new runoff input from raster. — add_HSgrid" />
 
-<meta property="og:description" content="Combines the runoff lists from two HSgrid objects, or adds a new
-runoff table from a raster. Warning: The geometries of the
-combined grids must be identical." />
+<meta property="og:description" content="Combines the runoff_ts columns from two HSgrid objects, or adds new
+runoff timeseries from a raster. **All** geometries in HSgrid must be present
+in the object to be added, or combination will not done." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -65,7 +65,7 @@ combined grids must be identical." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -111,21 +111,21 @@ combined grids must be identical." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Combine <code>HSgrid</code> objects or addnew runoff input from raster.</h1>
+    <h1>Combine <code>HSgrid</code> objects or add new runoff input from raster.</h1>
     
     <div class="hidden name"><code>add_HSgrid.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Combines the runoff lists from two HSgrid objects, or adds a new
-runoff table from a raster. <em>Warning: The geometries of the
-combined grids must be identical.</em></p>
+    <p>Combines the <code>runoff_ts</code> columns from two HSgrid objects, or adds new
+runoff timeseries from a raster. **All** geometries in HSgrid must be present
+in the object to be added, or combination will not done.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>add_HSgrid</span>(<span class='no'>HSgrid</span>, <span class='kw'>from</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>raster</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>date</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>timestep</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>name</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>add_HSgrid</span>(<span class='no'>HSgrid</span>, <span class='kw'>from</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>rasters</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>date</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>timestep</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -139,13 +139,15 @@ combined grids must be identical.</em></p>
       <td><p>A <code>HSgrid</code> object to add from. Optional.</p></td>
     </tr>
     <tr>
-      <th>raster</th>
-      <td><p>A Raster* object.</p></td>
+      <th>rasters</th>
+      <td><p>A raster object, or a list of raster objects, or a list of
+URIs to files readable by <code>raster</code> package.</p></td>
     </tr>
     <tr>
       <th>date</th>
       <td><p>Date of the first layer in <code>raster</code>, or a vector of dates 
-with the length of layers in <code>raster</code>.</p></td>
+with the length of layers in <code>raster</code>, or a list of vectors of dates,
+corresponding to the dates in each raster layer.</p></td>
     </tr>
     <tr>
       <th>timestep</th>
@@ -160,14 +162,15 @@ not a vector of dates.</p></td>
 recommended for all applications.</p></td>
     </tr>
     <tr>
-      <th>name</th>
-      <td><p>A name for the runoff timeseries. If <code>NULL</code>,</p></td>
+      <th>names</th>
+      <td><p>A name (names) for the runoff timeserie(s).</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns the input <code>HSgrid</code> object with added runoff.</p>
+    <p>Returns the input <code>HSgrid</code> object with added columns in 
+  runoff_ts column.</p>
     
 
   </div>
@@ -184,7 +187,7 @@ recommended for all applications.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

@@ -35,7 +35,7 @@ against observed streamflow — flow_gof • hydrostreamer</title>
 against observed streamflow — flow_gof" />
 
 <meta property="og:description" content="Computed goodness-of-fit statistics using gof
-for all the timeseries in the input HSflow object." />
+for all the timeseries in the input HS object." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -66,7 +66,7 @@ for all the timeseries in the input HSflow object." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -121,44 +121,30 @@ against observed streamflow</h1>
     <div class="ref-description">
     
     <p>Computed goodness-of-fit statistics using <code><a href='https://www.rdocumentation.org/packages/hydroGOF/topics/gof'>gof</a></code>
-for all the timeseries in the input <code>HSflow</code> object.</p>
+for all the timeseries in the input <code>HS</code> object.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>flow_gof</span>(<span class='no'>HSflow</span>, <span class='no'>HSobs</span>, <span class='kw'>weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
+    <pre class="usage"><span class='fu'>flow_gof</span>(<span class='no'>HS</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>HSflow</th>
-      <td><p>An <code>HSflow</code> object</p></td>
-    </tr>
-    <tr>
-      <th>HSobs</th>
-      <td><p>An <code>HSobs</code> object containing observations at the
-locations to optimise.</p></td>
-    </tr>
-    <tr>
-      <th>weights</th>
-      <td><p>a numeric vector of weights, or a list of weight vectors 
-with the length of the number of timeseries in <code>HSflow</code>. See details. 
-Optional.</p></td>
+      <th>HS</th>
+      <td><p>A <code>HS</code> object with column <code>discharge_ts</code></p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a list with gof-statistics for all the observations in
- every discharge prediction in <code>HSflow</code>.</p>
+ every discharge prediction in <code>HS</code>.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>By default, goodness-of-fit measures are computed for all timeseries in 
-the input data. If weights are provided, the timeseries are
-first combined according to the weights, and goodness-of-fit are then 
-computed for the resulting combination. If a list of weights is provided,
-goodness-of-fit is computed for all of them.</p>
+the input data.</p>
     
 
   </div>
@@ -177,7 +163,7 @@ goodness-of-fit is computed for all of them.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

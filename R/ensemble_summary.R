@@ -1,145 +1,161 @@
-#' Computes summaries from hydrostreamer::HS* objects
+#' Computes summary timeseries from HS* objects
 #' 
 #' Allows easy computation of summaries across runoff datasets with user defined 
 #' functions. The functions provided are run either individually for, or across, 
-#' each runoff/downscaled/flow sets in an HS* object. 
+#' each runoff/downscaled/discharge timeseries in an HS* object. 
 #' 
-#' @param HS Any HS* object, or a list of tables with column \code{Date}.
-#' @param summarise_over_all Compute functions individually, or across all data.
-#'   Defaults to \code{TRUE}.
-#' @param aggregate_monthly Summarise over the timestamps in data, or aggregate
-#'   results to the 12 months of the year.
-#' @param funs Functions to evaluate. By default, computes \code{min, mean, median and 
-#'   max.}
+#' Applicable functions take a vector of numeric values as input, and return 
+#' a single numerical value.
+#' 
+#' @param HS \code{HS} object, or a list of data frames with column \code{Date}.
+#' @param summarise_over_timeseries Apply function(s) to each column-wise (to
+#'   each timeseries separately, \code{TRUE}), or row-wise for each date in 
+#'   timeseries(\code{FALSE}, default).
+#' @param aggregate_monthly Apply results to the 12 months of the year. Defaults
+#'   to \code{FALSE}.
+#' @param funs Functions to evaluate. By default, computes \code{min, mean, 
+#' median and max}.
+#' @param drop Drop existing timeseries in \code{runoff_ts}, \code{discharge_ts},
+#'   or not.  
 #' @param ... Additional arguments passed to \code{funs}.
+#' @param verbose Indicate progress, or not. Defaults to \code{FALSE}.
 #' 
-#' @return Returns the input HS* object, or a list, where runoff/downscaled/discharge
-#'   is replaced with the computed summaries.
+#' @return Returns the input \code{HS} object, or a list, where 
+#'   runoff/downscaled/discharge is replaced with the computed summaries.
 #' 
 #' @export
 ensemble_summary <- function(HS, 
-                             summarise_over_all = TRUE, 
+                             summarise_over_timeseries = FALSE, 
                              aggregate_monthly = FALSE,
                              funs=c("min","mean","median","max"), 
-                             ...) {
-    if(aggregate_monthly && class(HS) != "HSflow") {
-        warning("Routing does not work appropriately for data aggregated to months. 
-                Use original timeseries for routing.")
-    }
+                             drop=FALSE,
+                             ...,
+                             verbose = FALSE) {
+    # if(aggregate_monthly && class(HS) != "HSflow") {
+    #     warning("Routing does not work appropriately for data aggregated to months. 
+    #             Use original timeseries for routing.")
+    # }
     UseMethod("ensemble_summary")
 }
 
 #' @export
 ensemble_summary.list <- function(HS,
-                                  summarise_over_all = TRUE, 
+                                  summarise_over_timeseries = TRUE, 
                                   aggregate_monthly = FALSE, 
                                   funs=c("min","mean","median","max"),
-                                  ...) {
+                                  drop = FALSE,
+                                  ...,
+                                  verbose = FALSE) {
+    Date <- NULL
+    Month <- NULL
+    Pred <- NULL
+    Value <- NULL
+    Stat <- NULL
+    Prediction <- NULL
     
-    nrunoff <- length(HS)
-    if (summarise_over_all && nrunoff != 1) {
-        HS <- summarise_over_all(HS)
+    total <- length(HS)
+    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
+    
+    for (seg in seq_along(HS)) {
+        data <- HS[[seg]]
+        
+        if (summarise_over_timeseries) {
+            if (aggregate_monthly) {
+                data <- data %>%
+                    tibble::as_tibble() %>%
+                    dplyr::mutate(Month = lubridate::month(Date)) %>%
+                    dplyr::group_by(Month) %>%
+                    dplyr::select(-Date) %>%
+                    dplyr::summarise_all(.funs=funs, na.rm=TRUE) %>%
+                    tidyr::gather(Pred, Value,-Month) %>%
+                    dplyr::mutate(Stat = stringr::word(Pred, -1, sep="_"),
+                                  Prediction = stringr::str_replace(Pred, 
+                                                                    paste0("_", Stat), "")) %>%
+                    dplyr::select(Month, Prediction, Stat, Value)
+            } else {
+                data <- data %>%
+                    tibble::as_tibble() %>%
+                    dplyr::select(-Date) %>%
+                    dplyr::summarise_all(.funs=funs, ...) %>%
+                    tidyr::gather(Pred, Value) %>%
+                    dplyr::mutate(Stat = stringr::word(Pred, -1, sep="_"),
+                                  Prediction = stringr::str_replace(Pred, 
+                                                                    paste0("_", Stat), "")) %>%
+                    dplyr::select(Prediction, Stat, Value)
+            }
+            
+        } else {
+            data <- data %>% 
+                tidyr::gather(Prediction, Value, -Date)
+            
+            if (aggregate_monthly) {
+                data <- data %>%
+                    tibble::as_tibble() %>%
+                    dplyr::mutate(Month = lubridate::month(Date)) %>%
+                    dplyr::group_by(Month) %>%
+                    dplyr::select(-Date,-Prediction) %>%
+                    dplyr::summarise_all(.funs=funs) 
+            } else {
+                data <- data %>%
+                    tibble::as_tibble() %>%
+                    dplyr::group_by(Date) %>%
+                    dplyr::select(-Prediction) %>%
+                    dplyr::summarise_all(.funs=funs) 
+            }
+            if (!drop) {
+                data <- dplyr::left_join(HS[[seg]], data, by="Date")
+            }
+            
+        }
+        
+        
+        HS[[seg]] <- data
+        if(verbose) setTxtProgressBar(pb, seg)
     }
     
-    data <- HS
+    if(verbose) close(pb)
     
-    output <- do_summary_fun(data, funs, aggregate_monthly, ...)
-    
-    return(output)
+    return(HS)
 }
 
 
 
 #' @export
-ensemble_summary.HSgrid <- function(HS,
-                                    summarise_over_all = TRUE,
-                                    aggregate_monthly = FALSE,
-                                    funs=c("min","mean","median","max"), 
-                                    ...) {
+ensemble_summary.HS <- function(HS,
+                                summarise_over_timeseries = TRUE,
+                                aggregate_monthly = FALSE,
+                                funs=c("min","mean","median","max"), 
+                                drop = FALSE,
+                                ...,
+                                verbose = FALSE) {
     
-    if ("quantile" %in% funs) stop("function 'quantile' not supported 
-                                    for HSgrid object due to problems 
-                                    further down the line.")
-    
-    nrunoff <- length(HS$runoff)
-    if (summarise_over_all && nrunoff != 1) {
-        HS$runoff <- summarise_over_all(HS$runoff)
+    runoff <- hasName(HS, "runoff_ts")
+    discharge <- hasName(HS, "discharge_ts")
+    if (runoff) {
+        data <- HS$runoff_ts
+        data <- ensemble_summary(data, 
+                                 summarise_over_timeseries,
+                                 aggregate_monthly,
+                                 funs,
+                                 drop = drop,
+                                 ...,
+                                 verbose = verbose)
+        HS$runoff_ts <- data
     }
     
-    data <- HS$runoff
+    if (discharge) {
+        data <- HS$discharge_ts
+        data <- ensemble_summary(data, 
+                                 summarise_over_timeseries,
+                                 aggregate_monthly,
+                                 funs,
+                                 drop = drop,
+                                 ...)
+        HS$discharge_ts <- data
+    }
     
-    output <- do_summary_fun(data, funs, aggregate_monthly, ...)
-    
-    HS$runoff <- output
+    HS <- reorder_cols(HS)
+    HS <- assign_class(HS, "HS")
     return(HS)
 }
 
-#' @export
-ensemble_summary.HSweights <- function(HS,  
-                                       summarise_over_all = TRUE,
-                                       aggregate_monthly = FALSE, 
-                                       funs=c("min","mean","median","max"),
-                                       ...) {
-    
-    if ("quantile" %in% funs) stop("function 'quantile' not supported 
-                                    for HSweights object due to problems 
-                                    further down the line.")
-    
-    nrunoff <- length(HS$grid$runoff)
-    if (summarise_over_all && nrunoff != 1) {
-        HS$runoff <- summarise_over_all(HS$grid$runoff)
-    }
-    
-    data <- HS$grid$runoff
-    
-    output <- do_summary_fun(data, funs, aggregate_monthly, ...)
-    
-    HS$grid$runoff <- output
-    return(HS)
-}
-
-
-#' @export
-ensemble_summary.HSrunoff <- function(HS,        
-                                      summarise_over_all = TRUE, 
-                                      aggregate_monthly = FALSE,    
-                                      funs=c("min","mean","median","max"),  
-                                      ...) {
-    
-    if ("quantile" %in% funs) stop("function 'quantile' not supported 
-                                    for HSrunoff object due to problems 
-                                    further down the line.")
-    
-    nrunoff <- length(HS$downscaled)
-    if (summarise_over_all && nrunoff != 1) {
-        HS$downscaled <- summarise_over_all(HS$downscaled)
-    }
-    
-    data <- HS$downscaled
-    
-    output <- do_summary_fun(data, funs, aggregate_monthly, ...)
-    
-    HS$downscaled <- output
-    return(HS)
-}
-
-
-#' @export
-ensemble_summary.HSflow <- function(HS,          
-                                    summarise_over_all = TRUE, 
-                                    aggregate_monthly = FALSE,   
-                                    funs=c("min","mean","median","max"), 
-                                    ...) {
-    
-    nrunoff <- length(HS$discharge)
-    if (summarise_over_all && nrunoff != 1) {
-        HS$discharge <- summarise_over_all(HS$discharge)
-    }
-    
-    data <- HS$discharge
-    
-    output <- do_summary_fun(data, funs, aggregate_monthly, ...)
-    
-    HS$discharge <- output
-    return(HS)
-}

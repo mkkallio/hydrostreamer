@@ -19,7 +19,7 @@ split_river_with_grid(river, HSgrid, riverID = "riverID",
 }
 \value{
 Returns an 'sf' linestring object which has been split at 
-  the polygon (grid) boundaries with attributes:
+  the polygon (grid) boundaries with attributes (columns):
   \itemize{
     \item \emph{ID}. Unique ID of the split river segments.
     \item \emph{riverID}. ID of the original river segment prior 

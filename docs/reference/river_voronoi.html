@@ -34,7 +34,8 @@
 
 <meta property="og:description" content="The function creates Voronoi diagram for each segment in a directed 
 connected river network (sf LINESTRING), where the Voronoi 
-polygons join together at network segment intersections." />
+polygons join together at network segment intersections. The function 
+requires package lwgeom and will not work without it." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -65,7 +66,7 @@ polygons join together at network segment intersections." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -120,7 +121,8 @@ polygons join together at network segment intersections." />
     
     <p>The function creates Voronoi diagram for each segment in a directed 
 connected river network (<code>sf LINESTRING</code>), where the Voronoi 
-polygons join together at network segment intersections.</p>
+polygons join together at network segment intersections. The function 
+requires package <code>lwgeom</code> and will not work without it.</p>
     
     </div>
 
@@ -140,7 +142,8 @@ polygons join together at network segment intersections.</p>
     <tr>
       <th>riverID</th>
       <td><p>A character string which specifies the name of the column in 
-<code>river</code> containing unique river network identifiers. Defaults to "riverID".</p></td>
+<code>river</code> containing unique river network identifiers. 
+Defaults to "riverID".</p></td>
     </tr>
     <tr>
       <th>verbose</th>
@@ -157,7 +160,7 @@ polygons join together at network segment intersections.</p>
 
     <p>Creating the segment Voronoi diagram is done in the following steps:</p><ol>
 <li><p>Move starting and ending nodes forward or backwards (respectively) 
-  for a small amount to ensure there are no identical nodes.</p></li>
+  for a small amount to ensure there are no identically placed nodes.</p></li>
 <li><p>Compute a Voronoi diagram from point cloud of river segment nodes.</p></li>
 <li><p>Union the individual polygons using river segment ID.</p></li>
 <li><p>Clip the polygons to the area of interest.</p></li>
@@ -184,7 +187,7 @@ with <code><a href='https://www.rdocumentation.org/packages/sf/topics/geos_unary
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

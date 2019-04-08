@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>hydrostreamer 0.3.1 • hydrostreamer</title>
+<title>hydrostreamer 0.4.0 • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,7 +30,7 @@
 
 
 
-<meta property="og:title" content="hydrostreamer 0.3.1" />
+<meta property="og:title" content="hydrostreamer 0.4.0" />
 
 
 
@@ -60,7 +60,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -106,12 +106,35 @@
 <div class="row">
   <div class="contents col-md-9">
     <div class="page-header">
-      <h1>hydrostreamer 0.3.1</h1>
+      <h1>hydrostreamer 0.4.0</h1>
     </div>
 
 
-<div id="hydrostreamer-0-3-1" class="section level1">
+<div id="hydrostreamer-0-4-0" class="section level1">
 
+<p>Large update which brings the package to version 0.4.0. Changes made to nearly all functions.</p>
+<ul>
+<li><p>The outputs from main functions are not ‘sf’ objects, with the runoff and discharge timeseries provided in list columns. This should enhance the usability of the package.</p></li>
+<li><p>New function <code><a href="reference/create_river.html">create_river()</a></code> is provided. The minimum input is now changed to a runoff timeseries and a river network, OR a DEM. The function create a river network from a supplied DEM. However, RSAGA is requred for this to function. Thanks go to Vili Virkki for adding this!</p></li>
+<li><p>New example data added.</p></li>
+<li><p>Vignette updated. New vignettes planned going deeper in the different aspects of hydrostreamer</p></li>
+<li><p>The workflow is now pipeable.</p></li>
+</ul>
+</div>
+<div id="hydrostreamer-0-3-2" class="section level1">
+<h1 class="hasAnchor">
+<a href="#hydrostreamer-0-3-2" class="anchor"></a>hydrostreamer 0.3.2</h1>
+<p>Fixed many issues, including:</p>
+<ul>
+<li><p>added <code>ForecastComb</code> in imports</p></li>
+<li><p>fixed <code><a href="reference/delineate_basin.html">delineate_basin()</a></code></p></li>
+<li><p>Hopefully fixed the conflict issue between <code>raster</code> and <code>hydroGOF</code> packages. The issue appears to have been caused by <code>hydroGOF</code> importing <code>hydroTSM</code> importing <code>gstat</code> importing <code>spacetime</code>, which redefines class <code>RasterStack</code>. Sometimes manifests itself when loading an .RData file with a raster in it, causing automatic attachment of <code>raster</code>.</p></li>
+<li><p>Some other smaller fixes.</p></li>
+</ul>
+</div>
+<div id="hydrostreamer-0-3-1" class="section level1">
+<h1 class="hasAnchor">
+<a href="#hydrostreamer-0-3-1" class="anchor"></a>hydrostreamer 0.3.1</h1>
 <p>Small update with mostly bugfixes.</p>
 <ul>
 <li><p>Fixed <a href="https://github.com/mkkallio/hydrostreamer/issues/2">issue</a> where Strahler based weighting of river segments did not work.</p></li>
@@ -254,7 +277,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

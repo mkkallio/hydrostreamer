@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes optimal estimate from multiple input discharge timeseries — optimise_point • hydrostreamer</title>
+<title>Computes optimal estimate at a specific river segment — optimise_point • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,10 +30,11 @@
 
 
 
-<meta property="og:title" content="Computes optimal estimate from multiple input discharge timeseries — optimise_point" />
+<meta property="og:title" content="Computes optimal estimate at a specific river segment — optimise_point" />
 
-<meta property="og:description" content="Function performs timeseries optimisation of discharge estimates against
-observed streamflow timeseries at specific river segments." />
+<meta property="og:description" content="Function performs data assimilation by combining timeseries of downscaled 
+discharge estimates against observed streamflow timeseries at all river 
+segments with observations." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -64,7 +65,7 @@ observed streamflow timeseries at specific river segments." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -110,32 +111,28 @@ observed streamflow timeseries at specific river segments." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes optimal estimate from multiple input discharge timeseries</h1>
+    <h1>Computes optimal estimate at a specific river segment</h1>
     
     <div class="hidden name"><code>optimise_point.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Function performs timeseries optimisation of discharge estimates against
-observed streamflow timeseries at specific river segments.</p>
+    <p>Function performs data assimilation by combining timeseries of downscaled 
+discharge estimates against observed streamflow timeseries at all river 
+segments with observations.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>optimise_point</span>(<span class='no'>HSflow</span>, <span class='no'>HSobs</span>, <span class='kw'>optim_method</span> <span class='kw'>=</span> <span class='st'>"CLS"</span>, <span class='kw'>train</span> <span class='kw'>=</span> <span class='fl'>0.5</span>,
-  <span class='kw'>bias_correction</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>optimise_point</span>(<span class='no'>HS</span>, <span class='kw'>optim_method</span> <span class='kw'>=</span> <span class='st'>"CLS"</span>, <span class='kw'>combination</span> <span class='kw'>=</span> <span class='st'>"ts"</span>,
+  <span class='kw'>sampling</span> <span class='kw'>=</span> <span class='st'>"series"</span>, <span class='kw'>train</span> <span class='kw'>=</span> <span class='fl'>0.5</span>, <span class='kw'>bias_correction</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>HSflow</th>
-      <td><p>An <code>HSflow</code> object</p></td>
-    </tr>
-    <tr>
-      <th>HSobs</th>
-      <td><p>An <code>HSobs</code> object containing observations at the
-locations to optimise.</p></td>
+      <th>HS</th>
+      <td><p>An <code>HS</code> object with observation_ts and discharge_ts</p></td>
     </tr>
     <tr>
       <th>optim_method</th>
@@ -143,12 +140,24 @@ locations to optimise.</p></td>
 linear regression. See details.</p></td>
     </tr>
     <tr>
+      <th>combination</th>
+      <td><p>Whether to do the forecast combination for the entire
+timeseries, or each month of the year individually. Accepts 
+<code>"timeseries"</code>, <code>"ts"</code>, <code>"monthly"</code> or <code>"mon"</code>.</p></td>
+    </tr>
+    <tr>
+      <th>sampling</th>
+      <td><p>How to sample training and testing periods. <code>"series"</code>
+for training serially from beginning, or <code>"random"</code> for a random
+sample for both training and testing periods.</p></td>
+    </tr>
+    <tr>
       <th>train</th>
       <td><p>The share of timeseries used for training period.</p></td>
     </tr>
     <tr>
       <th>bias_correction</th>
-      <td><p>Apply (constant) bias correction. Defaults to FALSE.</p></td>
+      <td><p>Apply bias correction. Defaults to FALSE.</p></td>
     </tr>
     </table>
     
@@ -182,8 +191,8 @@ constraints the coefficients to add to unity, and all weights are between
 0, and 1. CLS also forces Intercept to 0. In some cases, CLS fails to 
 find a unique solution. In those cases, you can try the factorized
 CLS.</p>
-<p>If bias correction is set to TRUE, a constant bias correction is applied
-to the entire timeseries so that mean error in the training period is 0.</p>
+<p>If bias correction is set to TRUE, bias correction is applied
+to the entire timeseries so that bias <!-- % in the training period is 0. --></p>
     
 
   </div>
@@ -202,7 +211,7 @@ to the entire timeseries so that mean error in the training period is 0.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

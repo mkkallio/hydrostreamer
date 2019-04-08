@@ -1,3 +1,23 @@
+# hydrostreamer 0.4.0
+
+
+
+# hydrostreamer 0.3.2
+
+Fixed many issues, including:
+
+* added `ForecastComb` in imports
+
+* fixed `delineate_basin()`
+
+* Hopefully fixed the conflict issue between `raster` and `hydroGOF` packages.
+The issue appears to have been caused by `hydroGOF` importing `hydroTSM` 
+importing `gstat` importing `spacetime`, which redefines class `RasterStack`.
+Sometimes manifests itself when loading an .RData file with a raster in it,
+causing automatic attachment of `raster`.
+
+* Some other smaller fixes.
+
 # hydrostreamer 0.3.1
 
 Small update with mostly bugfixes.

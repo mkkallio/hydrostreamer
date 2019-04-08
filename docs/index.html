@@ -5,19 +5,20 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A package for downscaling distributed runoff products in to 
+<title>A package for downscaling distributed runoff products on to 
   explicit river segments • hydrostreamer</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script><!-- sticky kit --><script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="A package for downscaling distributed runoff products in to 
+<script src="pkgdown.js"></script><meta property="og:title" content="A package for downscaling distributed runoff products on to 
   explicit river segments">
-<meta property="og:description" content="hydrostreamer provides functions to downscale distributed runoff data 
-  into an explicitly represented river network. Downscaling is done by the spatial 
-  relationship between an areal unit of runoff and an overlaid river network. 
-  Value of the runoff unit is divided among intersecting river segments. hydrostreamer
-  provides several methods for the assignment. Simple river routing algorithms 
-  are also provided to estimate discharge at each segment.">
+<meta property="og:description" content="hydrostreamer provides functions to downscale distributed runoff 
+  data on to an explicitly represented river network. Downscaling is done by the 
+  spatial relationship between an areal unit of runoff and an overlaid river 
+  network. Value of the runoff unit is divided among intersecting river segments
+  using weighted interpolation. hydrostreamer provides several methods for the 
+  assignment. Simple river routing algorithms are also provided to estimate 
+  discharge at arbitrary segment.">
 <meta name="twitter:card" content="summary">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -25,7 +26,7 @@
 <![endif]-->
 </head>
 <body>
-    <div class="container template-home">
+    <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
@@ -37,7 +38,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -78,55 +79,61 @@
 
       
       </header><div class="row">
-  <div class="contents col-md-9">
-<div id="hydrostreamer" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#hydrostreamer" class="anchor"></a>hydrostreamer</h1></div>
+  <div class="col-md-9 contents">
+    
 
-<p><strong>hydrostreamer</strong> is an R package to downscale distributed runoff data products by spatial relationship between the areal unit in runoff data, and an explicitly represented river network. In practise the downscaling occurs by dividing the value of runoff to all those river segments intersecting the areal unit (of runoff) using a numerical attribute for weighting. These attributes can be, for instance, length of the intersecting river segment, Strahler number, or area of the segment-specific catchment.</p>
+    
+    
+<div id="hydrostreamer-0-4-0" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#hydrostreamer-0-4-0" class="anchor"></a>hydrostreamer 0.4.0</h1></div>
+
+<p><strong>hydrostreamer</strong> is an R package to downscale distributed runoff data products by spatial relationship between the areal unit in runoff data, and an explicitly represented river network.</p>
+<p>In practise the downscaling occurs by dividing the value of runoff to all those river segments intersecting the areal unit (of runoff) using a numerical attribute for weighting. These attributes can be, for instance, length of the intersecting river segment, Strahler number, or area of the segment-specific catchment.</p>
 <p><img src="http://markokallio.fi/hydrostreamer%20downscaling.png"><em>Downscaling in hydrostreamer can be done either using river segment lines, or by their catchment areas. This is an example in case of a gridded runoff product, but the areal units can be arbitrarily shaped</em></p>
+<div id="installing" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installing" class="anchor"></a>Installing</h2>
 <p><strong>hydrostreamer</strong> is not yet on CRAN, so to install, use <em>devtools::install_github()</em> in RStudio. You should have R version higher than 3.4.0 for the package to work properly.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw"><a href="https://www.rdocumentation.org/packages/devtools/topics/reexports">install_github</a></span>(<span class="st">"mkkallio/hydrostreamer"</span>)</code></pre></div>
+<p>Note that while <strong>hydrostreamer</strong> is already a useful package, it is under development and may change without prior notice.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># devtools::install_github("mkkallio/hydrostreamer")</span></code></pre></div>
+</div>
 <div id="basic-usage" class="section level2">
 <h2 class="hasAnchor">
 <a href="#basic-usage" class="anchor"></a>Basic usage</h2>
 <p><strong>hydrostreamer</strong> workflow occurs in four steps:</p>
-<ol>
+<ol style="list-style-type: decimal">
 <li>Convert the runoff timeseries to a HSgrid object,</li>
 <li>Compute weights for each river segment,</li>
-<li>Downscale runoff, and optionally</li>
+<li>Downscale runoff, and</li>
 <li>Apply river routing.</li>
 </ol>
-<p>Minimum data requirement is a runoff timeseries, either as polygons or in raster format, and a river network. The river network needs to be a ‘clean’ set of connected linestrings, meaning that connected river segments must share a node at either end of the segment. In addition, the digitizing direction is semantically important: the river segment must be drawnfrom upstream to downstream. Using a polygon of an area of interest is not an absolute requirement, but is recommended to avoid erroneous runoff assignments at the border areas.</p>
-<p>First, load exaple data to R:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(sf)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(raster)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(hydrostreamer)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(lubridate)
-
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(river)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(basin)
-runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/system.file">system.file</a></span>(<span class="st">"extdata"</span>, <span class="st">"runoff.tif"</span>, <span class="dt">package =</span> <span class="st">"hydrostreamer"</span>))</code></pre></div>
+<p>Minimum data requirement is a distributed runoff timeseries, either as polygons or in a raster format, and a river network. Alternatively, river network can be derived from a Digital Elevation Model (DEM).</p>
+<p>First, load example data to R:</p>
 <div id="convert-raster-timeseries-to-a-hsgrid" class="section level3">
 <h3 class="hasAnchor">
 <a href="#convert-raster-timeseries-to-a-hsgrid" class="anchor"></a>1. Convert raster timeseries to a HSgrid</h3>
 <p>The first step in hydrostreamer is converting runoff into a <em>HSgrid</em> object. For a runoff input in a raster format, use <em>raster_to_HSgrid()</em> function. For input we need the raster, starting date of the timeseries and the granularity of input timesteps.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span><span class="kw"><a href="reference/raster_to_HSgrid.html">raster_to_HSgrid</a></span>(runoff, <span class="dt">date=</span><span class="kw">ymd</span>(<span class="st">"1971-01-01"</span>), <span class="dt">timestep=</span><span class="st">"month"</span>, <span class="dt">aoi=</span>basin)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">HSgrid &lt;-<span class="st"> </span><span class="kw"><a href="reference/raster_to_HSgrid.html">raster_to_HSgrid</a></span>(runoff, 
+                         <span class="dt">date =</span> <span class="kw">ymd</span>(<span class="st">"1980-01-01"</span>), 
+                         <span class="dt">timestep =</span> <span class="st">"month"</span>, 
+                         <span class="dt">aoi =</span> <span class="kw">st_union</span>(basins),
+                         <span class="dt">names =</span> <span class="st">"LORA"</span>)</code></pre></div>
 </div>
 <div id="compute-weights-for-each-river-segment" class="section level3">
 <h3 class="hasAnchor">
 <a href="#compute-weights-for-each-river-segment" class="anchor"></a>2. Compute weights for each river segment</h3>
 <p>Next, we weight the river segments within each segment, so that the weights of segments within a polygon add to 1. In <strong>hydrostreamer</strong> this can be done by</p>
-<ol>
+<ol style="list-style-type: decimal">
 <li>Catchment area of each river segment by
-<ol>
+<ol style="list-style-type: decimal">
 <li>user provided catchments</li>
 <li>drainage direction delineated basins (for river networks derived from them)</li>
 <li>Medial axis delineated basins (Voronoi Diagram created from the river network)</li>
 </ol>
 </li>
 <li>River segment properties
-<ol>
+<ol style="list-style-type: decimal">
 <li>divide runoff equally to all intersecting segments</li>
 <li>use stream order to weight the segments</li>
 <li>use segment length for weighting</li>
@@ -135,13 +142,18 @@ runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="
 </li>
 <li>More complex downscaling</li>
 </ol>
-<p>Here, we use river segment Voronoi diagram as basins. For information on the other options, see <em>help(compute_HSweights)</em>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">weights &lt;-<span class="st"> </span><span class="kw"><a href="reference/compute_HSweights.html">compute_HSweights</a></span>(river, grid, <span class="st">"area"</span>, <span class="dt">aoi=</span>basin, <span class="dt">riverID =</span> <span class="st">"ID"</span>)</code></pre></div>
+<p>Here, we use river segment specific catchment areas, which are provided in the example data. For information on the other options, see <em>help(compute_HSweights)</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">weights &lt;-<span class="st"> </span><span class="kw"><a href="reference/compute_HSweights.html">compute_HSweights</a></span>(HSgrid, 
+                             river, 
+                             <span class="st">"area"</span>,
+                             <span class="dt">basins =</span> basins,
+                             <span class="dt">aoi =</span> <span class="kw">st_union</span>(basins), 
+                             <span class="dt">riverID =</span> <span class="st">"SEGMENT_ID"</span>)</code></pre></div>
 </div>
 <div id="downscale-runoff" class="section level3">
 <h3 class="hasAnchor">
 <a href="#downscale-runoff" class="anchor"></a>3. Downscale runoff</h3>
-<p>With the weights computed, we can assign specific runoff to each river segment.</p>
+<p>With the weights computed, we can assign specific runoff to each river segment. This means that we disaggregate the low resolution runoff into its components - the river segments.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">downscaled_runoff &lt;-<span class="st"> </span><span class="kw"><a href="reference/downscale_runoff.html">downscale_runoff</a></span>(weights)</code></pre></div>
 </div>
 <div id="apply-river-routing" class="section level3">
@@ -151,17 +163,46 @@ runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="
 <p><strong>hydrostreamer</strong> currently (v. 0.2.0) only implements the simplest possible river routing, instantaneous flow, by adding all runoff to every segment downstream, at each timestep. This is an overly simple scheme, and there are plans to add more sophisticated river routing algorithms to the package.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">streamflow &lt;-<span class="st"> </span><span class="kw"><a href="reference/accumulate_runoff.html">accumulate_runoff</a></span>(downscaled_runoff)</code></pre></div>
 </div>
-<div id="export" class="section level3">
+<div id="these-functions-are-pipable" class="section level3">
 <h3 class="hasAnchor">
-<a href="#export" class="anchor"></a>Export</h3>
-<p><strong>hydrostreamer</strong> includes also a useful function to export the results to a GeoPackage, which can be viewed in any GIS software (such as ArcGIS, QGIS).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="reference/HSwrite.html">HSwrite</a></span>(streamflow, <span class="st">"downscaled_streamflow.gpkg"</span>)</code></pre></div>
+<a href="#these-functions-are-pipable" class="anchor"></a>These functions are pipable</h3>
+<p>The function usage has been developed so that they are all pipable.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">streamflow &lt;-<span class="st"> </span><span class="kw"><a href="reference/raster_to_HSgrid.html">raster_to_HSgrid</a></span>(runoff, 
+                         <span class="dt">date=</span><span class="kw">ymd</span>(<span class="st">"1980-01-01"</span>), 
+                         <span class="dt">timestep=</span><span class="st">"month"</span>, 
+                         <span class="dt">aoi=</span><span class="kw">st_union</span>(basins),
+                         <span class="dt">names=</span><span class="st">"LORA"</span>) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="reference/compute_HSweights.html">compute_HSweights</a></span>(river,
+                      <span class="st">"area"</span>,
+                      <span class="dt">aoi=</span><span class="kw">st_union</span>(basins),
+                      <span class="dt">basins =</span> basins,
+                      <span class="dt">riverID =</span> <span class="st">"SEGMENT_ID"</span>) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="reference/downscale_runoff.html">downscale_runoff</a></span>() <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw"><a href="reference/accumulate_runoff.html">accumulate_runoff</a></span>()</code></pre></div>
+</div>
+<div id="exporting" class="section level3">
+<h3 class="hasAnchor">
+<a href="#exporting" class="anchor"></a>Exporting</h3>
+<p><strong>hydrostreamer</strong> includes also a useful function to export the results to a GeoPackage, which can be viewed in any GIS software (such as ArcGIS, QGIS). We can also write the discharge (or runoff) as a table.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># HSwrite(streamflow, "downscaled_streamflow.gpkg")</span>
+<span class="co"># HSwrite(streamflow, "downscaled_streamflow.csv", what = "discharge")</span></code></pre></div>
 </div>
 </div>
-<div id="development" class="section level2">
+<div id="more-information" class="section level2">
 <h2 class="hasAnchor">
-<a href="#development" class="anchor"></a>Development</h2>
-<p><strong>hydrostreamer</strong> provides simple tools to downscale off-the-shelf runoff products without performing additional modelling. The package is under rapid development. The current version includes many improvements over the earlier 0.2.2 version. See News for more information. Also, see the additional vignettes for further information and usage.</p>
+<a href="#more-information" class="anchor"></a>More information</h2>
+<p><strong>hydrostreamer</strong> has featured in a number of conference presentations:</p>
+<ul>
+<li>EGU 2018: Kallio et al, <a href="https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network">Spatial allocation of low resolution runoff model outputs to high resolution stream network</a>
+</li>
+<li>AGU 2018: Kallio et al, <a href="https://www.researchgate.net/publication/330213179_Generating_improved_estimates_of_streamflow_using_model_averaging_of_downscaled_runoff_products_under_uncertainty">Generating improved estimates of streamflow using model averaging of downscaled runoff products under uncertainty</a>
+</li>
+<li>AGU 2018: Virkki et al, <a href="https://www.researchgate.net/publication/331320855_AGU_2018_Poster_Presentation">The value of open-source river discharge estimation in the water governance context of the 3S river basin in Southeast Asia</a>
+</li>
+<li>EGU 2019: Nauditt et al, <a href="https://meetingorganizer.copernicus.org/EGU2019/EGU2019-18370.pdf">Evaluating drought risk in data scarce tropical catchments</a>
+</li>
+<li>A research paper is currently under preparation.</li>
+</ul>
 </div>
 <div id="license" class="section level2">
 <h2 class="hasAnchor">
@@ -195,20 +236,23 @@ runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="
 <h2>Developers</h2>
 <ul class="list-unstyled">
 <li>Marko Kallio <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-6917-7790" target="orcid.widget"><img src="https://members.orcid.org/sites/default/files/vector_iD_icon.svg" class="orcid" alt="ORCID" height="16"></a> </li>
+<li>Vili Virkki <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-2603-3420" target="orcid.widget"><img src="https://members.orcid.org/sites/default/files/vector_iD_icon.svg" class="orcid" alt="ORCID" height="16"></a> </li>
 </ul>
 </div>
 
-  <div class="dev-status">
+      <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://doi.org/10.5281/zenodo.1214523"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.1214523.svg" alt="DOI"></a></li>
 </ul>
 </div>
 </div>
+
 </div>
 
+
       <footer><div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

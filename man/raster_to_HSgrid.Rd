@@ -2,17 +2,18 @@
 % Please edit documentation in R/raster_to_HSgrid.R
 \name{raster_to_HSgrid}
 \alias{raster_to_HSgrid}
-\title{Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object.}
+\title{Create HSgrid from a raster}
 \usage{
-raster_to_HSgrid(raster, date, timestep = NULL, aoi = NULL,
-  name = "runoff1")
+raster_to_HSgrid(rasters, date, timestep = NULL, aoi = NULL,
+  names = NULL, verbose = FALSE)
 }
 \arguments{
-\item{raster}{A Raster* object.}
+\item{rasters}{A raster object, or a list of raster objects, or a list of
+URIs to files readable by \code{raster} package.}
 
 \item{date}{Date of the first layer in \code{raster}, or a vector of dates 
-with the length of layers in \code{raster}.}
+with the length of layers in \code{raster}, or a list of vectors of dates,
+corresponding to the dates in each raster layer.}
 
 \item{timestep}{Length of timestep in raster. Currently supporting 
 \code{"hour"}, \code{"day"}, \code{"month"}. Only needed if \code{date} is
@@ -22,15 +23,14 @@ not a vector of dates.}
 'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
 recommended for all applications.}
 
-\item{name}{A name for the runoff timeseries. If \code{NULL},}
+\item{names}{A name (names) for the runoff timeserie(s).}
+
+\item{verbose}{Print progress indication or not.}
 }
 \value{
-Returns an 'sf' polygon object, with each polygon representing 
-  a raster cell, and which has been cropped to the area of interest. 
-  Columns are ID, area of the polygon in m^2, and each timestep as separate
-  column. Output has class 'HSgrid'.
+See \code{\link{create_HSgrid}}.
 }
 \description{
-Polygonizes a raster and adds cell values as attribute columns to 
-an 'sf' polygon object.
+Polygonizes a raster and adds the values in the raster stack to a data frame
+in list column \code{runoff_ts}.
 }

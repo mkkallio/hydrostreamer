@@ -225,97 +225,96 @@ new_row_col <- function(bearing, prc) {
 
 
 
-
-do_summary_fun <- function (list, 
-                            funs, 
-                            monthly,
-                            ...) {
-    
-    Date <- NULL
-    Month <- NULL
-    
-    output <- list()
-    for(i in seq_along(list)) {
-        data <- list[[i]]
-        name <- names(list)[i]
-        if(is.null(name)) name <- paste0("runoff",i)
-        
-        if(monthly) data$Month <- lubridate::month(data$Date)
-
-        for (fun in funs) {
-            
-            # if input functions include quantile(), it needs to be handled in a
-            # special way so that output list of tables have the correct names, 
-            # and the table contains correct column headers. If not for this, 
-            # the output table has 2 or more times columns leading to problems 
-            # later on in downscaling.
-            if (fun == "quantile" ) {
-                if (!methods::hasArg("probs")) stop('Argument probs for quantile 
-                                                  missing')
-                p <- list(...)
-
-                p <- p[['probs']]
-
-                for(prob in seq_along(p)) {
-                    elname <- paste0(name,"_Q",p[prob]*100,"%")
-                    if(monthly) {
-                        out <- data %>% 
-                            dplyr::select(-Date) %>%
-                            dplyr::group_by(Month) %>% 
-                            dplyr::summarise_all(.funs=fun, probs=p[prob])
-                        output[[elname]] <- out
-                    } else {
-                        out <- data %>% 
-                            dplyr::group_by(Date) %>% 
-                            dplyr::summarise_all(.funs=fun, probs=p[prob])
-                        output[[elname]] <- out
-                    }
-                }
-                
-            } else {
-                elname <- paste0(name,"_",fun)
-                if(monthly) {
-                    out <- data %>% 
-                        dplyr::select(-Date) %>%
-                        dplyr::group_by(Month) %>% 
-                        dplyr::summarise_all(.funs=fun)
-                    output[[elname]] <- out
-                } else {
-                    out <- data %>% 
-                        dplyr::group_by(Date) %>% 
-                        dplyr::summarise_all(.funs=fun)
-                    output[[elname]] <- out
-                }
-            }
-            
-            
-        }
-    }
-    return(output)
-}
-
-
-summarise_over_all <- function (list) {
-    n <- length(list)
-    temp <- list[[1]]
-    for(i in 2:n) {
-        temp <- bind_rows(temp, list[[i]])
-    }
-    name <- paste0("runoff")
-    out <- list(temp)
-    names(out) <- name
-    return(out)
-}
-
-
+# 
+# do_summary_fun <- function (list, 
+#                             funs, 
+#                             monthly,
+#                             ...) {
+#     
+#     Date <- NULL
+#     Month <- NULL
+#     
+#     output <- list()
+#     for(i in seq_along(list)) {
+#         data <- list[[i]]
+#         name <- names(list)[i]
+#         if(is.null(name)) name <- paste0("runoff",i)
+#         
+#         if(monthly) data$Month <- lubridate::month(data$Date)
+# 
+#         for (fun in funs) {
+#             
+#             # if input functions include quantile(), it needs to be handled in a
+#             # special way so that output list of tables have the correct names, 
+#             # and the table contains correct column headers. If not for this, 
+#             # the output table has 2 or more times columns leading to problems 
+#             # later on in downscaling.
+#             if (fun == "quantile" ) {
+#                 if (!methods::hasArg("probs")) stop('Argument probs for quantile 
+#                                                   missing')
+#                 p <- list(...)
+# 
+#                 p <- p[['probs']]
+# 
+#                 for(prob in seq_along(p)) {
+#                     elname <- paste0(name,"_Q",p[prob]*100,"%")
+#                     if(monthly) {
+#                         out <- data %>% 
+#                             dplyr::select(-Date) %>%
+#                             dplyr::group_by(Month) %>% 
+#                             dplyr::summarise_all(.funs=fun, probs=p[prob])
+#                         output[[elname]] <- out
+#                     } else {
+#                         out <- data %>% 
+#                             dplyr::group_by(Date) %>% 
+#                             dplyr::summarise_all(.funs=fun, probs=p[prob])
+#                         output[[elname]] <- out
+#                     }
+#                 }
+#                 
+#             } else {
+#                 elname <- paste0(name,"_",fun)
+#                 if(monthly) {
+#                     out <- data %>% 
+#                         dplyr::select(-Date) %>%
+#                         dplyr::group_by(Month) %>% 
+#                         dplyr::summarise_all(.funs=fun)
+#                     output[[elname]] <- out
+#                 } else {
+#                     out <- data %>% 
+#                         dplyr::group_by(Date) %>% 
+#                         dplyr::summarise_all(.funs=fun)
+#                     output[[elname]] <- out
+#                 }
+#             }
+#             
+#             
+#         }
+#     }
+#     return(output)
+# }
+# 
+# 
+# summarise_over_all <- function (list) {
+#     n <- length(list)
+#     temp <- list[[1]]
+#     for(i in 2:n) {
+#         temp <- bind_rows(temp, list[[i]])
+#     }
+#     name <- paste0("runoff")
+#     out <- list(temp)
+#     names(out) <- name
+#     return(out)
+# }
+# 
 
 
 
 # This is function ForecastComb::comb_CLS(), but edited according to 
 # https://stackoverflow.com/a/28388394. 
 # Edits marked with ###.
-forecastcomb_comb_CLS <- function (x) 
-{
+forecastcomb_comb_CLS <- function (x) {
+
     if (class(x) != "foreccomb") 
         stop("Data must be class 'foreccomb'. See ?foreccomb to bring data in 
              in a correct format.", 
@@ -372,9 +371,9 @@ forecastcomb_comb_CLS <- function (x)
                                      Forecasts_Test = pred, 
                                      Accuracy_Test = accuracy_outsample, 
                                      Input_Data = list(Actual_Train = x$Actual_Train,
-                                                       Forecasts_Train = x$Forecasts_Train, 
-                                                       Actual_Test = x$Actual_Test, 
-                                                       Forecasts_Test = x$Forecasts_Test)),
+                                               Forecasts_Train = x$Forecasts_Train, 
+                                               Actual_Test = x$Actual_Test, 
+                                               Forecasts_Test = x$Forecasts_Test)),
                                 class = c("foreccomb_res"))
             rownames(result$Accuracy_Train) <- "Training Set"
             rownames(result$Accuracy_Test) <- "Test Set"
@@ -409,6 +408,121 @@ dmult <- function(m,s) {
 }
 
 
+
+
+
+collect_listc <- function(ts, acc = FALSE) {
+    
+    Date <- NULL
+    
+    unidates <- lapply(ts, function(x) x$Date) %>%
+        unlist %>%
+        unique %>%
+        lubridate::as_date()
+    names <- colnames(ts[[1]])[-1]
+    nts <- length(ts)
+    #n <- ncol(ts[[1]])-1
+    n <- lapply(ts, ncol) %>%
+        unlist %>%
+        max
+    n <- n-1
+    empty_ts <- matrix(NA, ncol = nts, nrow = length(unidates))
+    
+    output <- list()
+    
+    for (tsi in 1:n) {
+        act_ts <- empty_ts
+        for(i in 1:nts) {
+            if(ncol(ts[[i]])-1 < tsi) break
+            dates <- unidates %in% ts[[i]]$Date 
+            act_ts[dates,i] <- unlist(ts[[i]][,tsi+1])
+        }
+        output[[ names[tsi] ]] <- act_ts     
+    }
+    
+    if(acc) {
+        for(tsi in seq_along(output)) {
+            temp <- cbind(unidates, output[[tsi]]) %>%
+                as.data.frame()
+            colnames(temp) <- c("Date", names(ts))
+            temp <- temp %>% 
+                dplyr::mutate(Date = lubridate::as_date(Date)) %>%
+                tibble::as_tibble() %>%
+                tsibble::as_tsibble(index = "Date")
+            output[[tsi]] <- temp
+        }
+    }
+    
+    names(output) <- names
+    
+    return(output)
+}
+
+
+init_ts <- function(ts) {
+    max_ts <- lapply(ts, nrow) %>%
+        unlist
+    max_ts <- which(max_ts == max(max_ts))
+    dates <- ts[[ max_ts[1] ]]$Date
+    
+    output <- vector("list", ncol(ts[[1]])-1) 
+    
+    output <- lapply(output, function(x) {
+        tsib <- matrix(NA, ncol=length(ts)+1, nrow=length(dates)) 
+        colnames(tsib) <- c("Date", names(ts))
+        tsib <- tibble::as_tibble(tsib)
+        tsib$Date <- dates
+        tsib <- tsibble::as_tsibble(tsib, index = "Date")
+        return(tsib)
+    })
+    names(output) <- colnames(ts[[1]])[-1]
+    return(output)
+}
+
+spread_listc <- function(ts) {
+    listc <- list()
+    names <- names(ts)
+    
+    listc <- init_ts(ts)
+    
+    for(seg in seq_along(listc)) {
+        for(tsi in seq_along(ts)) {
+            listc[[seg]][,tsi+1] <- ts[[tsi]][seg+1]
+        }
+    }
+    return(listc)
+}
+
+
+assign_class <- function(obj, class) {
+    
+    original <- class(obj)
+    
+    HS <- which(original %in% class)
+    
+    if(HS != 1 || length(HS) == 0) {
+        
+        if (length(HS) != 0) newclass <- c(class, original[-HS])
+        if (length(HS) == 0) newclass <- c(class, original)
+        class(obj) <- newclass
+        return(obj)
+        
+    } else {
+        
+        return(obj)
+        
+    }
+}
+
+reorder_cols <- function(HS) {
+    order <- c("riverID","gridID", "NEXT", "PREVIOUS", "STRAHLER", "runoff_ts", 
+               "discharge_ts", "observation_station", "observation_ts", 
+               "control_type", "control_ts")
+    order <- order[order %in% names(HS)]
+    
+    HS <- dplyr::select(HS, order, dplyr::everything())
+    return(HS)
+}
 
 
 

@@ -33,7 +33,7 @@
 <meta property="og:title" content="Find all upstream segments from a specified river segment. — upstream" />
 
 <meta property="og:description" content="Function returns the river network consisting of all upstream segments 
-from a specified river segment." />
+from the specified river segment." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -64,7 +64,7 @@ from a specified river segment." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -118,7 +118,7 @@ from a specified river segment." />
     <div class="ref-description">
     
     <p>Function returns the river network consisting of all upstream segments 
-from a specified river segment.</p>
+from the specified river segment.</p>
     
     </div>
 
@@ -134,7 +134,8 @@ with <code><a href='river_network.html'>river_network</a></code>.</p></td>
     </tr>
     <tr>
       <th>ID</th>
-      <td><p>The ID of the segment for which the upstream rivershed is returned.</p></td>
+      <td><p>The ID of the segment for which the upstream river network is 
+returned.</p></td>
     </tr>
     <tr>
       <th>riverID</th>
@@ -145,8 +146,8 @@ with <code><a href='river_network.html'>river_network</a></code>.</p></td>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>HSnetwork</code> object (a routed river network) consisting of the 
-segments upstream from the segment specified.</p>
+    <p>The input <code>HSnetwork</code> object consisting of only upstream 
+  segments.</p>
     
 
   </div>
@@ -163,7 +164,7 @@ segments upstream from the segment specified.</p>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

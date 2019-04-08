@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Implements 'muskingum' routing algorithm for vector river network — accumulate_runoff_muskingum • hydrostreamer</title>
+<title>Apply Muskingum river routing — accumulate_runoff_muskingum • hydrostreamer</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,13 +30,13 @@
 
 
 
-<meta property="og:title" content="Implements 'muskingum' routing algorithm for vector river network — accumulate_runoff_muskingum" />
+<meta property="og:title" content="Apply Muskingum river routing — accumulate_runoff_muskingum" />
 
-<meta property="og:description" content="The function implements 'muskingum' routing scheme where the storage parameter
+<meta property="og:description" content="The function implements Muskingum routing scheme where the storage parameter
 k is computed using user input flow velocity, and the length of a 
-river segment. Using 'muskingum' for runoff data with time interval between
-runoff longer than day may cause instability in the output. If the interval is
-too high, use another algorithm." />
+river segment. Using Muskingum for runoff data with time interval day may 
+cause instability in the output. If the interval is too high, it is advised 
+to use another routing algorithm." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -67,7 +67,7 @@ too high, use another algorithm." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -113,39 +113,35 @@ too high, use another algorithm." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Implements 'muskingum' routing algorithm for vector river network</h1>
+    <h1>Apply Muskingum river routing</h1>
     
     <div class="hidden name"><code>accumulate_runoff_muskingum.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>The function implements 'muskingum' routing scheme where the storage parameter
+    <p>The function implements Muskingum routing scheme where the storage parameter
 <em>k</em> is computed using user input flow velocity, and the length of a 
-river segment. Using 'muskingum' for runoff data with time interval between
-runoff longer than day may cause instability in the output. If the interval is
-too high, use another algorithm.</p>
+river segment. Using Muskingum for runoff data with time interval day may 
+cause instability in the output. If the interval is too high, it is advised 
+to use another routing algorithm.</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>accumulate_runoff_muskingum</span>(<span class='no'>HSrunoff</span>, <span class='kw'>boundary</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>velocity</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>x</span>,
-  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
+    <pre class="usage"><span class='fu'>accumulate_runoff_muskingum</span>(<span class='no'>HS</span>, <span class='kw'>velocity</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>x</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>HSrunoff</th>
-      <td><p>A <code>HSrunoff</code> object.</p></td>
-    </tr>
-    <tr>
-      <th>boundary</th>
-      <td><p>A <code>HSobs</code> object with boundary condition for routing.</p></td>
+      <th>HS</th>
+      <td><p>A <code>HS</code> object.</p></td>
     </tr>
     <tr>
       <th>velocity</th>
-      <td><p>Flow velocity applied to compute parameter x. Can be a constant,
-or a vector of flow values at river segments.</p></td>
+      <td><p>Flow velocity applied to compute parameter x. Can be a 
+constant, or a vector of flow velocity at each unique river segments.
+Flow velocity defaults at 1.</p></td>
     </tr>
     <tr>
       <th>x</th>
@@ -153,19 +149,16 @@ or a vector of flow values at river segments.</p></td>
     </tr>
     <tr>
       <th>verbose</th>
-      <td><p>Whether or not print progress indicators.</p></td>
+      <td><p>Whether or not to print progress information. Defaults to 
+<code>FALSE</code>.</p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an object of class <code>HSflow</code>) with</p><ul>
-<li><p><code>river</code> River network inherited from input <code>HSrunoff</code>.</p></li>
-<li><p><code>discharge</code> A list of tables with estimated discharge for each 
-    river segment and each timestep.</p></li>
-<li><p><code>Routing_Method</code> The algorithm used for routing.</p></li>
-</ul>
-
+    <p>Returns the input object <code>HS</code>) with an added list column
+  <code>discharge_ts</code> containing routed discharge estimates for each river
+   segment.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
@@ -188,7 +181,7 @@ or a vector of flow values at river segments.</p></td>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

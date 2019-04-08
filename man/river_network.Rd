@@ -2,7 +2,7 @@
 % Please edit documentation in R/river_network.R
 \name{river_network}
 \alias{river_network}
-\title{Generates neighbour information from a connected, directed river network.}
+\title{Generates routing information for river routing algorithms}
 \usage{
 river_network(river, riverID = "riverID", verbose = FALSE)
 }
@@ -20,14 +20,14 @@ Returns the river network with class 'HSnetwork' with the following attributes:
   \item riverID: Unique (renamed) river segment identifier.
   \item PREVIOUS: a list of riverID(s) of the previous river segment(s).
   \item NEXT: riverID of the segment where the river flows to.
-  \item DOWNSTREAM: A list of riverID(s) of all the river segments downstream for the current segment.
   \item UP_SEGMENTS: the number of river segments upstream.
 }
 }
 \description{
-The function adds connectivity information to the input \emph{river} object. The function assumes 
-that the input river is a "clean" river network: connected segments share a node at the start or 
-end of the segment. Digitizing direction is required to be the direction of flow.
+The function adds connectivity information to the input \emph{river} object. 
+The function assumes that the input river is a "clean" river network: 
+connected segments share a node at the start or end of the segment. 
+Digitizing direction is required to be the direction of flow.
 }
 \examples{
 \dontrun{

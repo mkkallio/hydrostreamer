@@ -2,8 +2,8 @@
 ^\.Rproj\.user$
 README.Rmd
 todo.txt
-README_files
 News.md
 docs
 sticker.ai
 sticker.png
+dev_script.R

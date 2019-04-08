@@ -32,9 +32,10 @@
 
 <meta property="og:title" content="Identify locations from where to start catchment delineation. — river_outlets" />
 
-<meta property="og:description" content="The function identifies the coordinates of raster cells which are just upstream from river confluence
-points identified from a river network layer. The cell just upstream from confluence allows delineation
-of segment specific catchments." />
+<meta property="og:description" content="The function identifies the coordinates of raster cells which are just 
+upstream from river confluence points identified from a river network layer. 
+The cell just upstream from confluence allows delineation of segment specific
+catchments." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -65,7 +66,7 @@ of segment specific catchments." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
       </span>
     </div>
 
@@ -118,9 +119,10 @@ of segment specific catchments." />
 
     <div class="ref-description">
     
-    <p>The function identifies the coordinates of raster cells which are just upstream from river confluence
-points identified from a river network layer. The cell just upstream from confluence allows delineation
-of segment specific catchments.</p>
+    <p>The function identifies the coordinates of raster cells which are just 
+upstream from river confluence points identified from a river network layer. 
+The cell just upstream from confluence allows delineation of segment specific
+catchments.</p>
     
     </div>
 
@@ -141,16 +143,18 @@ of segment specific catchments.</p>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an 'sf' point object of identified raster cell centers. Includes all the attributes in the 
-given <code>river</code> object.</p>
+    <p>Returns an 'sf' point object of identified raster cell centers. 
+Includes all the attributes in the given <code>river</code> object.</p>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The function logic is such that it looks at the last node-pair of each segment in the river network. The angle
-of the last node pair is computed, and the raster cell from where the last node-pair originated is identified. 
-Note that the logic of the function requires that the river network is derived from the same raster than the 
-drainage directions input to the function.</p>
-<p>Note: Drainage directions must be in coded 1-128:</p><ul>
+    <p>The function logic is such that it looks at the last node-pair of each 
+segment in the river network. The angle of the last node pair is computed, 
+and the raster cell from where the last node-pair originated is identified. 
+Note that the logic of the function requires that the river network is 
+derived from the same raster than the drainage directions input to the 
+function.</p>
+<p>Note: Drainage directions must be coded in 1-128:</p><ul>
 <li><p>1:East</p></li>
 <li><p>2:Southeast</p></li>
 <li><p>4:South</p></li>
@@ -162,12 +166,6 @@ drainage directions input to the function.</p>
 </ul>
     
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"># NOT RUN {
-# to be added
-# }
-<div class='input'> 
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -177,16 +175,14 @@ drainage directions input to the function.</p>
       <li><a href="#value">Value</a></li>
 
       <li><a href="#details">Details</a></li>
-      
-      <li><a href="#examples">Examples</a></li>
-    </ul>
+          </ul>
 
   </div>
 </div>
 
       <footer>
       <div class="copyright">
-  <p>Developed by Marko Kallio.</p>
+  <p>Developed by Marko Kallio, Vili Virkki.</p>
 </div>
 
 <div class="pkgdown">

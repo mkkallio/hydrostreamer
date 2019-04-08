@@ -4,13 +4,25 @@
 \alias{combine_runoff}
 \title{Combines runoff in HS* objects}
 \usage{
-combine_runoff(HS, weights = NULL)
+combine_runoff(HS, weights, intercept = 0, bias = NULL, drop = FALSE,
+  monthly = FALSE)
 }
 \arguments{
-\item{HS}{An \code{HS*} object}
+\item{HS}{An \code{HS} object}
 
 \item{weights}{A vector of weights with the same length as the number of
 runoff timeseries in \code{HS}, or a list of weight vectors.}
+
+\item{intercept}{If weights are associated with an intercept, include it here.
+Default intercept = 0.}
+
+\item{bias}{Bias in percentage. Defaults to \code{NULL}.}
+
+\item{drop}{Whether to remove source timeseries and replace them with 
+combinations, or keep source timeseries and add combination as new column.}
+
+\item{monthly}{If provided weights are for each month, set to \code{TRUE}
+to apply weights separately for each month.}
 }
 \value{
 Returns the input \code{HS} object where runoff timeseries is 
@@ -18,17 +30,25 @@ Returns the input \code{HS} object where runoff timeseries is
 }
 \description{
 The function provides the ability to combine runoff from \code{HSgrid}, 
-\code{HSweights}, \code{HSrunoff}, or \code{HSflow} using user provided
-weights. Function can process several input weight sets at once.
+or \code{HS} using user provided weights. Function can process several input 
+weight sets at once.
 }
 \details{
 If a named list of weights is provided to the function, their names will be 
 preserved in the output. Otherwise the combinations are named in a running
 order.
 
+If \code{intercept} is provided, it is added to the combined timeseries.
+If \code{bias} is provided, the combined timeseries is adjusted by
+timeseries / (1-bias/100). 
+ 
 Note that if the timeseries of dates is different in each runoff timeseries
 in the input, the output includes only those dates which are present in 
 every input timeseries.
+
+The combination is only applied to columns \code{runoff_ts}, and 
+\code{discharge_ts}, if they exist. Columns \code{observation_ts} and 
+\code{control_ts} are left untouched if present.
 }
 \examples{
 \dontrun{
