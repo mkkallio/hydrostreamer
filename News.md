@@ -1,5 +1,23 @@
 # hydrostreamer 0.4.0
 
+Large update which brings the package to version 0.4.0. Changes made to nearly 
+all functions.
+
+* The outputs from main functions are not 'sf' objects, with the runoff and
+  discharge timeseries provided in list columns. This should enhance the usability
+  of the package.
+  
+* New function `create_river()` is provided. The minimum input is now changed to
+  a runoff timeseries and a river network, OR a DEM. The function create a river
+  network from a supplied DEM. However, RSAGA is requred for this to function. 
+  Thanks go to Vili Virkki for adding this!
+
+* New example data added.
+
+* Vignette updated. New vignettes planned going deeper in the different aspects
+  of hydrostreamer
+  
+* The workflow is now pipeable.
 
 
 # hydrostreamer 0.3.2
