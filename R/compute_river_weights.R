@@ -41,7 +41,7 @@
 #' @export
 compute_river_weights <- function(river, 
                                   grid, 
-                                  seg_weights = "length", 
+                                  seg_weights = NULL, 
                                   riverID = "riverID", 
                                   split=TRUE) {
     
@@ -51,70 +51,111 @@ compute_river_weights <- function(river,
     runoff_ts <- NULL
 
     if(!any(colnames(river) == riverID)) stop("riverID column '", 
-                                           riverID, "' does not exist in river input")
-    if(!riverID == "riverID") river <- dplyr::rename_(river, 
-                                                      riverID = riverID)  
+                                           riverID, 
+                                           "' does not exist in river input")
+    if(!riverID == "riverID") river <- dplyr::rename(river, 
+                                                     riverID = riverID)  
     
     if("runoff_ts" %in% colnames(grid)) grid <- dplyr::select(grid, -runoff_ts)
 
-    #river <- dplyr::select_(river, riverID)
-    if(seg_weights == "strahler") river <- river_hierarchy(river)
-    if(split) river <- split_river_with_grid(river, 
-                                             grid, 
-                                             riverID = riverID)
-    #get elements of rivers intersecting polygons
-    riverIntsc <- suppressWarnings(suppressMessages(sf::st_contains(grid,river, 
-                                                                    sparse=FALSE)))
-    
-    
-    if (is.character(seg_weights)) {
-        if(seg_weights == "length") {
-            input <- sf::st_length(river) %>%
-                unclass()
-            
-        } else if(seg_weights == "equal") {
-            input <- seq(1,NROW(river))
-            
-        } else if(seg_weights == "strahler") {
-            input <- river$STRAHLER
-            
-        } else {
-            stop("Accepted values for weights are either 'length', 'equal', 
-                 'strahler', or a vector of weights. Please check the input.")
-        }
-        
-        
-        weight <- apply(riverIntsc,1, compute_segment_weights, input)
-        weight <- apply(weight,1, FUN=sum)
-        weight <- unlist(weight)
-        if (any(names(river) == "weights")) {
-            message("Replacing existing 'weights' column")
-            river <- dplyr::select(river, -weights)
-        }
-        
-        
-        
-    } else if(is.vector(seg_weights)) {
-        
-        weight <- apply(riverIntsc,1, compute_segment_weights, seg_weights)
-        weight <- apply(weight,1, FUN=sum)
-        weight <- unlist(weight)
-        
-        if (any(names(river) == "weights")) {
-            message("Replacing existing 'weights' column")
-            river <- dplyr::select(river, -weights)
-        }
-        
-        
+    if(is.null(seg_weights)) {
+        dasymetric <- FALSE
     } else {
-        stop("Accepted values for weights are either 'length', 'equal', 
-             'strahler', or a vector of weights. Please check the input.")
+        dasymetric <- TRUE
+        test <- hasName(river, seg_weights)
+        if(!test) stop("No column ", seg_weights," in basins input")
+        test <- sum(is.null(river[,seg_weights]))
+        test2 <- sum(is.na(river[,seg_weights]))
+        if(test+test2 > 0) stop("Missing values in column ", seg_weights)
     }
     
-    river$weights  <- weight
-    river <- river %>% 
+    ##############
+    # preprocess
+    
+    # split river
+    if(split) river <- split_river_with_grid(river,
+                                             grid,
+                                             riverID = riverID)
+    
+    #get elements of rivers intersecting polygons
+    riverIntsc <- suppressWarnings(
+                    suppressMessages(
+                        sf::st_contains(grid,
+                                        river,
+                                        sparse=FALSE)))
+    
+    ##############
+    # get weights
+    
+    if(dasymetric) {
+        # get the dasymetric variable/segment weights
+        dasymetric_var <- sf::st_set_geometry(river, NULL) %>%
+            dplyr::pull(seg_weights)
+        
+        weight <- apply(riverIntsc,1, compute_dasymetric_weights, 
+                        sf::st_length(river), dasymetric_var) %>%
+            apply(1, FUN=sum) %>% 
+            unlist()
+        
+    } else {
+        weight <- apply(riverIntsc,1, compute_segment_weights, 
+                        sf::st_length(river)) %>% 
+            apply(1, FUN=sum) %>% 
+            unlist()
+    }
+    
+    # if (is.character(seg_weights)) {
+    #     if(seg_weights == "length") {
+    #         input <- sf::st_length(river) %>%
+    #             unclass()
+    #         
+    #     } else if(seg_weights == "equal") {
+    #         input <- seq(1,NROW(river))
+    #         
+    #     } else if(seg_weights == "strahler") {
+    #         input <- river$STRAHLER
+    #         
+    #     } else {
+    #         stop("Accepted values for weights are either 'length', 'equal', 
+    #              'strahler', or a vector of weights. Please check the input.")
+    #     }
+    #     
+    #     
+    #     weight <- apply(riverIntsc,1, compute_segment_weights, input)
+    #     weight <- apply(weight,1, FUN=sum)
+    #     weight <- unlist(weight)
+    # 
+    # } else if(is.vector(seg_weights)) {
+    #     
+    #     if(dasymetric) {
+    #         weight <- apply(riverIntsc,1, compute_dasymetric_weights, 
+    #                         sf::st_length(river), seg_weights)
+    #         weight <- apply(weight,1, FUN=sum)
+    #         weight <- unlist(weight)
+    #     } else {
+    #         weight <- apply(riverIntsc,1, compute_segment_weights, seg_weights)
+    #         weight <- apply(weight,1, FUN=sum)
+    #         weight <- unlist(weight)
+    #     }
+    #     
+    #     
+    # } else {
+    #     stop("Accepted values for weights are either 'length', 'equal', 
+    #          'strahler', or a vector of weights. Please check the input.")
+    # }
+    
+    ###############
+    # process output
+    
+    if (any(names(river) == "weights")) {
+        message("Replacing existing 'weights' column")
+        river <- dplyr::select(river, -weights)
+    }
+    
+    river <- tibble::add_column(river, weights = weight) %>%
         dplyr::select(ID, riverID, gridID, weights) %>%
         tibble::as_tibble(river) %>%
         sf::st_as_sf()
+    
     return(river)
 }

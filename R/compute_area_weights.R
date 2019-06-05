@@ -32,7 +32,8 @@
 #' 
 #' @export
 compute_area_weights <- function(basins, 
-                                 HSgrid, 
+                                 HSgrid,
+                                 seg_weights = NULL,
                                  riverID = "riverID", 
                                  gridID = "gridID") {
     
@@ -43,9 +44,25 @@ compute_area_weights <- function(basins,
     g_area_m2 <- NULL
     
     if(!any(names(basins) == riverID)) stop("riverID column '", 
-                                            riverID, "' does not exist in basins input")
+                                            riverID, 
+                                            "' does not exist in basins input")
     if(!riverID == "riverID") basins <- dplyr::rename_(basins, 
-                                                       riverID = riverID)  
+                                                       riverID = riverID) 
+    
+    if(is.null(seg_weights)) {
+        dasymetric <- FALSE
+    } else {
+        dasymetric <- TRUE
+        test <- hasName(basins, seg_weights)
+        if(!test) stop("No column ", seg_weights," in basins input")
+        test <- sum(is.null(basins[,seg_weights]))
+        test2 <- sum(is.na(basins[,seg_weights]))
+        if(test+test2 > 0) stop("Missing values in column ", seg_weights)
+    }
+    
+    if (hasName(basins,"weights")) {
+        warning("Replacing existing 'weights' column")
+    }
     
     HSgrid <- HSgrid %>% dplyr::select(gridID, g_area_m2 = area_m2)
     
@@ -54,24 +71,35 @@ compute_area_weights <- function(basins,
             sf::st_intersection(basins,HSgrid)
         )
     )
-
-    area <- sf::st_area(basins)
+    basins <- sf::st_collection_extract(basins, "POLYGON") %>%
+        tibble::add_column(b_area_m2 = sf::st_area(.)) %>%
+        dplyr::filter(unclass(b_area_m2) != 0)
     
-    # compute weight. unclass to get rid of the m^2 unit that gets 
-    # carried over from area
-    weight <- unclass(area)/unclass(basins$g_area_m2) %>%
-        unclass()
-    
-    if (any(names(basins) == "weights")) {
-        message("Replacing existing 'weights' column")
-        basins <- dplyr::select(basins, -weights)
+    if(dasymetric) {
+        dasymetric_var <- sf::st_set_geometry(basins, NULL) %>%
+            dplyr::pull(seg_weights)
+        
+        basins <- basins %>%
+            tibble::add_column(variable = dasymetric_var) %>%
+            dplyr::group_by(gridID) %>%
+            dplyr::mutate(bas_dasy = variable*unclass(b_area_m2),
+                   denom = sum(bas_dasy),
+                   weights = bas_dasy/denom) %>%
+            dplyr::ungroup() %>%
+            dplyr::select(-variable, -bas_dasy, -denom)
+        
+    } else {
+        basins <- dplyr::mutate(basins, 
+                                weights = unclass(basins$b_area_m2)/
+                                          unclass(basins$g_area_m2)) 
     }
-    basins$weights <- weight
+
+    #basins$weights <- weight
     
     #reorder and add columns 
     if (!any(names(basins) == "ID")) basins$ID <- 1:nrow(basins)
-    basins$weights <- weight
-    basins$b_area_m2 <- area
+    #basins$weights <- weight
+    #basins$b_area_m2 <- area
     basins <- basins %>% dplyr::select(ID, riverID, gridID, weights,
                                        b_area_m2, g_area_m2, 
                                        dplyr::everything())

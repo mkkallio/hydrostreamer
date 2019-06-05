@@ -44,7 +44,8 @@ raster_to_HSgrid <- function(rasters,
             if(test3) {
                 rasters <- list(rasters)
             } else {
-                stop("rasters input must be either a raster or an URI to a raster")
+                stop("rasters input must be either a raster or an ",
+                     "URI to a raster")
             }
         }
     }
@@ -109,8 +110,8 @@ raster_to_HSgrid <- function(rasters,
                 raster <- raster::crop(raster, aoi)
                 aoi <- sf::st_as_sf(aoi)
             } else {
-                stop("Input area of interest should be an object of spatial class 
-                     from either 'sf' or 'sp' packages")
+                stop("Input area of interest should be an object of spatial",
+                    " class from either 'sf' or 'sp' packages")
             }
         }
         
@@ -148,9 +149,11 @@ raster_to_HSgrid <- function(rasters,
             if(timestep == "month") {
                 enddate <- dates %m+% months(raster::nlayers(raster) -1)
             } else if(timestep == "day") {
-                enddate <- dates %m+% lubridate::days(raster::nlayers(raster) -1)
+                enddate <- dates %m+% 
+                             lubridate::days(raster::nlayers(raster) -1)
             } else if(timestep == "hour") {
-                enddate <- dates %m+% lubridate::hours(raster::nlayers(raster) -1)
+                enddate <- dates %m+% 
+                             lubridate::hours(raster::nlayers(raster) -1)
             }
             dates <- seq(dates, enddate, by = timestep)
         }  else {

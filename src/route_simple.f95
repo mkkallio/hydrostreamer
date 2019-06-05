@@ -9,27 +9,15 @@ subroutine routesimple(nt, ncol, intervals, duration, inmat, outmat)
 	integer :: t, col
 	real(kind=8) :: outflow, inflow
 	
-	! initialize
-	
 	
 	do col = 1, ncol(1)
 		do t = 1, (nt(1)-1)
-			!if(t == 0) then
-			!	outflow = inmat(1,col) * (1-(duration(1) / intervals(1)))
-			!	inflow = inmat(t+1,col) + (inmat(1,col) - outflow)
-			!	inmat(1,col) = inflow
-			!	outmat(1,col) = outflow
-			!end if
-			
-			!if(t > 0) then
-				outflow = inmat(t,col) * (1-(duration(1) / intervals(t)))
-				inflow = inmat(t+1,col) + (inmat(t,col) - outflow)
-				inmat(t+1,col) = inflow
-				outmat(t,col) = outflow
-			!end if
+			outflow = inmat(t,col) * (1-(duration(1) / intervals(t)))
+			inflow = inmat(t+1,col) + (inmat(t,col) - outflow)
+			inmat(t+1,col) = inflow
+			outmat(t,col) = outflow
 		end do
 		
 	end do
 	
 end subroutine routesimple
-

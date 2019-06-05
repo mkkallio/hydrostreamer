@@ -25,7 +25,7 @@ add_HSgrid <- function(HSgrid,
     }
     
     if (is.null(from)) {
-        from <- raster_to_HSgrid(raster, date, timestep, aoi, names)
+        from <- raster_to_HSgrid(rasters, date, timestep, aoi, names)
     }
     
     if(!"HSgrid" %in% class(from)) { 

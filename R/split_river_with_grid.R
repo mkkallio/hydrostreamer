@@ -46,7 +46,8 @@ split_river_with_grid <- function(river,
     #if("HSgrid" %in% class(HSgrid)) HSgrid <- HSgrid$grid
     grid <- HSgrid %>% dplyr::select_(gridID)
     
-    river <- suppressMessages(suppressWarnings(sf::st_intersection(river, grid)))
+    river <- suppressMessages(suppressWarnings(sf::st_intersection(river, 
+                                                                   grid)))
     
     #add unique IDs
     if( any(names(river) == riverID) ) {

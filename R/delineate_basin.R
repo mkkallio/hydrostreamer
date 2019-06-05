@@ -39,7 +39,7 @@ delineate_basin <- function(outlets,
                             drain.dir, 
                             riverID = "riverID", 
                             output = "vector",
-                            use_rsaga = TRUE, # TODO: discuss about this parameter
+                            use_rsaga = TRUE, # TODO: discuss this parameter
                             verbose = FALSE) {
     
     VALUE <- NULL
@@ -65,8 +65,8 @@ delineate_basin <- function(outlets,
     nseeds <- nrow(outlets)
     drdir <- raster::values(drain.dir)
     delbas <- vector("numeric", raster::ncell(drain.dir))
-    delbas[outlets$cell] <- ID
-    #delbas[outlets$cell] <- 1:nseeds
+    #delbas[outlets$cell] <- ID
+    delbas[outlets$cell] <- 1:nseeds
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
     
     delbas <- .Fortran("delineate", 
@@ -117,28 +117,33 @@ delineate_basin <- function(outlets,
             # prepare files
             delbas_grid_path <- tempfile(fileext = ".sgrd")
             delbas_shapes_path <- tempfile(fileext = ".shp")
-            raster::writeRaster(delbas, delbas_grid_path, format="SAGA", overwrite=TRUE)
+            raster::writeRaster(delbas, 
+                                delbas_grid_path, 
+                                format="SAGA", 
+                                overwrite=TRUE)
             
             # vectorize raster
             RSAGA::rsaga.geoprocessor(lib = "shapes_grid",
-                                      module = 6,
-                                      env = saga_env,
-                                      param = list(GRID = delbas_grid_path,
-                                                   POLYGONS = delbas_shapes_path),
-                                      show.output.on.console = verbose)
+                                  module = 6,
+                                  env = saga_env,
+                                  param = list(GRID = delbas_grid_path,
+                                               POLYGONS = delbas_shapes_path),
+                                  show.output.on.console = verbose)
             
             # read from file and set CRS
             delbas <- sf::st_read(delbas_shapes_path, quiet = !verbose) %>%
                 sf::st_set_crs(4326)
             
-            # select only river segment basins (leave out encircling zero values polygon)
-            # and only value (river ID) as attribute besides geometry
+            # select only river segment basins (leave out encircling zero 
+            # values polygon) and only value (river ID) as attribute besides
+            # geometry
             delbas <- delbas[2:nrow(delbas),]
             delbas <- dplyr::select(delbas, VALUE)
             
         } else {
             
-            if (verbose) message("Using raster::rasterToPolygons. This may take long.")
+            if (verbose) message("Using raster::rasterToPolygons.",
+                                 " This may take long.")
             
             # vectorize raster without RSAGA
             delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
@@ -149,7 +154,7 @@ delineate_basin <- function(outlets,
         names(delbas)[1] <- "riverID"
         #cols <- cbind(riverID = ID, NCELLS = ncells)
         #delbas <- merge(delbas, cols)
-        delbas$
+        delbas$riverID <- ID[delbas$riverID]
         delbas$AREA_M2 <- sf::st_area(delbas)
         
     }

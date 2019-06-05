@@ -3,7 +3,6 @@ Type: Package
 Title: A package for downscaling distributed runoff products on to 
   explicit river segments
 Version: 0.4.0
-Date: 2019-04-08
 Author: Marko Kallio
 Authors@R: c(person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 
@@ -34,11 +33,11 @@ Imports:
     lubridate,
     ggplot2,
     quadprog,
-    ForecastComb,
-    forecast,
     tidyr,
     tsibble,
-    stringr
+    stringr,
+    Matrix,
+    stats
 Suggests:
     knitr,
     rmarkdown,

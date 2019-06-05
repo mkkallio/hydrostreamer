@@ -42,6 +42,9 @@
 #' @param river An 'sf' linestring feature representing a river network.
 #' @param weights A character vector specifying type of weights, or a vector of user-
 #'   specified weights. See Details.
+#' @param dasymetric If \code{TRUE}, column, which' name is specified by 
+#'   \code{weights} is used as the ancillary information in dasymetric mapping.
+#'   Defaults to \code{FALSE}. See details.
 #' @param aoi An area of interest. 'sf' polygon object. Optional.
 #' @param basins An 'sf' polygon object. If weights are set to "area", providing basins 
 #'   skips the delineation process. ID column must have the name as \code{riverID} See 
@@ -67,7 +70,8 @@
 #' @export
 compute_HSweights <- function(HSgrid, 
                               river,
-                              weights, 
+                              weights = NULL, 
+                              dasymetric = TRUE,
                               aoi=NULL, 
                               basins=NULL, 
                               riverID = "riverID", 
@@ -78,82 +82,63 @@ compute_HSweights <- function(HSgrid,
     ##############
     if(!"HSgrid" %in% class(HSgrid)) { 
         stop("HSgrid input should be of class HSgrid, obtained with function 
-             raster_to_HSgrid()")
+             raster_to_HSgrid() or create_HSgrid()")
     }
     
     # Convert river and aoi to sf
     # check if 'sf'
     test <- any(class(river) == 'sf')
     if(!test) river <- sf::st_as_sf(river)
-    # if(!is.null(aoi)) {
-    #     test <- 'sf' %in% class(aoi)
-    #     if(!test) aoi <- sf::st_as_sf(aoi)
-    # }
     
-    # check the weights input to determine which track to take (area or line)
-    if(is.character(weights)) {
-        linetracks <- c("equal", "length", "strahler")
-        if(weights == "area") {
-          track <- "area"
-        } else if(weights %in% linetracks)  {
-          track <- "line"
-        }
-    } else if (is.vector(weights)) {
-        track <- "line"
-        if (!length(weights) == nrow(river)) {
-            stop("Length of 'weights' vector needs to equal to number of features 
-                 in 'river'")
-        }
-    } else {
-        stop("weights should be one of 'equal', 'length', 'strahler', 'area', or a 
-             vector of weights equaling the length of river segments.")
-    }
-
+    ### determine what to do
+    test <- is.null(basins) 
+    if(test) track <- "line" else track <- "area"
     
+    ### if no weights given, dasymetric = FALSE
+    if(is.null(weights)) dasymetric <- FALSE
     
     #############
     # AREA TRACK
     #############
     
     if (track == "area") {
-        if (!is.null(basins)) {
-            track <- "user"
-        } else {
-            track <- "voronoi"
-            if(is.null(aoi)) {
-                stop("no area of interest given. Voronoi polygon based catchment 
-                     generation requires an area of interest. If application is 
-                     global, provide shoreline.")
-            }
-        }
+        
+        test <- hasName(river, riverID) && hasName(basins, riverID)
+        if(!test) stop("Both river and basins input must have column ", riverID)
 
-        # IF aoi is given, intersect river network to aoi
-        if(!is.null(aoi)) {
-            river <- suppressMessages(
-                suppressWarnings(
-                    sf::st_intersection(river, sf::st_geometry(aoi))
-                )
+        if(!is.null(weights)) {
+            test <- hasName(basins, weights)
+            if(!test) stop("No column ", weights, " found in basins input.")
+        }
+        
+        
+        # 1. Intersect river network with union of basins, and intersect HSgrid
+        # with the union of basins - this is to make sure that the runoff 
+        # units is consistent with the basins. If they are not, weights
+        # will not equal to 1 for every runoff unit.
+        river <- suppressMessages(
+            suppressWarnings(
+                sf::st_intersection(river, 
+                            sf::st_geometry(sf::st_union(basins)))
             )
-        }
+        )
 
-        # 1. create flow path information
+        # 2. create flow path information
         river <- river_network(river, riverID = riverID, verbose = verbose)
 
-        # 2. create basins
-        # if (track == "delineate") {
-        #     outlets <- river_outlets(river, drain.dir)
-        #     basins <- delineate_basin(outlets, drain.dir, verbose = verbose)
-        # }
-        if (track == "voronoi") {
-            message("No predefined basins or drainage direction raster given: 
-                    creating a river Voronoi diagram.")
-            basins <- river_voronoi(river, aoi, verbose = verbose)
-        }
-
         # 3. compute basin weights
-        basins <- compute_area_weights(basins, 
-                                       HSgrid, 
-                                       riverID = riverID)
+        if(dasymetric) {
+            basins <- compute_area_weights(basins, 
+                                           HSgrid, 
+                                           seg_weights = weights,
+                                           riverID = riverID)
+        } else {
+            basins <- compute_area_weights(basins, 
+                                           HSgrid, 
+                                           seg_weights = NULL,
+                                           riverID = riverID)
+        }
+        
 
         # create output 
         HSweights <- create_HSweights(river, basins, HSgrid)
@@ -164,22 +149,43 @@ compute_HSweights <- function(HSgrid,
     ############
     
     if (track == "line") {
-        # crop river network to aoi
+        
+        if(!is.null(weights)){
+            test <- hasName(river, weights)
+            if(!test) stop("No column ", weights, " found in river input.")
+        }
+        
+        
+        # 1. crop river network to aoi if given, else intersect it with grid
         if(!is.null(aoi)) {
             select <- sf::st_intersects(river, 
                                         sf::st_geometry(sf::st_union(aoi)), 
                                         sparse=FALSE)
             river <- river[select,]
+        } else {
+            select <- sf::st_intersects(river, 
+                                        sf::st_geometry(sf::st_union(HSgrid)), 
+                                        sparse=FALSE)
+            river <- river[select,]
         }
 
-        # 1. create flow paths
+        # 2. create flow paths
         river <- river_network(river, riverID = riverID, verbose = verbose)
 
-        # 2. compute weights based on river lines
-        splitriver <- compute_river_weights(river, 
-                                            HSgrid, 
-                                            seg_weights = weights,
-                                            split=TRUE)
+        # 3. compute weights based on river lines
+        
+        if(dasymetric) {
+            splitriver <- compute_river_weights(river, 
+                                                HSgrid, 
+                                                seg_weights = weights,
+                                                split=TRUE)
+        } else {
+            splitriver <- compute_river_weights(river, 
+                                                HSgrid, 
+                                                seg_weights = NULL,
+                                                split=TRUE)
+        }
+        
 
         # create output
         HSweights <- create_HSweights(river = river, 

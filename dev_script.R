@@ -9,7 +9,7 @@ library(stringr)
 
 #################
 # Load data
-    system.time({
+system.time({
 # river
 #river <- st_read("../../GLOBAL RIVER CLASSIFICATION/GloRic_v10_shapefile/GloRiC_v10.shp")
 #aoi <- st_read("data/muriae_basin.shp")
@@ -18,6 +18,9 @@ library(stringr)
 river <- read_sf("../hydrostreamer pojects/Muriae basin/Data/muriae_rivers.gpkg")
 aoi <- read_sf("../hydrostreamer pojects/Muriae basin/Data/muriae_basin.shp") %>% 
     st_transform(4326)
+basins <- read_sf("../hydrostreamer pojects/Muriae basin/Data/muriae_catchments.gpkg") %>%
+    rename(Reach_ID = riverID)
+aoi <- st_union(basins)
 
 
 # runoff rasters and naming
@@ -26,6 +29,7 @@ remove <- grepl(".aux.xml", rasters)
 rasters <- rasters[!remove]
 remove <- grepl("watch", rasters)
 rasters <- rasters[!remove]
+#rasters <- rasters[1:5]
 fcast_model <- vector("character", length(rasters))
 fcast_reanalysis <- vector("character", length(rasters))
 fcast_names <- vector("character", length(rasters))
@@ -57,8 +61,52 @@ monthly_obs <- obs %>%
     
 
 
+# test HSweights
+HSgrid <- raster_to_HSgrid(rasters, 
+                           fcast_startdate,
+                           "month",
+                           aoi,
+                           fcast_names)
+
+# HS <- compute_HSweights(HSgrid,
+#                         river,
+#                         riverID = "Reach_ID")
+# 
+# HSdas <- compute_HSweights(HSgrid,
+#                         river,
+#                         weights = "Stream_pow",
+#                         riverID = "Reach_ID")
+
+HS <- compute_HSweights(HSgrid,
+                        river,
+                        basins=basins,
+                        riverID = "Reach_ID")
+
+# HSdas <- compute_HSweights(HSgrid,
+#                         river,
+#                         basins=basins,
+#                         weights = "NCELLS",
+#                         riverID = "Reach_ID")
+
+system.time(testinorm <- downscale_runoff(HS))
+system.time(testipycno <- downscale_runoff(HS, pycno = TRUE, verbose=TRUE))
 
 
+flownorm <- accumulate_runoff(testinorm, "simple")
+flowpycno <- accumulate_runoff(testipycno, "simple")
+
+flownorm <- add_observations(flownorm, monthly_obs,
+                 c(61311019,61315260,
+                   61307950,61311778,
+                   61316367,61320749))
+flowpycno <- add_observations(flowpycno, monthly_obs,
+                 c(61311019,61315260,
+                   61307950,61311778,
+                   61316367,61320749))
+gofn <- flow_gof(flownorm) %>% 
+    select(Prediction, Station, MAE, RMSE, `PBIAS %`, NSE, R2, KGE)
+gofp <- flow_gof(flowpycno) %>% 
+    select(Prediction, Station, MAE, RMSE, `PBIAS %`, NSE, R2, KGE)
 ###############
 # hydrostreamer
 system.time({ 
@@ -68,7 +116,6 @@ system.time({
                            aoi,
                            fcast_names) %>%
         compute_HSweights(river, 
-                           weights="length", 
                            aoi=aoi, 
                            riverID = "Reach_ID") %>%
         downscale_runoff() %>%
@@ -87,41 +134,43 @@ system.time({
 
 ###############
 # Create HSgrid
-system.time({
-HSgrid <- raster_to_HSgrid(brick(rasters[1]), 
-                           lubridate::ymd(fcast_startdate[[1]]), 
-                           timestep="month", 
-                           aoi=aoi, 
-                           name=fcast_names[1])
+# system.time({
+# HSgrid <- raster_to_HSgrid(brick(rasters[1]), 
+#                            lubridate::ymd(fcast_startdate[[1]]), 
+#                            timestep="month", 
+#                            aoi=aoi, 
+#                            name=fcast_names[1])
+# 
+# ###############
+# # Add additional layers to HSgrid
+# for(i in 2:length(rasters)) {
+#     HSgrid <- add_HSgrid(HSgrid,
+#                          raster = brick(rasters[i]),
+#                          date = lubridate::ymd(fcast_startdate[[i]]),
+#                          timestep="month",
+#                          aoi=aoi,
+#                          name=fcast_names[i])
+# }
+# 
+# HSgrid <- add_HSgrid(HSgrid, 
+#                      raster=brick("../RUNOFF DATA/LORA 1.0/lora combined.tif"),
+#                      date = lubridate::ymd("1980-01-01"), 
+#                      timestep="month", 
+#                      aoi = aoi,
+#                      name = "LORA")
+# 
+# }) ### 66 sec
 
-###############
-# Add additional layers to HSgrid
-for(i in 2:length(rasters)) {
-    HSgrid <- add_HSgrid(HSgrid,
-                         raster = brick(rasters[i]),
-                         date = lubridate::ymd(fcast_startdate[[i]]),
-                         timestep="month",
-                         aoi=aoi,
-                         name=fcast_names[i])
-}
-
-HSgrid <- add_HSgrid(HSgrid, 
-                     raster=brick("../RUNOFF DATA/LORA 1.0/lora combined.tif"),
-                     date = lubridate::ymd("1980-01-01"), 
-                     timestep="month", 
-                     aoi = aoi,
-                     name = "LORA")
-
-}) ### 66 sec
 #################
 # Create HSweights object using river segment length weighting
 system.time({
-HSweights.monthly <- compute_HSweights(river, 
-                                      HSgrid, 
-                                      weights="length", 
-                                      aoi=aoi, 
-                                      riverID = "Reach_ID")
-}) ### 27 sec
+HSweights.monthly <- compute_HSweights(HSgrid, 
+                                       river, 
+                                       weights="length", 
+                                       aoi=aoi, 
+                                       riverID = "Reach_ID")
+}) ### 6 sec
+
 ##################
 # Downscale
 system.time({
@@ -140,8 +189,6 @@ system.time(HSflow.simple <- accumulate_runoff(HSrunoff.monthly,
 #                                                 velocity = 1,
 #                                                 x = 1)) ### 157 sec
 
-
-
 })
 
 ###############
@@ -159,18 +206,18 @@ monthly_obs <- obs %>%
     dplyr::select(Date, everything(),-year, -month)
 
 HSflow.simple <- add_observations(HSflow.simple, monthly_obs,
-                                  c(61311019,61315260,61307950,61311778,61316367,61320749))
+                      c(61311019,61315260,61307950,61311778,61316367,61320749))
 HSrunoff.monthly <- add_observations(HSrunoff.monthly, monthly_obs,
-                                  c(61311019,61315260,61307950,61311778,61316367,61320749))
+                      c(61311019,61315260,61307950,61311778,61316367,61320749))
 
 
 
 ###############
 # Optimise flow @ observation stations using Ordinary Least Squares combination
 optim <- optimise_point(HSflow.simple,
-                        optim_method = "CLS", 
+                        optim_method = "GRA", 
                         combination = "mon",
-                        train = 0.99)
+                        train = 0.5)
 gof <- as.data.frame(matrix(NA, ncol=6,nrow=20))
 for(i in seq_along(optim)) {
     gof[,i] <- optim[[i]]$Goodness_of_fit$`Entire timeseries`
@@ -294,3 +341,69 @@ HSflow <- add_observations(HSflow, obs,
 
 
 flow_gof(HSflow) %>% select(Prediction, Station, ME, `PBIAS %`, NSE, KGE, R2)
+
+
+
+
+
+
+optim_method = "CLS" 
+sampling = "random"
+train = 0.5
+bias_correction = TRUE
+log = FALSE
+combination <- "mon"
+routing <- "simple"
+verbose <- TRUE
+drop <- TRUE
+
+
+routing = "simple", 
+train = 0.5,
+optim_method = "CLS",
+bias_correction = FALSE,
+log = FALSE,
+combination = "ts",
+sampling = "series",
+region_type= "upstream", 
+no_station = "em", 
+drop = TRUE,
+
+
+
+
+temp <- hydrostreamer:::combine_timeseries(flow, "GRA", "random", 0.5,
+                                           FALSE,TRUE,FALSE,FALSE)
+logGRA <- temp$Goodness_of_fit
+plot(temp$Optimized_ts[,c(1,3)], type='l')
+temp <- hydrostreamer:::combine_timeseries(flow, "GRB", "random", 0.5,
+                                           FALSE,TRUE,FALSE,FALSE)
+logGRB <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+temp <- hydrostreamer:::combine_timeseries(flow, "CLS", "random", 0.5,
+                                           FALSE,TRUE,FALSE,FALSE)
+logCLS <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+temp <- hydrostreamer:::combine_timeseries(flow, "NNLS", "random", 0.5,
+                                           FALSE,TRUE,FALSE,FALSE)
+logNNLS <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+
+temp <- hydrostreamer:::combine_timeseries(flow, "GRA", "random", 0.5,
+                                           FALSE,FALSE,FALSE,FALSE)
+GRA <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+temp <- hydrostreamer:::combine_timeseries(flow, "GRB", "random", 0.5,
+                                           FALSE,FALSE,FALSE,FALSE)
+GRB <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+temp <- hydrostreamer:::combine_timeseries(flow, "CLS", "random", 0.5,
+                                           FALSE,FALSE,FALSE,FALSE)
+CLS <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+temp <- hydrostreamer:::combine_timeseries(flow, "NNLS", "random", 0.5,
+                                           FALSE,FALSE,FALSE,FALSE)
+NNLS <- temp$Goodness_of_fit
+lines(temp$Optimized_ts[,c(1,3)])
+
+lines(temp$Optimized_ts[,1:2], col='red', lwd=2)

@@ -1,21 +1,33 @@
+# hydrostreamer 0.5.0
+
+Another jump in the version number due to added functionality, and some breaking changes.
+
+## New features
+
+* `compute_HSweights()` is redesigned to support Dasymetric mapping and for simpler usage.
+
+* In addition to a contiguous timeseries or calendar month combinations, calendar year combinations have been added. 
+
+## Minor fixes and enhancements
+
+* `flow_gof()` is now faster for very large number of timeseries to evaluate.
+
+*  Two new combination options have been added; Granger-Ramanathan type A and type B (Ordinary Least Squares combination with no intercept (A), and OLS with no intercept and weights sum to unity (B)), as defined in Arsenault, et al. “A Comparative Analysis of 9 Multi-Model Averaging Approaches in Hydrological Continuous Streamflow Simulation.” Journal of Hydrology 529 (October 2015): 754–67. https://doi.org/10.1016/j.jhydrol.2015.09.001.
+
+*  Combinations are now implemented in hydrostreamer itself: `ForecastComb` package is no longer a dependency
+
+
 # hydrostreamer 0.4.0
 
-Large update which brings the package to version 0.4.0. Changes made to nearly 
-all functions.
+Large update which brings the package to version 0.4.0. Changes made to nearly all functions.
 
-* The outputs from main functions are not 'sf' objects, with the runoff and
-  discharge timeseries provided in list columns. This should enhance the usability
-  of the package.
+* The outputs from main functions are not 'sf' objects, with the runoff and  discharge timeseries provided in list columns. This should enhance the usability of the package.
   
-* New function `create_river()` is provided. The minimum input is now changed to
-  a runoff timeseries and a river network, OR a DEM. The function create a river
-  network from a supplied DEM. However, RSAGA is requred for this to function. 
-  Thanks go to Vili Virkki for adding this!
+* New function `create_river()` is provided. The minimum input is now changed to a runoff timeseries and a river network, OR a DEM. The function create a river  network from a supplied DEM. However, RSAGA is requred for this to function.   Thanks go to Vili Virkki for adding this!
 
 * New example data added.
 
-* Vignette updated. New vignettes planned going deeper in the different aspects
-  of hydrostreamer
+* Vignette updated. New vignettes planned going deeper in the different aspects  of hydrostreamer
   
 * The workflow is now pipeable.
 
@@ -28,11 +40,7 @@ Fixed many issues, including:
 
 * fixed `delineate_basin()`
 
-* Hopefully fixed the conflict issue between `raster` and `hydroGOF` packages.
-The issue appears to have been caused by `hydroGOF` importing `hydroTSM` 
-importing `gstat` importing `spacetime`, which redefines class `RasterStack`.
-Sometimes manifests itself when loading an .RData file with a raster in it,
-causing automatic attachment of `raster`.
+* Hopefully fixed the conflict issue between `raster` and `hydroGOF` packages.The issue appears to have been caused by `hydroGOF` importing `hydroTSM` importing `gstat` importing `spacetime`, which redefines class `RasterStack`. Sometimes manifests itself when loading an .RData file with a raster in it, causing automatic attachment of `raster`.
 
 * Some other smaller fixes.
 

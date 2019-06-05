@@ -47,9 +47,10 @@ optimise_region <- function(HS,
                             routing = "simple", 
                             train = 0.5,
                             optim_method = "CLS",
-                            bias_correction=FALSE,
+                            bias_correction = FALSE,
+                            log = FALSE,
                             combination = "ts",
-                            sampling = "series",
+                            sampling = "random",
                             region_type= "upstream", 
                             no_station = "em", 
                             drop = TRUE,
@@ -63,13 +64,26 @@ optimise_region <- function(HS,
     warned_overfit <- FALSE
     warned_train <- FALSE
     
+    ###############
+    # Check inputs
+    ###############
     
-    start <- Sys.time()
+    if(optim_method %in% c("EIG2", "GRC", "OLS")) {
+        warning(paste0(optim_method, " contains an intercept which may cause ",
+                "considerable amount of negative streamflow estimates in",
+                " river segments with no observations!"))
+    }
+    
+    #################
+    # preprocess
+    #################
+
     if(verbose) message("Initializing..")
     
     statrIDs <- lapply(HS$observation_ts, is.null)
     statrIDs <- which(!unlist(statrIDs))
     stat_names <- HS$observation_station[ statrIDs ]
+    if(combination %in% c("monthly", "mon")) mon <- TRUE else mon <- FALSE
     
     # find nearest up- and downstream station for each station
     rind <- statrIDs 
@@ -110,7 +124,13 @@ optimise_region <- function(HS,
     controlts <- NULL
     if(hasName(HS, "control_ts")) controlts <- HS$control_ts
     
+    
+    
+    
+    #######################################
     # route and combine stations one by one
+    #######################################
+    
     for(station in 1:nrow(upstations)) {
         
         # choose only upstream
@@ -120,8 +140,8 @@ optimise_region <- function(HS,
         
         # route
         statriver <- accumulate_runoff(statriver, 
-                                       method = routing,
-                                       ...)
+                                       method = routing)#,
+                                       #...)
         
         # prepare combination
         stationrID <- which(statriver$riverID == upstations$riverID[station])
@@ -129,111 +149,119 @@ optimise_region <- function(HS,
                                  statriver$observation_ts[[ stationrID ]],
                                  by="Date")
         
+        flow <- flow[!is.na(flow$observations),]
+        
         colremove <- apply(flow, 2, FUN=function(x) all(is.na(x)))
         if(any(colremove)) {
             flow <- flow[,names(colremove)[!colremove]]
         }
         
         ############################################
-        # Forecast combination entire timeseries or monthly
+        # Forecast combination entire timeseries or monthly or annual or best
+        ############################################
         if(combination %in% c("timeseries", "ts")) {
             
-            comb <- combine_timeseries(tibble::as_tibble(flow), 
-                                                       optim_method, 
-                                                       sampling,
-                                                       train,
-                                                       bias_correction,
-                                                       warned_overfit,
-                                                       warned_train)
+            comb <- combine_timeseries(flow, 
+                                       optim_method, 
+                                       sampling,
+                                       train,
+                                       bias_correction,
+                                       log,
+                                       warned_overfit,
+                                       warned_train)
             warned_overfit <- comb$warned_overfit
             warned_train <- comb$warned_train
-            
-            # # get the optimized weights and combine
-            # # with intercept and bias divided among river segments
-            # if (bias_correction) {
-            #     intbias <- ( comb$Intercept + comb$Bias_correction ) /
-            #         nrow(statriver)
-            #     
-            # } else {
-            #     intbias <- comb$Intercept / nrow(statriver)
-            # }
-            # weights <- c(Intercept = intbias, comb$Weights) 
-            
-            # # get the optimized weights and combine
-            weights <- c(Intercept = comb$Intercept, comb$Weights) 
-            
-            if (bias_correction) {
-                bias <- comb$Bias_correction
-            } else {
-                bias <- NULL
-            }
-            
-            statriver <- combine_runoff(statriver, 
-                                        list(Optimized = weights),
-                                        bias = comb$Bias_correction,
-                                        drop = drop,
-                                        monthly = FALSE)
             
         } else if(combination %in% c("monthly", "mon")) {
             
-            comb <- combine_monthly(tibble::as_tibble(flow), 
-                                                    optim_method, 
-                                                    sampling,
-                                                    train,
-                                                    bias_correction,
-                                                    warned_overfit,
-                                                    warned_train)
+            comb <- hydrostreamer:::combine_monthly(flow, 
+                                    optim_method, 
+                                    sampling,
+                                    train,
+                                    bias_correction,
+                                    log,
+                                    warned_overfit,
+                                    warned_train)
             warned_overfit <- comb$warned_overfit
             warned_train <- comb$warned_train
             
-            # get the optimized weights and combine
-            weights <- cbind(Intercept = comb$Intercept, comb$Weights)
-            
-            if(bias_correction) {
-                bias <- comb$Bias_correction %>% 
-                    as.matrix() %>% 
-                    t()
-            } else {
-                bias <- NULL
-            }
-            
-            
+        } else if (combination %in% c("annual", "ann")) {
+            comb <- combine_annual(flow, 
+                                   optim_method, 
+                                   sampling,
+                                   train,
+                                   bias_correction,
+                                   log,
+                                   warned_overfit,
+                                   warned_train)
+            warned_overfit <- comb$warned_overfit
+            warned_train <- comb$warned_train
+        }
+        
+        ##################################################
+        # process output - combine timeseries using the obtained weights
+        ##################################################
+        
+        # get the optimized weights and combine
+        if(combination %in% c("mon", "monthly")) {
+            weights <- comb$Weights[,-1] %>% as.matrix
+        }  else weights <- comb$Weights
+        intercept <- comb$Intercept
+        bias <- comb$Bias_correction
+        
+        if (bias_correction) {
             statriver <- combine_runoff(statriver, 
                                         list(Optimized = weights),
                                         bias = bias,
+                                        intercept = intercept,
                                         drop = drop,
-                                        monthly = TRUE)
-        }
-        
-        # update comb info
-        opt <- comb$Optimized_ts
-        opt$Optimized <- statriver$discharge_ts[[stationrID]]$Optimized
-        opt$Residuals <- opt$Optimized - opt$Observations
-        comb$Optimized_ts <- opt
-        
-        trains <- comb$Optimized_ts$Train_or_test == "Train"
-        tests <- comb$Optimized_ts$Train_or_test == "Test"
-        
-        if(sum(tests, na.rm=TRUE) == 0) {
-            traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
+                                        monthly = mon)
+            
+            # update comb info after bias correction
+            opt <- comb$Optimized_ts
+            optdates <- opt$Date %in% statriver$discharge_ts[[stationrID]]$Date
+            dates <- statriver$discharge_ts[[stationrID]]$Date %in% opt$Date
+            opt$Optimized[optdates] <-
+                statriver$discharge_ts[[stationrID]]$Optimized[dates]
+            opt$Residuals <- opt$Optimized - opt$Observations
+            comb$Optimized_ts <- opt
+            
+            # update GOF metrics after bias correction
+            # TODO: update so that monthly GOF is kept. Now each month stats 
+            # are lost.
+            trains <- comb$Optimized_ts$Train_or_test == "Train"
+            tests <- comb$Optimized_ts$Train_or_test == "Test"
+            
+            if(sum(tests, na.rm=TRUE) == 0) {
+                traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
                                       comb$Optimized_ts$Observations[trains])  
-            gofs <- data.frame(Train = traingof)
-        } else {
-            traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
+                gofs <- data.frame(Train = traingof)
+            } else {
+                traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
                                       comb$Optimized_ts$Observations[trains]) 
-            
-            testgof <- hydroGOF::gof(comb$Optimized_ts$Optimized[tests], 
+                
+                testgof <- hydroGOF::gof(comb$Optimized_ts$Optimized[tests], 
                                      comb$Optimized_ts$Observations[tests])
-            
-            bothgof <- hydroGOF::gof(comb$Optimized_ts$Optimized, 
+                
+                bothgof <- hydroGOF::gof(comb$Optimized_ts$Optimized, 
                                      comb$Optimized_ts$Observations)
+                
+                gofs <- data.frame(Train = traingof,
+                                   Test = testgof,
+                                   Together = bothgof)
+            }
             
-            gofs <- data.frame(Train = traingof,
-                               Test = testgof,
-                               Together = bothgof)
+            comb$Goodness_of_fit <- gofs
+            
+        } else { # if no bias correction
+            
+            statriver <- combine_runoff(statriver, 
+                                        list(Optimized = weights),
+                                        intercept = intercept,
+                                        bias = rep(0,12),
+                                        drop = drop,
+                                        monthly = mon)
         }
-        
-        comb$Goodness_of_fit <- gofs
         
         # update HS 
         statriver$Optimisation_info[[stationrID]] <- comb
@@ -248,13 +276,11 @@ optimise_region <- function(HS,
         
         # mark which river segments have already been optimized
         optimizedIDs <- rbind(optimizedIDs, 
-                              data.frame(riverID = statriver$riverID, 
-                                         OPTIMIZED_STATION=upstations$station[station],
-                                         OPTIMIZED_riverID = upstations$riverID[station]))
+                          data.frame(riverID = statriver$riverID, 
+                             OPTIMIZED_STATION = upstations$station[station],
+                             OPTIMIZED_riverID = upstations$riverID[station]))
         
         # create a boundary conditions
-        #boundaryrID <- 
-        #    which(HS$riverID == HS$NEXT[upstations$rind[station]])
         boundaryrID <- HS$NEXT[upstations$rind[station]]
         
         if (boundaryrID != -9999) {
@@ -267,7 +293,9 @@ optimise_region <- function(HS,
     }
     
     
+    ##################################################################
     # after all stations are optimized, process the remaining segments
+    ##################################################################
     
     if(no_station == "em") {
         
@@ -276,20 +304,19 @@ optimise_region <- function(HS,
         statriver <- HS[!HS$riverID %in% optimizedIDs$riverID,]
         statriver <- statriver[order(statriver$riverID),]
         
-        
-        # route
-        statriver <- accumulate_runoff(statriver, 
-                                       method = routing,
-                                       ...)
-        
-        # mean combination
-        
+        # mean combination first so that we dont need to route everything
+        # and then take mean. instead, route the mean directly
+        statriver <- dplyr::select(statriver, -discharge_ts)
         statriver <- ensemble_summary(statriver, 
                                       summarise_over_timeseries = FALSE,
                                       aggregate_monthly = FALSE,
                                       funs = "mean",
                                       drop=TRUE)
-        
+        # route
+        statriver <- accumulate_runoff(statriver, 
+                                       method = routing,
+                                       ...)
+
         # update HS 
         for(i in seq_along(statriver$Optimisation_info)) {
             statriver$Optimisation_info[[i]] <- 
@@ -308,11 +335,15 @@ optimise_region <- function(HS,
                               data.frame(riverID = statriver$riverID, 
                                          OPTIMIZED_STATION = "Ensemble Mean",
                                          OPTIMIZED_riverID = NA))
-        
     }
     
     if (verbose) setTxtProgressBar(pb, station+1)
     if (verbose) close(pb) 
+    
+    
+    #####################################################
+    # Output
+    #####################################################
     
     # return original control timeseries, if HS had any. Otherwise remove
     if(is.null(controltype)) {
@@ -333,7 +364,6 @@ optimise_region <- function(HS,
     # return
     HS <- reorder_cols(HS)
     HS <- assign_class(HS, "HS")
-    if (verbose) message(paste0("Finished in ", Sys.time()-start))
     return(HS)
     
 } 

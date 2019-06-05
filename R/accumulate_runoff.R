@@ -42,7 +42,9 @@ accumulate_runoff <- function(HS,
 
 #' @export
 accumulate_runoff.instant <- function(HS,
-                                      method=c("instant", "simple", "muskingum"), 
+                                      method=c("instant", 
+                                               "simple", 
+                                               "muskingum"), 
                                       ..., 
                                       verbose = FALSE) {
     
@@ -59,7 +61,9 @@ accumulate_runoff.instant <- function(HS,
 
 #' @export
 accumulate_runoff.muskingum <- function(HS,
-                                        method=c("instant", "simple", "muskingum"), 
+                                        method=c("instant", 
+                                                 "simple", 
+                                                 "muskingum"), 
                                         ..., 
                                         verbose = FALSE) {
     
@@ -86,7 +90,9 @@ accumulate_runoff.muskingum <- function(HS,
 
 #' @export
 accumulate_runoff.simple <- function(HS,
-                                     method=c("instant", "simple", "muskingum"), 
+                                     method=c("instant", 
+                                              "simple", 
+                                              "muskingum"), 
                                      ..., 
                                      verbose = FALSE) {
     

@@ -20,9 +20,9 @@ accumulate_runoff_simple <- function(HS,
     UP_SEGMENTS <- NULL
     
     lengths <- sf::st_length(HS) %>% unclass()
-    IDs <- dplyr::select(HS, riverID) %>% 
-        sf::st_set_geometry(NULL) %>% 
-        unlist()
+    IDs <- dplyr::pull(HS, riverID) # %>% 
+        # sf::st_set_geometry(NULL) %>% 
+        # unlist()
     
     order <- HS %>%
         dplyr::select(riverID, UP_SEGMENTS) %>%
@@ -37,10 +37,7 @@ accumulate_runoff_simple <- function(HS,
     
     duration <- lengths/velocity
     
-    # downscaled <- suppressMessages(collect_listc(HS$runoff_ts, acc=TRUE) )
-    # discharge <- downscaled
     discharge <- HS$runoff_ts
-    #discharge <- downscaled
     
     # dates and time intervals between dates
     dates <- lapply(discharge, function(x) x$Date) %>%
@@ -53,12 +50,12 @@ accumulate_runoff_simple <- function(HS,
     for (i in seq_along(intervals)) {
         if (i == length(intervals)) {
             intervals[i] <- lubridate::interval(dates[i],
-                                                lubridate::ceiling_date(dates[i],
-                                                     unit="month")) / 
-                                                        lubridate::seconds(1)
+                                        lubridate::ceiling_date(dates[i],
+                                             unit="month")) / 
+                                                lubridate::seconds(1)
         } else {
             intervals[i] <- lubridate::interval(dates[i],
-                                                dates[i+1]) / lubridate::seconds(1)
+                                        dates[i+1]) / lubridate::seconds(1)
         }
     }
     
@@ -66,6 +63,7 @@ accumulate_runoff_simple <- function(HS,
     total <- length(order)
     if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
     prog <- 0
+    
     for (seg in order) {
         # progress ind
         prog <- prog + 1
@@ -76,7 +74,7 @@ accumulate_runoff_simple <- function(HS,
             if(!is.null(HS$control_ts[[seg]])) {
                 control_ts <- HS$control_ts[[seg]]
                 type <- HS$control_type[[seg]]
-
+                
                 dateind <- discharge[[seg]]$Date %in% control_ts$Date
                 
                 # Set, of modify input runoff of the segment
@@ -124,13 +122,15 @@ accumulate_runoff_simple <- function(HS,
 
         # process all timeseries (cols in discharge[[seg]])
         dis <- discharge[[seg]]
-        dis <- dis[,2:ncol(dis)] #remove date
+        dis <- dis[,-1] #remove date
         dis <- bind_rows(dis[1,], dis)  %>%
             as.matrix()
         
         #remove NAs for fortran
-        na <- apply(dis,1, function(x) any(is.na(x)))
-        fort <- dis[!na,]
+        #na <- apply(dis,1, function(x) any(is.na(x)))
+        keep <- complete.cases(dis)
+        fort <- dis[keep,] 
+        if(class(fort) != "matrix") fort <- as.matrix(fort)
         rows <- nrow(fort)
         cols <- ncol(fort)
 
@@ -143,8 +143,9 @@ accumulate_runoff_simple <- function(HS,
                         as.double(fort),
                         PACKAGE = "hydrostreamer")[[6]]
         fort <- matrix(fort, nrow=rows, ncol=cols)
+        
         # update inflow of the next river segment
-        dis[!na] <- fort
+        dis[keep,] <- fort
         ncol <- ncol(discharge[[ nextriver[seg] ]])
         discharge[[ nextriver[seg] ]][, 2:ncol] <-
             discharge[[ nextriver[seg] ]][, 2:ncol] + dis[-1,]

@@ -25,7 +25,7 @@
 #'   runoff timeseries in \code{HS}, or a list of weight vectors.
 #' @param intercept If weights are associated with an intercept, include it here.
 #'   Default intercept = 0.
-#' @param bias Bias in percentage. Defaults to \code{NULL}.
+#' @param bias Bias in percentage. Defaults to 0.
 #' @param drop Whether to remove source timeseries and replace them with 
 #'   combinations, or keep source timeseries and add combination as new column.
 #' @param monthly If provided weights are for each month, set to \code{TRUE}
@@ -50,37 +50,105 @@
 combine_runoff <- function(HS, 
                            weights, 
                            intercept = 0,
-                           bias = NULL,
+                           bias = 0,
                            drop = FALSE, 
                            monthly = FALSE) {
     UseMethod("combine_runoff")
 }
 
 
-
+#' @method combine_runoff list 
 #' @export
 combine_runoff.list <- function(HS, 
                                 weights, 
                                 intercept = 0,
-                                bias = NULL,
+                                bias = 0,
                                 drop = FALSE, 
                                 monthly = FALSE) { 
     
     Date <- NULL
     
+    if(!is.list(weights)) weights <- list(combination = weights)
     
-    
-    if(!is.list(weights) || is.data.frame(weights)) {
-        weights <- list(combination = weights)
+    # check intercept
+    if(length(intercept) != length(weights)) {
+        if(length(intercept) == 1) intercept <- rep(intercept, 
+                                                    length(weights))
+        if(monthly) {
+            if(!is.list(intercept)) {
+                intercept <- list(intercept)
+                intercept <- lapply(intercept, function(x) {
+                    if(length(x) == 1) {
+                        return(rep(x,12))
+                    } else if(length(x) != 12) {
+                        return(FALSE)
+                    } else {
+                        return(x)
+                    }
+                    
+                })
+                if(FALSE %in% intercept) stop(paste0("length(intercept) is not",
+                                                     " 1 or 12. Pleace check!"))
+            }
+        }
+        
     }
-    wnames <- names(weights)
-    if(is.null(wnames)) wnames <- paste0("combination",1:length(weights))
     
-    if (is.null(bias)) {
-        bias_correct <- FALSE
-    } else {
-        bias_correct <- TRUE   
-    } 
+    # check bias
+    if(length(bias) != length(weights)) {
+        if(length(bias) == 1) bias <- rep(bias, 
+                                                    length(weights))
+        if(monthly) {
+            if(!is.list(bias)) {
+                bias <- list(bias)
+                bias <- lapply(bias, function(x) {
+                    if(length(x) == 1) {
+                        return(rep(x,12))
+                    } else if(length(x) != 12) {
+                        return(FALSE)
+                    } else {
+                        return(x)
+                    }
+                })
+                if(FALSE %in% bias) stop(paste0("length(bias) is not",
+                                                     " 1 or 12. Pleace check!"))
+            }
+        }
+        
+    }
+    
+    wnames <- names(weights)
+    # if(is.null(wnames)) wnames <- paste0("combination",1:length(weights))
+    # 
+    # if (bias == 0) {
+    #     bias_correct <- FALSE
+    # } else {
+    #     bias_correct <- TRUE   
+    # } 
+    
+    # test <- length(bias) == 1 || length(bias) == length(weights)
+    # if (!test) stop("Bias needs to be length 1 or the same length as",
+    #                 " weights")
+    # 
+    # test <- length(intercept) == 1 || length(intercept) == length(weights)
+    # if(!test) stop("Intercept needs to be length 1 or the same length as",
+    #                " weights")
+    
+    # check bias and intercept for monthly weights
+    # if(monthly) {
+    #     # bias
+    #     test <- is.list(bias)
+    #     if(!test) bias <- list(bias = bias)
+    #     
+    #     test <- all( sapply(bias, function(x) length(x) == 12))
+    #     if(!test) stop("Some input bias' do not include value for all months")
+    #     
+    #     # intercept
+    #     test <- all( sapply(intercept, function(x) length(x) == 12))
+    #     if(!test) stop("Some input intercepts' do not include value for ",
+    #                    "all months")
+    # }
+
     
     ### if combination is done for each month
     if (monthly) {
@@ -93,25 +161,27 @@ combine_runoff.list <- function(HS,
             
             # process every set of weights
             for(w in seq_along(weights)) {
-                modelind <- which(colnames(HS[[seg]]) %in% colnames(weights[[w]]), 
+                modelind <- which(colnames(HS[[seg]]) %in% 
+                                      colnames(weights[[w]]), 
                                   arr.ind=TRUE)
                 
                 for(m in 1:12) {
                     mw <- unlist(weights[[w]][m,])
-                    intercept <- mw[1]
+                    int <- intercept[[w]][m]
+                    b <- bias[[w]][m]
                     mw[is.na(mw)] <- 0
                     
                     # make sure weights and timeseries match in order
                     order <- match(colnames(HS[[seg]])[modelind], names(mw))
-                    mw <- c(intercept, mw[order])
+                    mw <- c(int, mw[order])
                     
                     month <- lubridate::month(HS[[seg]]$Date) == m
                     p <- t(cbind(1,as.matrix(HS[[seg]][month,modelind])))
                     result <- as.vector(mw %*% p)
                     
-                    if(bias_correct) {
-                        result <-result / (1 - bias[w,m] / 100)
-                    }
+                    #if(bias_correct) {
+                        result <- result / (1 - bias[[w]][m] / 100)
+                    #}
                     data[month,w] <- result
                 }
             }
@@ -130,8 +200,8 @@ combine_runoff.list <- function(HS,
             
         }
         
-        # if combination is done for the entire timeseries
-    } else {
+        
+    } else { # if combination is done for the entire timeseries
         
         # process every river segment
         for(seg in seq_along(HS)) {
@@ -143,12 +213,12 @@ combine_runoff.list <- function(HS,
                                   arr.ind=TRUE)
                 
                 wmean <- apply(HS[[seg]][,modelind], 1, weighted.mean, 
-                               weights[[w]][-1])
-                wmean <- wmean + weights[[w]][1]
+                               weights[[w]])
+                wmean <- wmean + intercept[[w]]
                 
-                if (bias_correct) {
+                #if (bias_correct) {
                     wmean <- wmean / (1 - bias[[w]] / 100)
-                }
+                #}
                 data[,w] <- wmean
             }
             data <- tibble::as_tibble(data)
@@ -170,31 +240,32 @@ combine_runoff.list <- function(HS,
     return(HS)
 }
 
+#' @method combine_runoff HS 
 #' @export
 combine_runoff.HS <- function(HS, 
                               weights, 
                               intercept = 0,
-                              bias = NULL,
+                              bias = 0,
                               drop = FALSE, 
                               monthly = FALSE) {
     
     if("discharge_ts" %in% names(HS)) {
         comb <- combine_runoff(HS$discharge_ts, 
-                               weights, 
-                               intercept = intercept,
-                               bias = bias, 
-                               drop = drop, 
-                               monthly = monthly)
+                                weights, 
+                                intercept = intercept,
+                                bias = bias, 
+                                drop = drop, 
+                                monthly = monthly)
         HS$discharge_ts <- comb
     }
     
     if("runoff_ts" %in% names(HS)) {
         comb <- combine_runoff(HS$runoff_ts, 
-                               weights, 
-                               intercept = intercept,
-                               bias = bias,
-                               drop = drop, 
-                               monthly = monthly)
+                                weights, 
+                                intercept = intercept,
+                                bias = bias,
+                                drop = drop, 
+                                monthly = monthly)
         HS$runoff_ts <- comb
     }
     

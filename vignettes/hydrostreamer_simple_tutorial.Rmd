@@ -147,14 +147,14 @@ catchment_downscaled <- downscale_runoff(catchment_weights)
 The downscaled runoff in *runoff_ts* is a named list column where each element is a *tsibble*. Like with HSgrid, each element can be accessed by its name - the ID of the river segment.
 
 ```{r}
-( runoff180 <- catchment_downscaled$runoff_ts$`180` )
+( runoff200 <- catchment_downscaled$runoff_ts$`200` )
 ```
 
 We can compare the downscaled results from the two approaches.
 
 ```{r}
-plotdata <- left_join(runoff180, 
-                      river_downscaled$runoff_ts$`180`,
+plotdata <- left_join(runoff200, 
+                      river_downscaled$runoff_ts$`200`,
                       by="Date")
 colnames(plotdata) <- c("Date", "Catchment", "River")
 plotdata <- gather(plotdata, 
@@ -164,7 +164,7 @@ plotdata <- gather(plotdata,
 
 ggplot(plotdata, aes(Date, Runoff, color=Approach)) + 
     geom_line() +
-    labs(title = "Downscaled runoff at river segment 180",
+    labs(title = "Downscaled runoff at river segment 200",
          y = 'Runoff in m3/s',
          x = NULL)
 ```
@@ -178,30 +178,31 @@ Each routing method is accessible through the function *accumulate_runoff()*. Si
 
 ```{r message=FALSE, warning=FALSE}
 catchment_discharge <- accumulate_runoff(catchment_downscaled,
-                                         method = "instant")
+                                         method = "simple")
 river_discharge <- accumulate_runoff(river_downscaled,
-                                     method = "instant")
+                                     method = "simple")
 ```
 
-We can also plot the estimated discharge from the two approaches at segment 180 by accessing the new list column *discharge_ts*. The predictions can be very different. 
+We can also plot the estimated discharge from the two approaches at segment 200 by accessing the new list column *discharge_ts*. 
 
 ```{r}
-plotdata <- left_join(catchment_discharge$discharge_ts$`180`, 
-                      river_discharge$discharge_ts$`180`,
+plotdata2 <- left_join(catchment_discharge$discharge_ts$`200`, 
+                      river_discharge$discharge_ts$`200`,
                       by="Date")
-colnames(plotdata) <- c("Date", "Catchment", "River")
-plotdata <- gather(plotdata, 
+colnames(plotdata2) <- c("Date", "Catchment", "River")
+plotdata2 <- gather(plotdata2, 
                    Approach,
                    Discharge,
                    -Date)
 
-ggplot(plotdata, aes(Date, Discharge, color=Approach)) + 
+ggplot(plotdata2, aes(Date, Discharge, color=Approach)) + 
     geom_line() +
-    labs(title = "Downscaled discharge at river segment 180",
+    labs(title = "Downscaled discharge at river segment 200",
          y = 'Q m3/s',
          x = NULL)
 ```
-As seen from the plot, the two approaches can lead into very different estimations in small catchments - but as the river basin size increases, their predictions come closer and closer to one another. In this example basin, the big difference can be explained by the relationship between the runoff polygons and the river network; there are larger rivers which meet in the northern part of the basin. If weighted by line segments, the two rivers rare share the same grid. If weighted by basin, the catchments on both sides of the river cross over to the other runoff polygon.
+
+As seen from the plots, the two approaches can lead into very different estimations in small streams - but as the catchment size increases, their predictions come closer and closer to one another.
 
 We recommend that segment specific catchments be used instead of river lines for weighting whenever possible, because it creates more realistic division of runoff into the river segments.
 

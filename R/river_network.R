@@ -38,9 +38,7 @@ river_network <- function(river, riverID = "riverID", verbose=FALSE) {
     if(!any(class(river) == "sf")) {
         stop("river input should be an 'sf' LINESTRING object")
     }
-    #test <- sf::st_is(river, "LINESTRING")
-    #if(any(!test)) stop("Each geometry in river must be a LINESTRING; use e.g. sf::st_cast() to coerce geometries.")
-    
+ 
     if(!any(names(river) == riverID)) {
         stop(paste0("ID column '", riverID,"' does not exist"))
     }

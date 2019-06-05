@@ -78,18 +78,17 @@ river_voronoi<- function(river, aoi, riverID = "riverID", verbose=FALSE) {
       )
     )
     
-    lwgeom <- requireNamespace("lwgeom", quietly = TRUE)
     # fix any bad polygons
-    if(lwgeom) {
+    # if(lwgeom) {
         voronoi <- fix_voronoi(voronoi, riverID = riverID, verbose = verbose)
-    } else {
-        v.gc <- sf::st_is(voronoi, "GEOMETRYCOLLECTION")
-        if (any(v.gc)) {
-            message("The resulting Voronoi diagram may contain corrupted 
-                    geometries. Install package 'lwgeom' in order to 
-                    automatically fix them.")
-        }
-    }
+    # } else {
+    #     v.gc <- sf::st_is(voronoi, "GEOMETRYCOLLECTION")
+    #     if (any(v.gc)) {
+    #         message("The resulting Voronoi diagram may contain corrupted 
+    #                 geometries. Install package 'lwgeom' in order to 
+    #                 automatically fix them.")
+    #     }
+    # }
     
   
     # prepare return

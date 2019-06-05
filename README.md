@@ -7,27 +7,6 @@ hydrostreamer 0.4.0
 products by spatial relationship between the areal unit in runoff data,
 and an explicitly represented river network.
 
-**hydrostreamer** has featured in a number of conference presentations:
-
--   EGU 2018: Kallio et al, [Spatial allocation of low resolution runoff
-    model outputs to high resolution stream
-    network](https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network)
-
--   AGU 2018: Kallio et al, [Generating improved estimates of streamflow
-    using model averaging of downscaled runoff products under
-    uncertainty](https://www.researchgate.net/publication/330213179_Generating_improved_estimates_of_streamflow_using_model_averaging_of_downscaled_runoff_products_under_uncertainty)
-
--   AGU 2018: Virkki et al, [The value of open-source river discharge
-    estimation in the water governance context of the 3S river basin in
-    Southeast
-    Asia](https://www.researchgate.net/publication/331320855_AGU_2018_Poster_Presentation)
-
--   EGU 2019: Nauditt et al, [Evaluating drought risk in data scarce
-    tropical
-    catchments](https://meetingorganizer.copernicus.org/EGU2019/EGU2019-18370.pdf)
-
--   A research paper is currently under preparation.
-
 In practise the downscaling occurs by dividing the value of runoff to
 all those river segments intersecting the areal unit (of runoff) using a
 numerical attribute for weighting. These attributes can be, for
@@ -68,23 +47,8 @@ river network can be derived from a Digital Elevation Model (DEM).
 First, load example data to R:
 
     library(raster)
-
-    ## Loading required package: sp
-
     library(hydrostreamer)
-
-    ## Loading required package: sf
-
-    ## Linking to GEOS 3.6.1, GDAL 2.2.3, PROJ 4.9.3
-
     library(lubridate)
-
-    ## 
-    ## Attaching package: 'lubridate'
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     date
 
     data(example_rivers)
     data(example_basins)
@@ -179,16 +143,28 @@ The function usage has been developed so that they are all pipable.
 to a GeoPackage, which can be viewed in any GIS software (such as
 ArcGIS, QGIS). We can also write the discharge (or runoff) as a table.
 
-    HSwrite(streamflow, "downscaled_streamflow.gpkg")
+    # HSwrite(streamflow, "downscaled_streamflow.gpkg")
+    # HSwrite(streamflow, "downscaled_streamflow.csv", what = "discharge")
 
-    ## Writing layer `downscaled_streamflow' to data source `downscaled_streamflow.gpkg' using driver `GPKG'
-    ## features:       41
-    ## fields:         6
-    ## geometry type:  Line String
+More information
+----------------
 
-    HSwrite(streamflow, "downscaled_streamflow.csv", what = "discharge")
+**hydrostreamer** has featured in a number of conference presentations:
 
-    ## Loading required namespace: readr
+-   EGU 2018: Kallio et al, [Spatial allocation of low resolution runoff
+    model outputs to high resolution stream
+    network](https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network)
+-   AGU 2018: Kallio et al, [Generating improved estimates of streamflow
+    using model averaging of downscaled runoff products under
+    uncertainty](https://www.researchgate.net/publication/330213179_Generating_improved_estimates_of_streamflow_using_model_averaging_of_downscaled_runoff_products_under_uncertainty)
+-   AGU 2018: Virkki et al, [The value of open-source river discharge
+    estimation in the water governance context of the 3S river basin in
+    Southeast
+    Asia](https://www.researchgate.net/publication/331320855_AGU_2018_Poster_Presentation)
+-   EGU 2019: Nauditt et al, [Evaluating drought risk in data scarce
+    tropical
+    catchments](https://meetingorganizer.copernicus.org/EGU2019/EGU2019-18370.pdf)
+-   A research paper is currently under preparation.
 
 License
 -------

@@ -21,13 +21,16 @@
 #' @param optim_method Method used to optimise. Default uses constrained
 #'   linear regression. See details.
 #' @param combination Whether to do the forecast combination for the entire
-#'   timeseries, or each month of the year individually. Accepts 
-#'   \code{"timeseries"}, \code{"ts"}, \code{"monthly"} or \code{"mon"}.
+#'   timeseries, or each month of the year individually, or for full calendar 
+#'   years. Accepts \code{"timeseries"}, \code{"ts"}, or \code{"monthly"}, 
+#'   \code{"mon"}, or \code{"annual"}, \code{"ann"}.
 #' @param sampling How to sample training and testing periods. \code{"series"}
 #'   for training serially from beginning, or \code{"random"} for a random
 #'   sample for both training and testing periods. 
 #' @param train The share of timeseries used for training period. 
 #' @param bias_correction Apply bias correction. Defaults to FALSE.
+#' @param log Log-transform prediction and observation timeseries before 
+#'   fitting. Defaults to \code{FALSE}.
 #' 
 #' @return Returns an object of class \code{HSoptim}, which is a list of
 #' results from observation stations. Each list item contains:
@@ -49,16 +52,17 @@
 optimise_point <- function(HS, 
                            optim_method="CLS",
                            combination = "ts",
-                           sampling = "series",
+                           sampling = "random",
                            train = 0.5, 
-                           bias_correction = FALSE) {
+                           bias_correction = FALSE,
+                           log = FALSE) {
     
     warned_overfit <- FALSE
     warned_train <- FALSE
     
     riverIDs <- lapply(HS$observation_ts, is.null)
     riverIDs <- which(!unlist(riverIDs))
-
+    
     stat_names <- HS$observation_station[ riverIDs ]
     
     
@@ -67,30 +71,34 @@ optimise_point <- function(HS,
     ##########################################
     
     combs <- list()
-
+    
     for (rID in seq_along(riverIDs)) {
         
         flow <- dplyr::left_join(HS$discharge_ts[[ riverIDs[rID] ]],
                                  HS$observation_ts[[ riverIDs[rID] ]],
                                  by="Date")
         
+        flow <- flow[!is.na(flow$observations),]
+        
         colremove <- apply(flow, 2, FUN=function(x) all(is.na(x)))
         if(any(colremove)) {
             flow <- flow[,names(colremove)[!colremove]]
-            # flow <- flow[,colremove]
         }
-
+        
+        #flow <- remove_collinear(flow)
+        
         ############################################
-        # Forecast combination entire timeseries or monthly
+        # Forecast combination entire timeseries or monthly or annually
         
         
         if(combination %in% c("timeseries", "ts")) {
             
-            combs[[rID]] <- combine_timeseries(tibble::as_tibble(flow), 
+            combs[[rID]] <- combine_timeseries(flow, 
                                                optim_method, 
                                                sampling,
                                                train,
                                                bias_correction,
+                                               log,
                                                warned_overfit,
                                                warned_train)
             warned_overfit <- combs[[rID]]$warned_overfit
@@ -98,13 +106,27 @@ optimise_point <- function(HS,
             
         } else if(combination %in% c("monthly", "mon")) {
             
-            combs[[rID]] <- combine_monthly(tibble::as_tibble(flow), 
+            combs[[rID]] <- combine_monthly(flow, 
                                             optim_method, 
                                             sampling,
                                             train,
                                             bias_correction,
+                                            log,
                                             warned_overfit,
                                             warned_train)
+            warned_overfit <- combs[[rID]]$warned_overfit
+            warned_train <- combs[[rID]]$warned_train
+            
+        } else if(combination %in% c("annual", "ann")) {
+            
+            combs[[rID]] <- combine_annual(flow, 
+                                           optim_method, 
+                                           sampling,
+                                           train,
+                                           bias_correction,
+                                           log,
+                                           warned_overfit,
+                                           warned_train)
             warned_overfit <- combs[[rID]]$warned_overfit
             warned_train <- combs[[rID]]$warned_train
         }
@@ -117,21 +139,13 @@ optimise_point <- function(HS,
     output <- list()
     for(i in seq_along(combs)) {
         
-        # combining by OLS may result in NA for forecasts if the timeseries 
-        # is too short. In that case, hydroGOF::gof() fails. Here we make sure 
-        # that if there are NA's in either of forecast timeseries, gof() will 
-        # not be used.
-        # if(any(is.na(combs[[i]]$Forecasts_Train)) || any(is.na(combs[[i]]$Forecasts_Test))) {
-        #     gofs <- NA
-        # } else {
-        
         output[[ stat_names[i] ]] <- list(riverID = HS$riverID[riverIDs[i]],
-                                          Method = combs[[i]]$Method,
-                                          Weights = combs[[i]]$Weights,
-                                          Intercept = combs[[i]]$Intercept,
-                                          Bias_correction = combs[[i]]$Bias_correction,
-                                          Optimized_ts = combs[[i]]$Optimized_ts,
-                                          Goodness_of_fit = combs[[i]]$Goodness_of_fit)
+                                  Method = combs[[i]]$Method,
+                                  Weights = combs[[i]]$Weights,
+                                  Intercept = combs[[i]]$Intercept,
+                                  Bias_correction = combs[[i]]$Bias_correction,
+                                  Optimized_ts = combs[[i]]$Optimized_ts,
+                                  Goodness_of_fit = combs[[i]]$Goodness_of_fit)
     }
     
     output <- assign_class(output, "HSoptim")

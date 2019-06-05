@@ -19,6 +19,8 @@
 #' @importFrom lubridate %m+%
 #' @importFrom methods hasArg
 #' @importFrom stats complete.cases
+#' @importFrom Matrix rankMatrix
+#' @importFrom stats lm
 #' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer

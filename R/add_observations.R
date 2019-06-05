@@ -33,6 +33,14 @@ add_observations <- function(HS,
     
     if(is.null(station_names)) station_names <- colnames(timeseries)[-1]
     
+    # NaN -> NA; is.nan has no method for lists -> for-loop
+    for(i in 1:ncol(timeseries)) {
+        if( tolower(colnames(timeseries)[i])== "date") next
+        tmp <- timeseries[,i] %>% unlist() %>% unname()
+        tmp[is.nan(tmp)] <- NA
+        timeseries[,i] <- tmp
+    }
+    
     listc <- spread_listc(list( observations = timeseries))
     
     if(!hasName(HS, "observation_ts")) {

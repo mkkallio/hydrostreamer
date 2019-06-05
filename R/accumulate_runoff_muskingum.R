@@ -59,12 +59,12 @@ accumulate_runoff_muskingum <- function(HS,
     for (i in seq_along(intervals)) {
         if (i == length(intervals)) {
             intervals[i] <- lubridate::interval(dates[i],
-                                                lubridate::ceiling_date(dates[i],
-                                                                        unit="month")) / 
-                lubridate::seconds(1)
+                                lubridate::ceiling_date(dates[i],
+                                                        unit="month")) / 
+                                                        lubridate::seconds(1)
         } else {
             intervals[i] <- lubridate::interval(dates[i],
-                                                dates[i+1]) / lubridate::seconds(1)
+                                dates[i+1]) / lubridate::seconds(1)
         }
     }
     

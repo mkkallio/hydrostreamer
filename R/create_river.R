@@ -99,8 +99,8 @@ create_river <- function(dem,
     
     # check whether the user wants to do the basins
     if (do_basins){
-        message(paste0("Chosen to delineate individual river segment basins.\n",
-                       "This may take time.\n",
+        message(paste0("Chosen to delineate individual river segment basins.",
+                       "\n This may take time.\n",
                        "If desired, disable basin delineation by giving ",
                        "do_basins = FALSE"))
     }
@@ -128,8 +128,9 @@ create_river <- function(dem,
         # Assume that the environment is well-formed to avoid checking all
         # arguments inside.
         saga_env <- rsaga_env
-        message(paste0("Loaded given SAGA environment assuming that it is valid.\n",
-                       "Further errors in RSAGA usage may arise if the settings fail."))
+        message("Loaded given SAGA environment assuming that it is valid.\n",
+                "Further errors in RSAGA usage may arise if the settings",
+                " fail.")
     }
     
     # proj string for setting up CRS in some outputs
@@ -140,10 +141,10 @@ create_river <- function(dem,
     original_crs <- NA
     if (!identical(as.character(raster::crs(dem)), p)){
         
-        warning(paste0("Input DEM was projected to WGS84 CRS.\n",
-                       "Outputs were transformed back to the original CRS.\n",
-                       "Note that the river network derivation was done in WGS84.\n",
-                       "This may have caused inaccuracies in outputs."))
+        warning("Input DEM was projected to WGS84 CRS.\n",
+                "Outputs were transformed back to the original CRS.\n",
+                "Note that the river network derivation was done in WGS84.\n",
+                "This may have caused inaccuracies in outputs.")
         
         # get original CRS for later use in projecting outputs
         original_crs <- raster::crs(dem, asText = TRUE)
@@ -252,7 +253,8 @@ create_river <- function(dem,
         rivers_path <- tempfile(fileext = ".gpkg")
     }
     
-    # if the input dem was in a different crs than WGS84, project results back to it
+    # if the input dem was in a different crs than WGS84, 
+    # project results back to it
     if (!is.na(original_crs)){
         river <- sf::st_transform(river, crs = original_crs)
         if (do_basins){

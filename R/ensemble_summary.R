@@ -31,10 +31,6 @@ ensemble_summary <- function(HS,
                              drop=FALSE,
                              ...,
                              verbose = FALSE) {
-    # if(aggregate_monthly && class(HS) != "HSflow") {
-    #     warning("Routing does not work appropriately for data aggregated to months. 
-    #             Use original timeseries for routing.")
-    # }
     UseMethod("ensemble_summary")
 }
 
@@ -70,7 +66,7 @@ ensemble_summary.list <- function(HS,
                     tidyr::gather(Pred, Value,-Month) %>%
                     dplyr::mutate(Stat = stringr::word(Pred, -1, sep="_"),
                                   Prediction = stringr::str_replace(Pred, 
-                                                                    paste0("_", Stat), "")) %>%
+                                                    paste0("_", Stat), "")) %>%
                     dplyr::select(Month, Prediction, Stat, Value)
             } else {
                 data <- data %>%
@@ -80,7 +76,7 @@ ensemble_summary.list <- function(HS,
                     tidyr::gather(Pred, Value) %>%
                     dplyr::mutate(Stat = stringr::word(Pred, -1, sep="_"),
                                   Prediction = stringr::str_replace(Pred, 
-                                                                    paste0("_", Stat), "")) %>%
+                                                    paste0("_", Stat), "")) %>%
                     dplyr::select(Prediction, Stat, Value)
             }
             
