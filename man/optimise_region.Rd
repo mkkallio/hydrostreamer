@@ -6,9 +6,9 @@
 timeseries against observed streamflow}
 \usage{
 optimise_region(HS, routing = "simple", train = 0.5,
-  optim_method = "CLS", bias_correction = FALSE, combination = "ts",
-  sampling = "series", region_type = "upstream", no_station = "em",
-  drop = TRUE, ..., verbose = FALSE)
+  optim_method = "CLS", bias_correction = FALSE, log = FALSE,
+  combination = "ts", sampling = "random", region_type = "upstream",
+  no_station = "em", drop = TRUE, ..., verbose = FALSE)
 }
 \arguments{
 \item{HS}{An \code{HS} object containing runoff
@@ -24,9 +24,13 @@ linear regression. See details.}
 
 \item{bias_correction}{Whether to apply bias correction. Default FALSE.}
 
+\item{log}{Log-transform prediction and observation timeseries before 
+fitting. Defaults to \code{FALSE}.}
+
 \item{combination}{Whether to do the forecast combination for the entire
-timeseries, or each month of the year individually. Accepts 
-\code{"timeseries"}, \code{"ts"}, \code{"monthly"} or \code{"mon"}.}
+timeseries, or each month of the year individually, or for full calendar 
+years. Accepts \code{"timeseries"}, \code{"ts"}, or \code{"monthly"}, 
+\code{"mon"}, or \code{"annual"}, \code{"ann"}.}
 
 \item{sampling}{How to sample training and testing periods. \code{"series"}
 for training serially from beginning, or \code{"random"} for a random

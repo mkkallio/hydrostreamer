@@ -105,7 +105,7 @@ downstream <- function(HSnetwork, ID, riverID = "riverID") {
         stop(paste0("ID column '", riverID,"' does not exist"))
     }
     
-    rIDs <- dplyr::select_(HSnetwork, riverID) %>% unlist
+    rIDs <- dplyr::select(HSnetwork, riverID) %>% unlist
     nexts <- HSnetwork$NEXT
     
     
@@ -151,9 +151,11 @@ downstream <- function(HSnetwork, ID, riverID = "riverID") {
         visit <- visitlist[[visitposition]]
         
     }
+    visitlist <- unlist(visitlist)[-sum(downstream)] %>% match(rIDs) %>%
+        c(which(rIDs == ID),.)
     
     # select all downstream segments
-    downstream <- HSnetwork[downstream,]
+    downstream <- HSnetwork[visitlist,]
     
     return(downstream)
 }

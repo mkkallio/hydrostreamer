@@ -9,8 +9,8 @@ or line segments which intersect a polygon with runoff information. Weights
 are assigned so that the sum of weights for area or line features within a 
 polygon equal to 1.}
 \usage{
-compute_HSweights(HSgrid, river, weights, aoi = NULL, basins = NULL,
-  riverID = "riverID", verbose = FALSE)
+compute_HSweights(HSgrid, river, weights = NULL, dasymetric = TRUE,
+  aoi = NULL, basins = NULL, riverID = "riverID", verbose = FALSE)
 }
 \arguments{
 \item{HSgrid}{A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.}
@@ -19,6 +19,10 @@ compute_HSweights(HSgrid, river, weights, aoi = NULL, basins = NULL,
 
 \item{weights}{A character vector specifying type of weights, or a vector of user-
 specified weights. See Details.}
+
+\item{dasymetric}{If \code{TRUE}, column, which' name is specified by 
+\code{weights} is used as the ancillary information in dasymetric mapping.
+Defaults to \code{FALSE}. See details.}
 
 \item{aoi}{An area of interest. 'sf' polygon object. Optional.}
 

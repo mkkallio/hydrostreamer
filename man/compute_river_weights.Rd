@@ -4,7 +4,7 @@
 \alias{compute_river_weights}
 \title{Compute weights for river segments within runoff area features.}
 \usage{
-compute_river_weights(river, grid, seg_weights = "length",
+compute_river_weights(river, grid, seg_weights = NULL,
   riverID = "riverID", split = TRUE)
 }
 \arguments{

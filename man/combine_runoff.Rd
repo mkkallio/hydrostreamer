@@ -4,7 +4,7 @@
 \alias{combine_runoff}
 \title{Combines runoff in HS* objects}
 \usage{
-combine_runoff(HS, weights, intercept = 0, bias = NULL, drop = FALSE,
+combine_runoff(HS, weights, intercept = 0, bias = 0, drop = FALSE,
   monthly = FALSE)
 }
 \arguments{
@@ -16,7 +16,7 @@ runoff timeseries in \code{HS}, or a list of weight vectors.}
 \item{intercept}{If weights are associated with an intercept, include it here.
 Default intercept = 0.}
 
-\item{bias}{Bias in percentage. Defaults to \code{NULL}.}
+\item{bias}{Bias in percentage. Defaults to 0.}
 
 \item{drop}{Whether to remove source timeseries and replace them with 
 combinations, or keep source timeseries and add combination as new column.}

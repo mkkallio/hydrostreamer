@@ -5,10 +5,12 @@
 \title{Computed goodness-of-fit statistics for discharge predictions
 against observed streamflow}
 \usage{
-flow_gof(HS)
+flow_gof(HS, verbose = FALSE)
 }
 \arguments{
-\item{HS}{A \code{HS} object with column \code{discharge_ts}}
+\item{HS}{A \code{HS} object with column \code{discharge_ts}.}
+
+\item{verbose}{Print progress indication or not.}
 }
 \value{
 Returns a list with gof-statistics for all the observations in

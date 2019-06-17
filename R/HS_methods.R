@@ -101,8 +101,11 @@ tsplot <- function(HS,
                    date_begin = NULL, 
                    date_end = NULL) {
     
+    test <- requireNamespace("ggplot2")
+    if(!test) stop("ggplot2 not found: Use install.packages('ggplot2') first.")
+    
     if(hasName(HS, "observation_ts")) {
-        obs <- observations(HS, riverID)
+        obs <- observations(HS, riverID)[[1]]
     } else obs <- NULL
     
     if(what == "discharge") {
@@ -246,10 +249,15 @@ get_ts <- function(HS, riverID = NULL, what) {
     
     if(is.null(riverID)) {
         out <- hydrostreamer:::collect_listc(dplyr::pull(HS, what), acc=TRUE)
-        return(out[[1]])
+        return(out)
+    } else if(length(riverID) == 1) {
+        ind <- which(HS$riverID %in% riverID)
+        out <- dplyr::pull(HS[ind,], what)
+        return(out)
     } else {
         ind <- which(HS$riverID %in% riverID)
-        out <- hydrostreamer:::collect_listc(dplyr::pull(HS[ind,], what), acc=TRUE)
+        out <- hydrostreamer:::collect_listc(dplyr::pull(HS[ind,], what), 
+                                             acc=TRUE)
         return(out)
     }
 }

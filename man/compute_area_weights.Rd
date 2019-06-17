@@ -5,8 +5,8 @@
 \title{Compute weights for river catchment areas within the runoff area 
 features.}
 \usage{
-compute_area_weights(basins, HSgrid, riverID = "riverID",
-  gridID = "gridID")
+compute_area_weights(basins, HSgrid, seg_weights = NULL,
+  riverID = "riverID", gridID = "gridID")
 }
 \arguments{
 \item{basins}{An 'sf' polygon feature specifying the river segment 

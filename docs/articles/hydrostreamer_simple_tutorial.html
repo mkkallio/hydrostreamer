@@ -76,7 +76,7 @@
       <h1>hydrostreamer tutorial</h1>
                         <h4 class="author">Marko Kallio</h4>
             
-            <h4 class="date">2019-04-08</h4>
+            <h4 class="date">2019-04-10</h4>
       
       
       <div class="hidden name"><code>hydrostreamer_simple_tutorial.Rmd</code></div>
@@ -245,24 +245,24 @@ river_weights<span class="op">$</span>weights <span class="op">%&gt;%</span>
 <span class="co">#&gt; 10      88    99 &lt;dbl [1]&gt; &lt;tsibble~           1 (107.4525 12.4575, 107.44~</span>
 <span class="co">#&gt; # ... with 31 more rows</span></code></pre></div>
 <p>The downscaled runoff in <em>runoff_ts</em> is a named list column where each element is a <em>tsibble</em>. Like with HSgrid, each element can be accessed by its name - the ID of the river segment.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">( runoff180 &lt;-<span class="st"> </span>catchment_downscaled<span class="op">$</span>runoff_ts<span class="op">$</span><span class="st">`</span><span class="dt">180</span><span class="st">`</span> )
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">( runoff200 &lt;-<span class="st"> </span>catchment_downscaled<span class="op">$</span>runoff_ts<span class="op">$</span><span class="st">`</span><span class="dt">200</span><span class="st">`</span> )
 <span class="co">#&gt; # A tsibble: 396 x 2 [1D]</span>
-<span class="co">#&gt;    Date         LORA</span>
-<span class="co">#&gt;    &lt;date&gt;      &lt;dbl&gt;</span>
-<span class="co">#&gt;  1 1980-01-01 0.0961</span>
-<span class="co">#&gt;  2 1980-02-01 0.0465</span>
-<span class="co">#&gt;  3 1980-03-01 0.0277</span>
-<span class="co">#&gt;  4 1980-04-01 0.0244</span>
-<span class="co">#&gt;  5 1980-05-01 0.0228</span>
-<span class="co">#&gt;  6 1980-06-01 0.778 </span>
-<span class="co">#&gt;  7 1980-07-01 0.516 </span>
-<span class="co">#&gt;  8 1980-08-01 1.40  </span>
-<span class="co">#&gt;  9 1980-09-01 2.27  </span>
-<span class="co">#&gt; 10 1980-10-01 1.56  </span>
+<span class="co">#&gt;    Date           LORA</span>
+<span class="co">#&gt;    &lt;date&gt;        &lt;dbl&gt;</span>
+<span class="co">#&gt;  1 1980-01-01 0.00310 </span>
+<span class="co">#&gt;  2 1980-02-01 0.00150 </span>
+<span class="co">#&gt;  3 1980-03-01 0.000894</span>
+<span class="co">#&gt;  4 1980-04-01 0.000787</span>
+<span class="co">#&gt;  5 1980-05-01 0.000734</span>
+<span class="co">#&gt;  6 1980-06-01 0.0251  </span>
+<span class="co">#&gt;  7 1980-07-01 0.0166  </span>
+<span class="co">#&gt;  8 1980-08-01 0.0453  </span>
+<span class="co">#&gt;  9 1980-09-01 0.0733  </span>
+<span class="co">#&gt; 10 1980-10-01 0.0502  </span>
 <span class="co">#&gt; # ... with 386 more rows</span></code></pre></div>
 <p>We can compare the downscaled results from the two approaches.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plotdata &lt;-<span class="st"> </span><span class="kw">left_join</span>(runoff180, 
-                      river_downscaled<span class="op">$</span>runoff_ts<span class="op">$</span><span class="st">`</span><span class="dt">180</span><span class="st">`</span>,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plotdata &lt;-<span class="st"> </span><span class="kw">left_join</span>(runoff200, 
+                      river_downscaled<span class="op">$</span>runoff_ts<span class="op">$</span><span class="st">`</span><span class="dt">200</span><span class="st">`</span>,
                       <span class="dt">by=</span><span class="st">"Date"</span>)
 <span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(plotdata) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"Date"</span>, <span class="st">"Catchment"</span>, <span class="st">"River"</span>)
 plotdata &lt;-<span class="st"> </span><span class="kw">gather</span>(plotdata, 
@@ -272,7 +272,7 @@ plotdata &lt;-<span class="st"> </span><span class="kw">gather</span>(plotdata,
 
 <span class="kw">ggplot</span>(plotdata, <span class="kw">aes</span>(Date, Runoff, <span class="dt">color=</span>Approach)) <span class="op">+</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">"Downscaled runoff at river segment 180"</span>,
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">"Downscaled runoff at river segment 200"</span>,
          <span class="dt">y =</span> <span class="st">'Runoff in m3/s'</span>,
          <span class="dt">x =</span> <span class="ot">NULL</span>)</code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
@@ -283,25 +283,25 @@ plotdata &lt;-<span class="st"> </span><span class="kw">gather</span>(plotdata,
 <p>While the downscaled runoff at each river segment is already useful for many applications, often knowing river discharge is also desirable. <em>hydrostreamer</em> provides three simple river routing algorithms for this purpose: <strong>instantaneous</strong> routing, useful for e.g. estimating runoff in the entire upstream catchment of each river segment, <strong>simple</strong> lag based routing, and <strong>Muskingum</strong> routing scheme.</p>
 <p>Each routing method is accessible through the function <em>accumulate_runoff()</em>. Since the catchment provided here is small, and the timestep in runoff is one month, we’ll just use instantaneous routing here. There would be negligible difference between lag routing and instantaneous routing in this case.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">catchment_discharge &lt;-<span class="st"> </span><span class="kw"><a href="../reference/accumulate_runoff.html">accumulate_runoff</a></span>(catchment_downscaled,
-                                         <span class="dt">method =</span> <span class="st">"instant"</span>)
+                                         <span class="dt">method =</span> <span class="st">"simple"</span>)
 river_discharge &lt;-<span class="st"> </span><span class="kw"><a href="../reference/accumulate_runoff.html">accumulate_runoff</a></span>(river_downscaled,
-                                     <span class="dt">method =</span> <span class="st">"instant"</span>)</code></pre></div>
+                                     <span class="dt">method =</span> <span class="st">"simple"</span>)</code></pre></div>
 <p>We can also plot the estimated discharge from the two approaches at segment 180 by accessing the new list column <em>discharge_ts</em>. The predictions can be very different.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plotdata &lt;-<span class="st"> </span><span class="kw">left_join</span>(catchment_discharge<span class="op">$</span>discharge_ts<span class="op">$</span><span class="st">`</span><span class="dt">180</span><span class="st">`</span>, 
-                      river_discharge<span class="op">$</span>discharge_ts<span class="op">$</span><span class="st">`</span><span class="dt">180</span><span class="st">`</span>,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plotdata2 &lt;-<span class="st"> </span><span class="kw">left_join</span>(catchment_discharge<span class="op">$</span>discharge_ts<span class="op">$</span><span class="st">`</span><span class="dt">200</span><span class="st">`</span>, 
+                      river_discharge<span class="op">$</span>discharge_ts<span class="op">$</span><span class="st">`</span><span class="dt">200</span><span class="st">`</span>,
                       <span class="dt">by=</span><span class="st">"Date"</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(plotdata) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"Date"</span>, <span class="st">"Catchment"</span>, <span class="st">"River"</span>)
-plotdata &lt;-<span class="st"> </span><span class="kw">gather</span>(plotdata, 
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/colnames">colnames</a></span>(plotdata2) &lt;-<span class="st"> </span><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/c">c</a></span>(<span class="st">"Date"</span>, <span class="st">"Catchment"</span>, <span class="st">"River"</span>)
+plotdata2 &lt;-<span class="st"> </span><span class="kw">gather</span>(plotdata2, 
                    Approach,
                    Discharge,
                    <span class="op">-</span>Date)
 
-<span class="kw">ggplot</span>(plotdata, <span class="kw">aes</span>(Date, Discharge, <span class="dt">color=</span>Approach)) <span class="op">+</span><span class="st"> </span>
+<span class="kw">ggplot</span>(plotdata2, <span class="kw">aes</span>(Date, Discharge, <span class="dt">color=</span>Approach)) <span class="op">+</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">"Downscaled discharge at river segment 180"</span>,
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">"Downscaled discharge at river segment 200"</span>,
          <span class="dt">y =</span> <span class="st">'Q m3/s'</span>,
          <span class="dt">x =</span> <span class="ot">NULL</span>)</code></pre></div>
-<p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-10-1.png" width="700"> As seen from the plot, the two approaches can lead into very different estimations in small catchments - but as the river basin size increases, their predictions come closer and closer to one another. In this example basin, the big difference can be explained by the relationship between the runoff polygons and the river network; there are larger rivers which meet in the northern part of the basin. If weighted by line segments, the two rivers rare share the same grid. If weighted by basin, the catchments on both sides of the river cross over to the other runoff polygon.</p>
+<p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-10-1.png" width="700"> As seen from the plot, the two approaches can lead into very different estimations in small catchments - but as the river basin size increases, their predictions come closer and closer to one another.</p>
 <p>We recommend that segment specific catchments be used instead of river lines for weighting whenever possible, because it creates more realistic division of runoff into the river segments.</p>
 </div>
 <div id="exporting" class="section level2">
