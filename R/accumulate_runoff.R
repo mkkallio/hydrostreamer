@@ -15,8 +15,7 @@
 #' the documentation of each method:
 #' \itemize{
 #'   \item \code{\link{accumulate_runoff_instant}}
-#'   \item \code{\link{accumulate_runoff_simple}}
-#'   \item \code{\link{accumulate_runoff_muskingum}}
+#'   \item \code{\link{accumulate_runoff_constant}}
 #' }
 #'
 #' @param HS A 'HS' object obtained by \code{\link{downscale_runoff}}
@@ -31,7 +30,7 @@
 #' 
 #' @export
 accumulate_runoff <- function(HS, 
-                              method=c("instant", "simple", "muskingum"), 
+                              method=c("instant", "constant"), 
                               ..., 
                               verbose = FALSE) {
   
@@ -43,8 +42,7 @@ accumulate_runoff <- function(HS,
 #' @export
 accumulate_runoff.instant <- function(HS,
                                       method=c("instant", 
-                                               "simple", 
-                                               "muskingum"), 
+                                               "constant"), 
                                       ..., 
                                       verbose = FALSE) {
     
@@ -62,8 +60,7 @@ accumulate_runoff.instant <- function(HS,
 #' @export
 accumulate_runoff.muskingum <- function(HS,
                                         method=c("instant", 
-                                                 "simple", 
-                                                 "muskingum"), 
+                                                 "constant"), 
                                         ..., 
                                         verbose = FALSE) {
     
@@ -89,10 +86,9 @@ accumulate_runoff.muskingum <- function(HS,
 
 
 #' @export
-accumulate_runoff.simple <- function(HS,
+accumulate_runoff.constant <- function(HS,
                                      method=c("instant", 
-                                              "simple", 
-                                              "muskingum"), 
+                                              "constant"), 
                                      ..., 
                                      verbose = FALSE) {
     
@@ -102,7 +98,7 @@ accumulate_runoff.simple <- function(HS,
         params[["velocity"]] <- 1
     }
     
-    output <- accumulate_runoff_simple(HS, 
+    output <- accumulate_runoff_constant(HS, 
                                           velocity = params$velocity,
                                           verbose = verbose)
     output <- assign_class(output, "HS")

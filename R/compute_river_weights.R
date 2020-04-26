@@ -1,9 +1,9 @@
 #' Compute weights for river segments within runoff area features.
 #' 
 #' Computes weights for each individual river segments falling in the 
-#' areal units of the runoff \emph{HSgrid}. Weight is computed from a 
+#' areal units of the runoff \emph{HS}. Weight is computed from a 
 #' numerical property of segments by \emph{x/sum(x)} where x are the 
-#' river segments contained in a areal unit of runoff (\emph{HSgrid}). 
+#' river segments contained in a areal unit of runoff (\emph{HS}). 
 #' This function is called by \code{\link{compute_HSweights}}.
 #' 
 #' \emph{seg_weights} should be one of the following: "equal", "length", 
@@ -20,7 +20,7 @@
 #'       in \emph{river}. 
 #' }
 #' 
-#' @param grid A \code{HSgrid} object or an \code{sf POLYGON} object used for
+#' @param grid A \code{HS} object or an \code{sf POLYGON} object used for
 #'   areal interpolation.
 #' @param seg_weights A character vector specifying type of weights, or a 
 #'   numerical vector. See Details. Defaults to "length".
@@ -34,7 +34,7 @@
 #'   \itemize{
 #'     \item \emph{ID}. Unique ID of the feature.
 #'     \item \emph{riverID}. ID of the river each segment is associated to.
-#'     \item \emph{gridID}. ID of the runoff unit the river segment is contained in.
+#'     \item \emph{zoneID}. ID of the runoff unit the river segment is contained in.
 #'     \item \emph{weights}. Weights computed for each river segment.
 #' }
 #'   
@@ -47,7 +47,7 @@ compute_river_weights <- function(river,
     
     weights <- NULL
     ID <- NULL
-    gridID <- NULL
+    zoneID <- NULL
     runoff_ts <- NULL
 
     if(!any(colnames(river) == riverID)) stop("riverID column '", 
@@ -103,46 +103,7 @@ compute_river_weights <- function(river,
             apply(1, FUN=sum) %>% 
             unlist()
     }
-    
-    # if (is.character(seg_weights)) {
-    #     if(seg_weights == "length") {
-    #         input <- sf::st_length(river) %>%
-    #             unclass()
-    #         
-    #     } else if(seg_weights == "equal") {
-    #         input <- seq(1,NROW(river))
-    #         
-    #     } else if(seg_weights == "strahler") {
-    #         input <- river$STRAHLER
-    #         
-    #     } else {
-    #         stop("Accepted values for weights are either 'length', 'equal', 
-    #              'strahler', or a vector of weights. Please check the input.")
-    #     }
-    #     
-    #     
-    #     weight <- apply(riverIntsc,1, compute_segment_weights, input)
-    #     weight <- apply(weight,1, FUN=sum)
-    #     weight <- unlist(weight)
-    # 
-    # } else if(is.vector(seg_weights)) {
-    #     
-    #     if(dasymetric) {
-    #         weight <- apply(riverIntsc,1, compute_dasymetric_weights, 
-    #                         sf::st_length(river), seg_weights)
-    #         weight <- apply(weight,1, FUN=sum)
-    #         weight <- unlist(weight)
-    #     } else {
-    #         weight <- apply(riverIntsc,1, compute_segment_weights, seg_weights)
-    #         weight <- apply(weight,1, FUN=sum)
-    #         weight <- unlist(weight)
-    #     }
-    #     
-    #     
-    # } else {
-    #     stop("Accepted values for weights are either 'length', 'equal', 
-    #          'strahler', or a vector of weights. Please check the input.")
-    # }
+
     
     ###############
     # process output
@@ -153,7 +114,7 @@ compute_river_weights <- function(river,
     }
     
     river <- tibble::add_column(river, weights = weight) %>%
-        dplyr::select(ID, riverID, gridID, weights) %>%
+        dplyr::select(ID, riverID, zoneID, weights) %>%
         tibble::as_tibble(river) %>%
         sf::st_as_sf()
     

@@ -12,7 +12,7 @@
 #' derived from the same raster than the drainage directions input to the 
 #' function.
 #' 
-#' Note: Drainage directions must be coded in 1-128:
+#' Note: Drainage directions must be coded in 1-128 as follows:
 #' \itemize{
 #'   \item{1}{:East}
 #'   \item{2}{:Southeast}
@@ -80,7 +80,7 @@ river_outlets <- function(river, drain.dir) {
         if(!is.na(cell)) {
             bearing <- b[point]
             
-            prep <- new_row_col(bearing, prc)
+            prep <- hydrostreamer:::new_row_col(bearing, prc)
             
             cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
             coords <- raster::xyFromCell(drain.dir, cell)
@@ -92,6 +92,9 @@ river_outlets <- function(river, drain.dir) {
         }
         
     }
+    points_in <- complete.cases(pointcoords)
+    pointcoords <- pointcoords[points_in,]
+    river <- river[points_in,]
     
     points <- sf::st_multipoint(pointcoords) %>%
         sf::st_sfc() %>%

@@ -4,9 +4,13 @@
 \alias{optimise_point}
 \title{Computes optimal estimate at a specific river segment}
 \usage{
-optimise_point(HS, optim_method = "CLS", combination = "ts",
-  sampling = "random", train = 0.5, bias_correction = FALSE,
-  log = FALSE)
+optimise_point(
+  HS,
+  optim_method = "CLS",
+  combination = "ts",
+  sampling = "random",
+  train = 0.5
+)
 }
 \arguments{
 \item{HS}{An \code{HS} object with observation_ts and discharge_ts}
@@ -24,26 +28,18 @@ for training serially from beginning, or \code{"random"} for a random
 sample for both training and testing periods.}
 
 \item{train}{The share of timeseries used for training period.}
-
-\item{bias_correction}{Apply bias correction. Defaults to FALSE.}
-
-\item{log}{Log-transform prediction and observation timeseries before 
-fitting. Defaults to \code{FALSE}.}
 }
 \value{
 Returns an object of class \code{HSoptim}, which is a list of
 results from observation stations. Each list item contains:
   \itemize{
-    \item Observations: Supllied observation timeseries.
-    \item Forecast_train: Forecasted timeseries at training period.
-    \item Forecast_test: Forecasted timeseries at testing period.
-    \item Forecast_train_test: Forecasted timeseries with training and
-      testing combined
-    \item Method: Used method for forecast combination.
-    \item Forecast_weights: Vector of weights - how the input discharge 
-      timeseries were combined.
+    \item riverID
+    \item Method: Model averaging method used.
+    \item Forecast_weights: Vector of model averaging weights. 
     \item Intercept: Intercept from the combination. \code{NA}, if not
       applicable to the Method.
+    \item Optimised_ts: A \code{tsibble} consisting of date, observation and
+      optimised timeseries.
     \item Goodness_of_fit. Goodness of fit of the forecast combination
       obtained using \code{\link[hydroGOF]{gof}}.
 }
@@ -62,7 +58,7 @@ in factorized form). Default is constrained linear regression, which
 constraints the coefficients to add to unity, and all weights are between
 0, and 1. CLS also forces Intercept to 0. In some cases, CLS fails to 
 find a unique solution. In those cases, you can try the factorized
-CLS.
+CLS. 
 
 If bias correction is set to TRUE, bias correction is applied
 to the entire timeseries so that bias % in the training period is 0.

@@ -26,7 +26,7 @@ next_cell_up <- function(cell, drain.dir) {
     if (length(adj) < 8) return(NULL)
     dir <- drain.dir[adj]
     
-    out <- 0
+    out <- vector()
     
     if (dir[1] == 2) out <- c(out, adj[1])
     if (dir[2] == 4) out <- c(out, adj[2])
@@ -37,7 +37,7 @@ next_cell_up <- function(cell, drain.dir) {
     if (dir[7] == 64) out <- c(out, adj[7])
     if (dir[8] == 32) out <- c(out, adj[8])
     
-    if(length(out) == 1) return(NULL) else return(out[2:length(out)])
+    if(length(out) == 1) return(NULL) else return(out)
 }
 
 
@@ -125,7 +125,7 @@ tesselate_voronoi <- function(vorPoints,
                               verbose = FALSE) {
     if (verbose) message("Processing Voronoi tesselation")
     vorPoints <- suppressWarnings(sf::st_cast(vorPoints, "POINT"))
-    remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","gridID")
+    remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","zoneID")
     voronoi <- vorPoints[ , !(names(vorPoints) %in% remove)] %>%
         dplyr::rename_(ID = riverID)
     bbox <- sf::st_as_sfc(sf::st_bbox(aoi))
@@ -211,46 +211,46 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
 }
 
 
-
-new_row_col <- function(bearing, prc) {
-    prep <- data.frame(row=0, col=0)
-    if (bearing > -5 && bearing < 5) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col
-    } else if (bearing > 350 && bearing < 370) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col
-    } else  if (bearing > 40 && bearing < 50) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col+1
-    } else if (bearing > 80 && bearing < 100) {
-        prep$row <- prc$row
-        prep$col <- prc$col+1
-    } else if (bearing > 125 && bearing < 145) {
-        prep$row <- prc$row+1
-        prep$col <- prc$col+1
-    } else if (bearing > 170 && bearing < 190) {
-        prep$row <- prc$row+1
-        prep$col <- prc$col
-    } else if (bearing > 215 && bearing < 235) {
-        prep$row <- prc$row+1
-        prep$col <- prc$col-1
-    } else if (bearing > 260 && bearing < 280) {
-        prep$row <- prc$row
-        prep$col <- prc$col-1
-    } else if (bearing > 305 && bearing < 325) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col-1
-    }
-    return(prep)
-} 
-
+# fixed: Vili Virkki 24-07-2019
+new_row_col <- function (bearing, prc) {
+  prep <- data.frame(row = 0, col = 0)
+  if (bearing > -5 && bearing <= 22.5) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col
+  } else if (bearing > 337.5 && bearing < 370) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col
+  } else if (bearing > 22.5 && bearing <= 67.5) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col + 1
+  } else if (bearing > 67.5 && bearing <= 112.5) {
+    prep$row <- prc$row
+    prep$col <- prc$col + 1
+  } else if (bearing > 112.5 && bearing <= 157.5) {
+    prep$row <- prc$row + 1
+    prep$col <- prc$col + 1
+  } else if (bearing > 157.5 && bearing <= 202.5) {
+    prep$row <- prc$row + 1
+    prep$col <- prc$col
+  } else if (bearing > 202.5 && bearing <= 246.5) {
+    prep$row <- prc$row + 1
+    prep$col <- prc$col - 1
+  } else if (bearing > 246.5 && bearing <= 292.5) {
+    prep$row <- prc$row
+    prep$col <- prc$col - 1
+  } else if (bearing > 292.5 && bearing <= 337.5) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col - 1
+  }
+  return(prep)
+}
 
 
 collect_listc <- function(ts, acc = FALSE) {
     
     Date <- NULL
     
+    unit <- units::deparse_unit(dplyr::pull(ts[[1]],2)) 
     unidates <- lapply(ts, function(x) x$Date) %>%
         unlist %>%
         unique %>%
@@ -271,9 +271,9 @@ collect_listc <- function(ts, acc = FALSE) {
         for(i in 1:nts) {
             if(ncol(ts[[i]])-1 < tsi) break
             dates <- unidates %in% ts[[i]]$Date 
-            act_ts[dates,i] <- unlist(ts[[i]][,tsi+1])
+            act_ts[dates,i] <-unlist(ts[[i]][,tsi+1])
         }
-        output[[ names[tsi] ]] <- act_ts     
+        output[[ names[tsi] ]] <- units::as_units(act_ts, unit)     
     }
     
     if(acc) {
@@ -351,7 +351,7 @@ assign_class <- function(obj, class) {
 }
 
 reorder_cols <- function(HS) {
-    order <- c("riverID","gridID", "NEXT", "PREVIOUS", "STRAHLER", "runoff_ts", 
+    order <- c("riverID","zoneID", "NEXT", "PREVIOUS", "STRAHLER", "runoff_ts", 
                "discharge_ts", "observation_station", "observation_ts", 
                "control_type", "control_ts")
     order <- order[order %in% names(HS)]
@@ -361,4 +361,126 @@ reorder_cols <- function(HS) {
 }
 
 
+# if object has "HS" attributes, edit those without NULL
+# if object doesnt have "HS" attributes, initialize it with provided values
+mod_HS_attributes <- function(HS, next_col = NA, prev_col = NA, 
+                              col = NULL) {
+    
+    if(is.null(col)) {
+        test <- is.null(base::attr(HS, "HS", exact = TRUE))
+        if(test) {
+            att <- c(next_col = next_col, 
+                     prev_col = prev_col)
+            base::attr(HS, "HS") <- att
+        } else {
+            att <- base::attr(HS, "HS", exact = TRUE)
+            
+            if(!is.na(next_col)) att["next_col"] <- next_col
+            if(!is.na(prev_col)) att["prev_col"] <- prev_col
+            
+            base::attr(HS, "HS") <- att
+        }
+        return(HS)
+    } else {
+        test <- hasName(HS, col)
+        if(!test) stop("Couldn't find column ", col, " in HS input.")
+        
+        ind <- which(colnames(HS) == col)
+        test <- is.null(base::attr(HS[[ind]], "HS", exact = TRUE))
+        if(test) {
+            att <- c(next_col = next_col, 
+                     prev_col = prev_col)
+            base::attr(HS[[ind]], "HS") <- att
+        } else {
+            att <- base::attr(HS[[ind]], "HS", exact = TRUE)
+            
+            if(!is.na(next_col)) att["next_col"] <- next_col
+            if(!is.na(prev_col)) att["prev_col"] <- prev_col
+            
+            base::attr(HS[[ind]], "HS") <- att
+        }
+        return(HS)
+    }
+    
+    
+}
+# 
+get_HS_attr <- function(HS) {
+    return(base::attr(HS, "HS", exact = TRUE))
+}
 
+# goes through the columns in HS, and checks the value of "HS"
+find_attribute <- function(HS, attribute, value) {
+    test <- sapply(HS, function(x) {
+        att <- attr(x, "HS") 
+        test <- att[attribute] == value
+        if(length(test) == 0) return(FALSE) else return(test)
+    })
+    return(which(test))
+}
+
+# convert unit 
+convert_unit <- function(value, from = NULL, to1, to2, verbose = FALSE) {
+    
+    test <- inherits(value, "units")
+    if(!test) {
+        test <- is.null(from)
+        if(test) stop("input is not of class 'units', and 'from' not specified")
+        value <- units::set_units(value, from, mode="standard")
+    }
+    
+    
+    #try converting to first unit
+    conv <- try(units::set_units(value, to1, mode="standard"),
+                silent = TRUE)
+    
+    # if first conversion fails, try converting to alternative
+    if(class(conv) == "try-error") {
+        conv <- try(units::set_units(value, to2, mode="standard"),
+                    silent = TRUE)
+        
+        # stop conversion to alternative didnt work
+        if(class(conv) == "try-error") {
+            stop(paste0("Couldn't convert units. Are you sure the unit's type is ",
+                        "depth per time (e.g. mm/d) or volume per time ",
+                        "(e.g. m^3/s)?"))
+        }
+        
+        # return alternative
+        if(verbose) message("Unit converted from ", from, " to ", to2)
+        return(conv)
+    }
+    
+    # return first option
+    if(verbose) message("Unit converted from ", from, " to ", to1)
+    return(conv)
+}
+
+unit_conversion <- function(obj, unit, areas = NULL) {
+    units <- strsplit(unit, " ")[[1]]
+    
+    # check that all required elements are there and convertible
+    depth <- any(units %in% c("mm", "cm", "m", "km"))
+    area <- any(units %in% c("m-2", "km-2", "ha"))
+    time <- any(units %in% c("s-1", "min-1", "h-1", "d-1", 
+                             "week-1", "month-1"))
+    volume <- any(units %in% c("m3", "km3"))
+    
+    if(volume & time) {
+        obj <- convert_unit(obj, to1 = "m3/s")
+    } else if(volume & time & area) {
+        obj <- units::set_units(obj, "m3 m-2 s-1")
+        areas <- units::set_units(areas, "m2")
+        obj <- obj * areas
+    } else if(depth & time & !area) {
+        obj <- units::set_units(obj, "m s-1")
+        areas <- units::set_units(areas, "m2")
+        obj <- obj * areas
+    } else if(depth & time & area) {
+        obj <- units::set_units(obj, "m m-2 s-1")
+        areas <- units::set_units(areas, "m2")
+        obj <- obj * areas
+        obj <- obj * as_units(1, "m2")
+    } 
+    return(obj)
+}

@@ -28,23 +28,17 @@
 #'   for training serially from beginning, or \code{"random"} for a random
 #'   sample for both training and testing periods. 
 #' @param train The share of timeseries used for training period. 
-#' @param bias_correction Apply bias correction. Defaults to FALSE.
-#' @param log Log-transform prediction and observation timeseries before 
-#'   fitting. Defaults to \code{FALSE}.
 #' 
 #' @return Returns an object of class \code{HSoptim}, which is a list of
 #' results from observation stations. Each list item contains:
 #'   \itemize{
-#'     \item Observations: Supllied observation timeseries.
-#'     \item Forecast_train: Forecasted timeseries at training period.
-#'     \item Forecast_test: Forecasted timeseries at testing period.
-#'     \item Forecast_train_test: Forecasted timeseries with training and
-#'       testing combined
-#'     \item Method: Used method for forecast combination.
-#'     \item Forecast_weights: Vector of weights - how the input discharge 
-#'       timeseries were combined.
+#'     \item riverID
+#'     \item Method: Model averaging method used.
+#'     \item Forecast_weights: Vector of model averaging weights. 
 #'     \item Intercept: Intercept from the combination. \code{NA}, if not
 #'       applicable to the Method.
+#'     \item Optimised_ts: A \code{tsibble} consisting of date, observation and
+#'       optimised timeseries.
 #'     \item Goodness_of_fit. Goodness of fit of the forecast combination
 #'       obtained using \code{\link[hydroGOF]{gof}}.
 #' }
@@ -53,12 +47,12 @@ optimise_point <- function(HS,
                            optim_method="CLS",
                            combination = "ts",
                            sampling = "random",
-                           train = 0.5, 
-                           bias_correction = FALSE,
-                           log = FALSE) {
+                           train = 0.5) {
     
     warned_overfit <- FALSE
     warned_train <- FALSE
+    bias_correction <- FALSE # disabled currently, likely to be removed
+    log <- FALSE  # disabled currently, likely to be removed 
     
     riverIDs <- lapply(HS$observation_ts, is.null)
     riverIDs <- which(!unlist(riverIDs))
@@ -93,7 +87,7 @@ optimise_point <- function(HS,
         
         if(combination %in% c("timeseries", "ts")) {
             
-            combs[[rID]] <- combine_timeseries(flow, 
+            combs[[rID]] <- hydrostreamer:::combine_timeseries(flow, 
                                                optim_method, 
                                                sampling,
                                                train,

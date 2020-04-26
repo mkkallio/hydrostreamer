@@ -6,8 +6,6 @@
 #' @param HSweights An object of class 'HSweights', obtained with 
 #'   \code{compute_HSweights}, or constructed with function
 #'   \code{create_HSweights}.
-#' @param unit Unit of runoff. Can be either "mm/s", or "m3/s". 
-#'   Defaults to mm/s (~ equivalent to kg/m2/s).
 #' @param pycno If \code{TRUE}, ignore weights and perform pycnophylactic
 #'   interpolation for every timestep. EXPERIMENTAL AND 2-3 ORDERS OF MAGNITUDE
 #'   SLOWER THAN USING WEIGHTS. Default FALSE.
@@ -21,15 +19,14 @@
 #'   given in \eqn{m^3/s}.
 #' 
 #' @export
-downscale_runoff <- function(HSweights, 
-                             unit = "mm/s",
+downscale_runoff <- function(HSweights,
                              pycno = FALSE,
                              n = 10,
                              dasy = NULL,
                              verbose = FALSE) {
     
-    if(!any("HSweights" %in% class(HSweights))) {
-        stop("Input should be of class HSweights.")
+    if(!inherits(HSweights, "HSweights")) {
+        stop("Input should be of class HSweights. See ?compute_HSweights()")
     }
     
     ##############
@@ -45,75 +42,58 @@ downscale_runoff <- function(HSweights,
         QTS <- downscale_pycno(HSweights,
                                n, 
                                dasy = dasy,
-                               unit = unit, 
                                verbose = verbose)
     } else {
-        QTS <- downscale_with_weights(HSweights, 
-                                      unit = unit,
+        QTS <- hydrostreamer:::downscale_with_weights(HSweights, 
                                       verbose = verbose)
     }
     
-    listc <- spread_listc(QTS)
-    listc <- listc[order(names(listc))]
+    listc <- hydrostreamer:::spread_listc(QTS)
+    listc <- listc[order(as.numeric(names(listc)))]
     
-    output <- HSweights$river %>% 
-        dplyr::arrange(riverID)
-    output <- tibble::add_column(output, runoff_ts = listc) %>%
+    output <- HSweights$target %>% 
+        dplyr::arrange(riverID) %>% 
+        tibble::add_column(runoff_ts = listc) %>%
         tibble::as_tibble() %>%
         sf::st_as_sf()
     
     output <- reorder_cols(output)
     output <- assign_class(output, "HS")
     return(output)
-
+    
 } 
 
 
 ######## DOWNSCALING BASED ON WEIGHTS
-downscale_with_weights <- function(HSweights, 
-                                   unit = "mm/s",
+downscale_with_weights <- function(HSweights,
                                    verbose = FALSE) {
-    #####################
+    #---------------------------------------------------------------------------
     # prepare
     
-    area_m2 <- NULL
-    gridID <- NULL
+    area <- NULL
+    zoneID <- NULL
     Date <- NULL
     riverID <- NULL
     
-    river <- HSweights$river
+    river <- HSweights$target
     weights <- HSweights$weights
-    grid <- HSweights$grid
+    grid <- HSweights$source
     
     nriv <- NROW(river)
     nseg <- NROW(weights)
     ng <- NROW(grid)
-    
-    rIDs <- dplyr::select_(river, "riverID") %>%
-        sf::st_set_geometry(NULL) %>%
-        unlist()
-    gIDs <- dplyr::select(grid, gridID) %>%
-        sf::st_set_geometry(NULL) %>%
-        unlist()
-    wrIDs <- dplyr::select_(weights, "riverID") %>% 
-        sf::st_set_geometry(NULL) %>%
-        unlist() %>%
+
+    rIDs <- dplyr::pull(river, riverID)
+    gIDs <- dplyr::pull(grid, zoneID)
+    wrIDs <- dplyr::pull(weights, riverID) %>%
         match(rIDs)
-    wgIDs <- dplyr::select(weights, gridID) %>%
-        sf::st_set_geometry(NULL) %>%
-        unlist() %>%
+    wgIDs <- dplyr::pull(weights, zoneID) %>%
         match(gIDs)
-    weightvec <- dplyr::select(weights, weights) %>%
-        sf::st_set_geometry(NULL) %>%
-        unlist()
-    gridareas <- dplyr::select(grid, area_m2) %>%
-        sf::st_set_geometry(NULL) %>%
-        unlist()
+    weightvec <- dplyr::pull(weights, weights)
+    gridareas <- dplyr::pull(grid, area) %>% units::set_units("m2")
+        
     
-    if (unit == "mm/s") convert <- TRUE
-    if (unit == "m3/s") convert <- FALSE
-    
-    runoff_ts <- collect_listc(grid$runoff_ts)
+    runoff_ts <- hydrostreamer:::collect_listc(grid$runoff_ts)
     ngrids <- length(runoff_ts)
     unidates <- lapply(grid$runoff_ts, function(x) x$Date) %>%
         unlist %>%
@@ -123,6 +103,9 @@ downscale_with_weights <- function(HSweights,
     total <- ngrids
     if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
     
+    #---------------------------------------------------------------------------
+    # process
+    
     qts <- list()
     for (g in 1:ngrids) {
         
@@ -130,26 +113,42 @@ downscale_with_weights <- function(HSweights,
         nts <- nrow(runoff_ts[[g]])
         runoffTS <- runoff_ts[[g]]
         
-        QTS <- matrix(0, nrow = nts, ncol = nriv)
+        QTS <- matrix(0, nrow = nts, ncol = nriv) %>% 
+            units::as_units("m3/s")
         
-        if(convert) {
-            for (seg in 1:nseg) {
-                QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] + 
-                    weightvec[seg] *
-                    runoffTS[, wgIDs[seg] ] *
-                    gridareas[ wgIDs[seg] ] / 1000
-                
-            }
-        } else {
-            for (seg in 1:nseg) {
-                QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] + 
-                    weightvec[seg] *
-                    runoffTS[, wgIDs[seg] ]
-            }
+        
+        unit <- units::deparse_unit(runoffTS)
+        if(unit != "m3 s-1") {
+            runoffTS <- unit_conversion(runoffTS, 
+                                        unit,
+                                        gridareas[rep(1:ng, each = nts)])
+        } 
+        
+        for (seg in 1:nseg) {
+            if (is.na(wrIDs[seg])) next
+            QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] + 
+                weightvec[seg] *
+                runoffTS[, wgIDs[seg] ]
         }
         
-        
-        QTS <- data.frame(QTS)
+        # if(convert) {
+            # for (seg in 1:nseg) {
+            #     if (is.na(wrIDs[seg])) next
+            #     QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] +
+            #         weightvec[seg] *
+            #         runoffTS[, wgIDs[seg] ] *
+            #         gridareas[ wgIDs[seg] ] / as_units(1000, unitless)
+            # 
+            # }
+        # } else {
+        #     for (seg in 1:nseg) {
+        #         if (is.na(wrIDs[seg])) next
+        #         QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] + 
+        #             weightvec[seg] *
+        #             runoffTS[, wgIDs[seg] ]
+        #     }
+        # }
+        QTS <- dplyr::as_tibble(QTS)
         colnames(QTS) <- rIDs
         QTS$Date <- unidates
         QTS <- dplyr::select(QTS, Date, dplyr::everything()) 
@@ -166,64 +165,78 @@ downscale_with_weights <- function(HSweights,
     }
     if (verbose) close(pb)
     
+    
     return(qts)
     
 }
 
 ##### PYCNOPHYLACTIC INTERPOLATION FOR POLYGON NETWORKS
-downscale_pycno <- function(HS, n, dasy = NULL, 
-                            unit = "mm/s", verbose = FALSE) {
+downscale_pycno <- function(HS, n, dasy = NULL, verbose = FALSE) {
     
     if(verbose) message("Preprocessing..")
     
-    if (unit == "mm/s") convert <- TRUE
-    if (unit == "m3/s") convert <- FALSE
+    # if (unit == "mm/s") convert <- TRUE
+    # if (unit == "m3/s") convert <- FALSE
     
-    ##################
-    # create padding
-    outer_buffer <- sf::st_union(HS$weights) %>%
-        # st_cast("POLYGON") %>%
-        sf::st_cast("LINESTRING") %>%
-        sf::st_buffer(dist = 0.01)
-    
-    # break padding by centroids of neighbours, join attributes
-    outer_basin_centroids <- sf::st_intersection(HS$weights, outer_buffer) %>%
-        sf::st_centroid() 
-    
-    outer_basin <- outer_basin_centroids %>%
-        sf::st_union() %>%
-        sf::st_voronoi() %>%
-        sf::st_cast() %>%
-        sf::st_sf() %>%
-        sf::st_join(outer_basin_centroids) %>%
-        sf::st_intersection(outer_buffer) %>%
-        sf::st_difference(st_union(HS$weights)) %>%
-        dplyr::mutate(outID = 1:nrow(.), 
-               orig_id = riverID,
-               riverID = NA) %>%
-        dplyr::select(outID, orig_id, riverID, gridID, dplyr::everything())
-    
-    ####
+    # ##################
+    # # create padding
+    # outer_buffer <- sf::st_union(HS$weights) %>%
+    #     st_cast("POLYGON") %>%
+    #     sf::st_cast("LINESTRING") %>%
+    #     sf::st_buffer(dist = 0.01)
+    # 
+    # # break padding by centroids of neighbours, join attributes
+    # outer_basin_centroids <- sf::st_intersection(HS$weights, outer_buffer) %>%
+    #     sf::st_centroid() 
+    # 
+    # outer_basin <- outer_basin_centroids %>%
+    #     sf::st_union() %>%
+    #     sf::st_voronoi() %>%
+    #     sf::st_cast() %>%
+    #     sf::st_sf() %>%
+    #     sf::st_join(outer_basin_centroids) %>%
+    #     sf::st_intersection(outer_buffer) %>%
+    #     sf::st_difference(st_union(HS$weights)) %>%
+    #     dplyr::mutate(outID = 1:nrow(.), 
+    #                   orig_id = riverID,
+    #                   riverID = NA) %>%
+    #     dplyr::select(outID, orig_id, riverID, zoneID, dplyr::everything())
+    # 
+    # ####
     # prepare for pp
-    pycno <- rbind(outer_basin, 
-                   HS$weights %>% 
+    # pycno <- rbind(outer_basin, 
+    #                HS$weights %>% 
+    #                    tibble::add_column(outID = NA, orig_id = NA) %>%
+    #                    dplyr::select(outID, orig_id, riverID, 
+    #                                  dplyr::everything()) %>%
+    #                    dplyr::rename(geometry = geom))
+    
+    pycno <- HS$weights %>% 
                        tibble::add_column(outID = NA, orig_id = NA) %>%
                        dplyr::select(outID, orig_id, riverID, 
                                      dplyr::everything()) %>%
-                       dplyr::rename(geometry = geom))
+                       dplyr::rename(geometry = geom)
     
     #identify neighbours
     touching <- sf::st_touches(pycno)
     
+    #identify boundary
+    boundary <- sf::st_touches(pycno, 
+                               sf::st_union(pycno) %>%
+                                   sf::st_cast("POLYGON") %>%
+                                   sf::st_cast("LINESTRING"),
+                               sparse = FALSE) %>%
+        as.numeric()
+    boundary[boundary == 0] <- NA
     
     #prep
-    nmod <- ncol(HS$grid$runoff_ts[[1]])
-    nstep <- nrow(HS$grid$runoff_ts[[1]])
-    names <- colnames(HS$grid$runoff_ts[[1]])
-    nriver <- nrow(HS$river)
+    nmod <- ncol(HS$source$runoff_ts[[1]])
+    nstep <- nrow(HS$source$runoff_ts[[1]])
+    names <- colnames(HS$source$runoff_ts[[1]])
+    nriver <- nrow(HS$target)
     rivers <- which(!is.na(pycno$riverID))
-    gridareas <- HS$grid$area_m2
-    unidates <- lapply(HS$grid$runoff_ts, function(x) x$Date) %>%
+    gridareas <- HS$source$area
+    unidates <- lapply(HS$source$runoff_ts, function(x) x$Date) %>%
         unlist %>%
         unique %>%
         lubridate::as_date()
@@ -237,30 +250,31 @@ downscale_pycno <- function(HS, n, dasy = NULL,
     # do for each timestep and each model, convert mm/s to m3/s?
     for(model in 2:nmod) {
         qts <- matrix(NA, nrow = nstep, ncol = nriver)
-        colnames(qts) <- HS$river$riverID
+        colnames(qts) <- HS$target$riverID
         name <- names[model]
-
+        
         for(tstep in 1:nstep) {
             
-            r_grid <- sapply(HS$grid$runoff_ts, 
-                             function(x) pull(x[tstep, model]))
+            r_grid <- sapply(HS$source$runoff_ts, 
+                             function(x) dplyr::pull(x[tstep, model]))
             
-            r_pycno <- iterate_pycno(pycno, dasy, touching, 
-                                     r_grid, gridareas, n)
-            if(convert) r_pycno <- r_pycno * pycno$b_area_m2 / 1000
+            r_pycno <- iterate_pycno(pycno, dasy, touching, boundary,
+                                     r_grid, gridareas, n, convert=TRUE)
+
+            if(convert) r_pycno <- r_pycno * pycno$target_area / 1000
             
             for(i in seq_along(r_pycno)) {
-                where <- which(HS$river$riverID == pycno$riverID[i])
+                where <- which(HS$target$riverID == pycno$riverID[i])
                 if(length(where) == 0) next
                 qts[tstep, where] <- sum(qts[tstep, where], 
-                                        r_pycno[i],
-                                        na.rm=TRUE) 
+                                         r_pycno[i],
+                                         na.rm=TRUE) 
             }
-
+            
         }
-      
+        
         qts <- data.frame(qts)
-        colnames(qts) <- HS$river$riverID
+        colnames(qts) <- HS$target$riverID
         qts <- tibble::add_column(qts, Date = unidates, .before=1)
         QTS[[ name ]] <- qts
         
@@ -274,68 +288,60 @@ downscale_pycno <- function(HS, n, dasy = NULL,
 }
 
 
-iterate_pycno <- function(pycno, dasy = NULL, touching, r_grid, gridareas, n) {
+iterate_pycno <- function(p_obj, dasy = NULL, touching, boundary, 
+                          r_grid, gridareas, n, convert=TRUE) {
     
     # prepare
-    r_curr <- rep(NA, length(touching))
+    r_orig <- rep(NA, length(touching))
     for(i in seq_along(r_grid)) {
-        ind <- which(pycno$gridID == as.numeric(names(r_grid)[i]))
-        r_curr[ind] <- r_grid[[i]]
+        ind <- which(p_obj$zoneID == as.numeric(names(r_grid)[i]))
+        r_orig[ind] <- r_grid[[i]]
     }
-    r_prev <- r_curr
+    r_prev <- r_orig
+    r_curr <- r_orig
     
-    iter <- which(!is.na(pycno$riverID))
-    remove <- which(is.na(pycno$riverID))
-    pycno$gridID[remove] <- NA
+    iter <- which(!is.na(p_obj$riverID))
+    remove <- which(is.na(p_obj$riverID))
+    p_obj$zoneID[remove] <- NA
     
     # iterate
     for (i in 1:n) {
-
+        
         for(j in iter) {
             ind <- c(j, touching[[j]])
-            new_value <- mean(r_prev[ind], na.rm=TRUE)
+            boundary_val <- r_orig[j] * boundary[j]
+            vals <- c(r_prev[ind], boundary_val)
+            new_value <- mean(vals, na.rm=TRUE)
             r_curr[j] <- new_value
         }
         
-        # rescale
-        if(convert) {
+        # # rescale
             for(j in seq_along(r_grid)) {
-                ind <- which(pycno$gridID == j)
-                sum_runoff <- sum(r_curr[ind] * pycno$b_area_m2[ind], na.rm = TRUE)
-                bias <- r_grid[j]*gridareas[j] / sum_runoff
-                r_curr[ind] <- r_curr[ind] * bias
+                ind <- which(p_obj$zoneID == j)
+                vol_c <- r_curr[ind] * p_obj$target_area[ind]
+                vol_g <- r_grid[j]*gridareas[j]
+                bias <- vol_g / sum(vol_c,na.rm = TRUE)
+                vol_c <- vol_c * bias
+                
+                r_curr[ind] <- vol_c / p_obj$target_area[ind]
             }
-        } else {
-            for(j in seq_along(r_grid)) {
-                ind <- which(pycno$gridID == j)
-                mean_runoff <- mean(r_curr[ind])
-                bias <- r_grid[j] / mean_runoff
-                r_curr[ind] <- r_curr[ind] * bias
-            }
-        }
         
         r_prev <- r_curr    
     }
     
     # if dasymetric variable is provided
     if(!is.null(dasy)) {
-        r_curr <- r_curr * dasy
+       r_curr <- r_curr * dasy
         
-        #rescale again
-        if(convert) {
-            for(j in seq_along(r_grid)) {
-                ind <- which(pycno$gridID == j)
-                sum_runoff <- sum(r_curr[ind] * pycno$b_area_m2[ind], na.rm = TRUE)
-                bias <- r_grid[j]*gridareas[j] / sum_runoff
-                r_curr[ind] <- r_curr[ind] * bias
-            }
-        } else {
-            for(j in seq_along(r_grid)) {
-                ind <- which(pycno$gridID == j)
-                mean_runoff <- mean(r_curr[ind])
-                bias <- r_grid[j] / mean_runoff
-                r_curr[ind] <- r_curr[ind] * bias
-            }
+        # same as above
+        for(j in seq_along(r_grid)) {
+            ind <- which(p_obj$zoneID == j)
+            vol_c <- r_curr[ind] * p_obj$target_area[ind]
+            vol_g <- r_grid[j]*gridareas[j]
+            bias <- vol_g / sum(vol_c,na.rm = TRUE)
+            vol_c <- vol_c * bias
+            
+            r_curr[ind] <- vol_c / p_obj$target_area[ind]
         }
     }
     

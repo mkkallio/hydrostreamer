@@ -14,6 +14,7 @@
 #' 
 #' @param HS An \code{HS} object.
 #' @param timeseries a data frame with observations.
+#' @param unit The unit of values in \code{timeseries}.
 #' @param riverIDs A vector of riverID of the river segments of the columns
 #'  in obs.
 #' @param control Type of control, see details.
@@ -22,14 +23,28 @@
 #'   \code{observation_ts}.
 #' 
 #' @export
-add_control <- function(HS, timeseries, riverIDs, control = "set") {
-    if (!any(c("Date", "Month") %in% colnames(timeseries))) {
-        stop("timeseries do not include column 'Date', or 'Month'.")
+add_control <- function(HS, timeseries, unit, riverIDs, control, verbose=FALSE) {
+    if (!"Date" %in% colnames(timeseries)) {
+        stop("timeseries do not include column 'Date'")
     } 
     
-    if(!"HS" %in% class(HS)) stop("First input must be of class 'HS'")
+    if(!inherits(HS, "HS")) stop("First input must be of class 'HS'")
     
-    listc <- spread_listc( list( timeseries = timeseries))
+    # set unit
+    timeseries <- dplyr::select(timeseries, Date, dplyr::everything())
+    for(i in 2:ncol(timeseries)) {
+        ts <- dplyr::pull(timeseries,i)
+        if(inherits(ts, "units")) {
+            tsunit <- units::deparse_unit(ts)
+            if(tsunit != "m3 s-1") ts <- convert_unit(ts, to1 = "m3/s")
+            timeseries[,i] <- ts
+        } else {
+            timeseries[,i] <- units::as_units(dplyr::pull(timeseries,i), unit)   
+        }
+    }
+    
+    
+    listc <- hydrostreamer:::spread_listc( list( timeseries = timeseries))
     
     if (hasName(HS, "control_ts")) {
         control_ts <- HS$control_ts
@@ -47,10 +62,11 @@ add_control <- function(HS, timeseries, riverIDs, control = "set") {
     
     for(i in seq_along(riverIDs)) {
         statpos <- which(HS$riverID == riverIDs[[i]])
-        if(is.null(length(statpos))) {
+        test <- (is.null(length(statpos)) || length(statpos) == 0) & verbose
+        if(test) {
             message(paste0("riverID ", riverIDs[[i]], " does not exist in 
-                           HS - skipping station ", 
-                           colnames(control_ts)[-c("Date")]))
+                           HS - skipping station at ",riverIDs[i]))
+                           
             next
         }
         control_ts[[statpos]] <- listc[[i]]

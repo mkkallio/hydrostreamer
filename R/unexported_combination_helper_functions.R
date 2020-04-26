@@ -1,54 +1,54 @@
-bias_correct <- function(combs, type = "ratio") {
-    
-    # get bias
-    if (type == "ratio") {
-        bias <- (100+(-combs$Goodness_of_fit[6, 1])) / 100
-        combs[["Bias_correction"]] <- -combs$Goodness_of_fit[6, 1]
-        
-        # update timeseries with bias
-        combs$Optimized_ts$Optimized <- combs$Optimized_ts$Optimized * bias
-    }
-    
-    if (type == "abs") {
-        bias <- combs$Goodness_of_fit[1,1]
-        combs[["Bias_correction"]] <- -combs$Goodness_of_fit[1, 1]
-        
-        # update timeseries with bias
-        combs$Optimized_ts$Optimized <- combs$Optimized_ts$Optimized + bias
-        
-    }
-    
-    #update residuals
-    combs$Optimized_ts$Residuals <- combs$Optimized_ts$Optimized -
-        combs$Optimized_ts$Observations
-  
-    
-    trains <- combs$Optimized_ts$Train_or_test == "Train"
-    tests <- combs$Optimized_ts$Train_or_test == "Test"
-    
-    if(sum(tests, na.rm=TRUE) == 0) {
-        traingof <- hydroGOF::gof(combs$Optimized_ts$Optimized[trains], 
-                                  combs$Optimized_ts$Observations[trains])  
-        gofs <- data.frame(Train = traingof)
-    } else {
-        traingof <- hydroGOF::gof(combs$Optimized_ts$Optimized[trains], 
-                                  combs$Optimized_ts$Observations[trains]) 
-        
-        testgof <- hydroGOF::gof(combs$Optimized_ts$Optimized[tests], 
-                                 combs$Optimized_ts$Observations[tests])
-        
-        bothgof <- hydroGOF::gof(combs$Optimized_ts$Optimized, 
-                                 combs$Optimized_ts$Observations)
-        
-        gofs <- data.frame(Train = traingof,
-                           Test = testgof,
-                           Together = bothgof)
-    }
-    
-    combs$Goodness_of_fit <- gofs
-    
-    return(combs)
-}
+# bias_correct <- function(combs, type = "ratio") {
+#     
+#     # get bias
+#     if (type == "ratio") {
+#         bias <- (100+(-combs$Goodness_of_fit[6, 1])) / 100
+#         combs[["Bias_correction"]] <- -combs$Goodness_of_fit[6, 1]
+#         
+#         # update timeseries with bias
+#         combs$Optimized_ts$Optimized <- combs$Optimized_ts$Optimized * bias
+#     }
+#     
+#     if (type == "abs") {
+#         bias <- combs$Goodness_of_fit[1,1]
+#         combs[["Bias_correction"]] <- -combs$Goodness_of_fit[1, 1]
+#         
+#         # update timeseries with bias
+#         combs$Optimized_ts$Optimized <- combs$Optimized_ts$Optimized + bias
+#         
+#     }
+#     
+#     #update residuals
+#     combs$Optimized_ts$Residuals <- combs$Optimized_ts$Optimized -
+#         combs$Optimized_ts$Observations
+#   
+#     
+#     trains <- combs$Optimized_ts$Train_or_test == "Train"
+#     tests <- combs$Optimized_ts$Train_or_test == "Test"
+#     
+#     if(sum(tests, na.rm=TRUE) == 0) {
+#         traingof <- hydroGOF::gof(combs$Optimized_ts$Optimized[trains], 
+#                                   combs$Optimized_ts$Observations[trains])  
+#         gofs <- data.frame(Train = traingof)
+#     } else {
+#         traingof <- hydroGOF::gof(combs$Optimized_ts$Optimized[trains], 
+#                                   combs$Optimized_ts$Observations[trains]) 
+#         
+#         testgof <- hydroGOF::gof(combs$Optimized_ts$Optimized[tests], 
+#                                  combs$Optimized_ts$Observations[tests])
+#         
+#         bothgof <- hydroGOF::gof(combs$Optimized_ts$Optimized, 
+#                                  combs$Optimized_ts$Observations)
+#         
+#         gofs <- data.frame(Train = traingof,
+#                            Test = testgof,
+#                            Together = bothgof)
+#     }
+#     
+#     combs$Goodness_of_fit <- gofs
+#     
+#     return(combs)
+# }
 
 
 train_test <- function(flow, train, sampling = "random", warned = FALSE) {
@@ -89,9 +89,10 @@ combine_timeseries <- function(flow,
                                warned_overfit,
                                warned_train) { 
     
+    flowunit <- units::deparse_unit(dplyr::pull(flow, 2))
+    obsunit <- units::deparse_unit(dplyr::pull(flow, observations))
     
-    
-    tt <- train_test(flow, train, sampling, warned_train)
+    tt <- hydrostreamer:::train_test(flow, train, sampling, warned_train)
     warned_train <- tt$warned
     warned_overfit <- warned_overfit
     
@@ -110,7 +111,7 @@ combine_timeseries <- function(flow,
     
     ###########
     # Combine
-    combs <- combinations(flow[tt$train,], optim_method)
+    combs <- hydrostreamer:::combinations(flow[tt$train,], optim_method)
     ###########
     
     # gather weights
@@ -126,7 +127,7 @@ combine_timeseries <- function(flow,
     # Create the optimized timeseries and make a tsibble
     w <- c(int, weights)
     modelind <- which(colnames(flow) %in% models, arr.ind=TRUE)
-    p <- t(cbind(1,as.matrix(flow[,modelind])))
+    p <- t(cbind(0,as.matrix(flow[,modelind])))
     Opt <- as.vector(w %*% p)
     
     if(log) {
@@ -138,10 +139,15 @@ combine_timeseries <- function(flow,
     whichtt[tt$test] <- "Test"
     whichtt[tt$train] <- "Train"
     
+    
+    # assign units
+    Opt <- units::as_units(Opt, flowunit)
+    observ <- dplyr::pull(flow, observations)
+    
     pred <- suppressMessages(data.frame(Date = flow$Date, 
-                                        Observations = flow$observations,
+                                        Observations = observ,
                                         Optimized = Opt,
-                                        Residuals = Opt - flow$observations,
+                                        Residuals = Opt - observ,
                                         Train_or_test = whichtt) %>%
                                  tsibble::as_tsibble())
     
@@ -503,7 +509,7 @@ dmult <- function(m,s) {
 combinations <- function(flowmat, type="CLS") {
     
     # remove collinear timeseries
-    flowmat <- remove_collinear(flowmat)
+    flowmat <- hydrostreamer:::remove_collinear(flowmat)
     
     ncols <- ncol(flowmat)
     obs <- flowmat$observations %>% unname
@@ -553,9 +559,7 @@ combinations <- function(flowmat, type="CLS") {
                          "intercept = 0")
         p <- NCOL(predmat)
         Rinv <- solve(safe_chol(t(predmat) %*% predmat))
-        #C <- cbind(rep(1, p), diag(p))
         C <- cbind(rep(0, p), diag(p))
-        #b <- c(1, rep(0, p))
         b <- c(0, rep(0, p))
         d <- t(obs) %*% predmat
         nn2 <- sqrt(norm(d,"2")) ###
@@ -635,8 +639,9 @@ combinations <- function(flowmat, type="CLS") {
 
 # remove collinear timeseries. modified from ForecastComb::remove_collinear
 remove_collinear <- function (flow) {
+    
     ncols <- ncol(flow)
-    obs <- flow$observations
+    obs <- units::drop_units(flow$observations)
     predmat <- flow[,-c(1,ncols)] %>% as.matrix
     
     # remove collinear timeseries according to RMSE, until prediction matrix

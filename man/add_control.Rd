@@ -4,12 +4,14 @@
 \alias{add_control}
 \title{Adds flow controls to a 'HS' object}
 \usage{
-add_control(HS, timeseries, riverIDs, control = "set")
+add_control(HS, timeseries, unit, riverIDs, control, verbose = FALSE)
 }
 \arguments{
 \item{HS}{An \code{HS} object.}
 
 \item{timeseries}{a data frame with observations.}
+
+\item{unit}{The unit of values in \code{timeseries}.}
 
 \item{riverIDs}{A vector of riverID of the river segments of the columns
 in obs.}

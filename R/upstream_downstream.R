@@ -15,16 +15,16 @@
 #' @export
 upstream <- function(HSnetwork, ID, riverID = "riverID") {
     
-    if(!all(c("riverID", "NEXT", "PREVIOUS") %in% colnames(HSnetwork))) {
-        stop("river input should be of class HSnetwork, obtained with function 
-             river_network()")
-    }
+    # if(!all(c("riverID", "NEXT", "PREVIOUS") %in% colnames(HSnetwork))) {
+    #     stop("river input should be of class HSnetwork, obtained with function 
+    #          river_network()")
+    # }
     
     if(!any(names(HSnetwork) == riverID)) {
         stop(paste0("ID column '", riverID,"' does not exist"))
     }
     
-    rIDs <- dplyr::select_(HSnetwork, riverID) %>% unlist
+    rIDs <- dplyr::select(HSnetwork, riverID) %>% unlist
     prevs <- HSnetwork$PREVIOUS
     
     
@@ -96,10 +96,10 @@ upstream <- function(HSnetwork, ID, riverID = "riverID") {
 #' @export
 downstream <- function(HSnetwork, ID, riverID = "riverID") {
     
-    if(!all(c("riverID", "NEXT", "PREVIOUS") %in% colnames(HSnetwork))) {
-        stop("river input should be of class HSnetwork, obtained with function 
-             river_network()")
-    }
+    # if(!all(c("riverID", "NEXT", "PREVIOUS") %in% colnames(HSnetwork))) {
+    #     stop("river input should be of class HSnetwork, obtained with function 
+    #          river_network()")
+    # }
     
     if(!any(names(HSnetwork) == riverID)) {
         stop(paste0("ID column '", riverID,"' does not exist"))

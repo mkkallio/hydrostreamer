@@ -21,6 +21,7 @@
 #' @importFrom stats complete.cases
 #' @importFrom Matrix rankMatrix
 #' @importFrom stats lm
+#' @importFrom Rcpp evalCpp
 #' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer

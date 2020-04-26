@@ -61,7 +61,7 @@ river_voronoi<- function(river, aoi, riverID = "riverID", verbose=FALSE) {
     #create voronoi diagram, spatially join attributes
     if (verbose) message("Processing Voronoi tesselation")
     vorPoints <- suppressWarnings(sf::st_cast(voronoi, "POINT"))
-    remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","gridID")
+    remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","zoneID")
     voronoi <- vorPoints[ , !(names(vorPoints) %in% remove)]
     bbox <- sf::st_as_sfc(sf::st_bbox(aoi))
     voronoi <- suppressMessages(

@@ -14,7 +14,8 @@ with \code{\link{river_network}}.}
 returned.}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 }
 \value{
 The input \code{HSnetwork} object consisting of only upstream 

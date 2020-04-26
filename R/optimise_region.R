@@ -17,6 +17,7 @@
 #' station), an ensemble mean (each discharge prediction is given equal weight) 
 #' is computed.
 #' 
+#' The function currnetly only supports instantaneous routing.
 #' 
 #' @param HS An \code{HS} object containing runoff
 #'   estimates.
@@ -25,7 +26,6 @@
 #' @param region_type How to regionalize combination weights. See details.
 #' @param no_station How to handle river segments with no downstream 
 #'   stations. See details.
-#' @param bias_correction Whether to apply bias correction. Default FALSE.
 #' @param drop Drop existing timeseries (columns) in \code{runoff_ts}, 
 #'   \code{discharge_ts}, or not.
 #' @param ... Additional parameters passed to the \code{routing} algorithm.
@@ -44,11 +44,9 @@
 #'   
 #' @export
 optimise_region <- function(HS, 
-                            routing = "simple", 
+                            routing = "instant", 
                             train = 0.5,
                             optim_method = "CLS",
-                            bias_correction = FALSE,
-                            log = FALSE,
                             combination = "ts",
                             sampling = "random",
                             region_type= "upstream", 
@@ -63,10 +61,16 @@ optimise_region <- function(HS,
     control_ts <- NULL
     warned_overfit <- FALSE
     warned_train <- FALSE
+    bias_correction <- FALSE # disabled currently, likely to be removed
+    log <- FALSE  # disabled currently, likely to be removed 
     
     ###############
     # Check inputs
     ###############
+    
+    test <- routing == "instant"
+    if(!test) stop(paste0("Regional optimisation currently only supports ",
+                   "instantaneous routing."))
     
     if(optim_method %in% c("EIG2", "GRC", "OLS")) {
         warning(paste0(optim_method, " contains an intercept which may cause ",
@@ -113,18 +117,22 @@ optimise_region <- function(HS,
         pb <- txtProgressBar(min = 0, max = nrow(upstations)+1, style = 3)
     }
     
-    HS$Optimisation_info <- vector("list", nrow(HS))
-    HS$Optimised_at <- rep(NA, nrow(HS))
-    HS$discharge_ts <- vector("list", nrow(HS))
-    HS <- HS[order(HS$riverID),]
+    HS <- tibble::add_column(HS, 
+                             Optimisation_info = vector("list", nrow(HS)),
+                             Optimised_at = rep(NA, nrow(HS))) %>%
+        dplyr::mutate(discharge_ts = vector("list", nrow(HS))) %>%
+        dplyr::arrange(riverID)
+    
+    # HS$Optimisation_info <- vector("list", nrow(HS))
+    # HS$Optimised_at <- rep(NA, nrow(HS))
+    # HS$discharge_ts <- vector("list", nrow(HS))
+    # HS <- HS[order(HS$riverID),]
     
     # record original control timeseries
     controltype <- NULL 
     if(hasName(HS, "control_type")) controltype <- HS$control_type
     controlts <- NULL
     if(hasName(HS, "control_ts")) controlts <- HS$control_ts
-    
-    
     
     
     #######################################
@@ -143,10 +151,9 @@ optimise_region <- function(HS,
                                        method = routing)#,
                                        #...)
         
-        # prepare combination
-        stationrID <- which(statriver$riverID == upstations$riverID[station])
-        flow <- dplyr::left_join(statriver$discharge_ts[[ stationrID ]],
-                                 statriver$observation_ts[[ stationrID ]],
+        stationrow <- which(statriver$riverID == upstations$riverID[station])
+        flow <- dplyr::left_join(statriver$discharge_ts[[ stationrow ]],
+                                 statriver$observation_ts[[ stationrow ]],
                                  by="Date")
         
         flow <- flow[!is.na(flow$observations),]
@@ -161,7 +168,7 @@ optimise_region <- function(HS,
         ############################################
         if(combination %in% c("timeseries", "ts")) {
             
-            comb <- combine_timeseries(flow, 
+            comb <- hydrostreamer:::combine_timeseries(flow, 
                                        optim_method, 
                                        sampling,
                                        train,
@@ -209,51 +216,52 @@ optimise_region <- function(HS,
         intercept <- comb$Intercept
         bias <- comb$Bias_correction
         
-        if (bias_correction) {
-            statriver <- combine_runoff(statriver, 
-                                        list(Optimized = weights),
-                                        bias = bias,
-                                        intercept = intercept,
-                                        drop = drop,
-                                        monthly = mon)
-            
-            # update comb info after bias correction
-            opt <- comb$Optimized_ts
-            optdates <- opt$Date %in% statriver$discharge_ts[[stationrID]]$Date
-            dates <- statriver$discharge_ts[[stationrID]]$Date %in% opt$Date
-            opt$Optimized[optdates] <-
-                statriver$discharge_ts[[stationrID]]$Optimized[dates]
-            opt$Residuals <- opt$Optimized - opt$Observations
-            comb$Optimized_ts <- opt
-            
-            # update GOF metrics after bias correction
-            # TODO: update so that monthly GOF is kept. Now each month stats 
-            # are lost.
-            trains <- comb$Optimized_ts$Train_or_test == "Train"
-            tests <- comb$Optimized_ts$Train_or_test == "Test"
-            
-            if(sum(tests, na.rm=TRUE) == 0) {
-                traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
-                                      comb$Optimized_ts$Observations[trains])  
-                gofs <- data.frame(Train = traingof)
-            } else {
-                traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
-                                      comb$Optimized_ts$Observations[trains]) 
-                
-                testgof <- hydroGOF::gof(comb$Optimized_ts$Optimized[tests], 
-                                     comb$Optimized_ts$Observations[tests])
-                
-                bothgof <- hydroGOF::gof(comb$Optimized_ts$Optimized, 
-                                     comb$Optimized_ts$Observations)
-                
-                gofs <- data.frame(Train = traingof,
-                                   Test = testgof,
-                                   Together = bothgof)
-            }
-            
-            comb$Goodness_of_fit <- gofs
-            
-        } else { # if no bias correction
+        # CURRENTLY DISABLED
+        # if (bias_correction) {
+        #     statriver <- combine_runoff(statriver, 
+        #                                 list(Optimized = weights),
+        #                                 bias = bias,
+        #                                 intercept = intercept,
+        #                                 drop = drop,
+        #                                 monthly = mon)
+        #     
+        #     # update comb info after bias correction
+        #     opt <- comb$Optimized_ts
+        #     optdates <- opt$Date %in% statriver$discharge_ts[[stationrow]]$Date
+        #     dates <- statriver$discharge_ts[[stationrow]]$Date %in% opt$Date
+        #     opt$Optimized[optdates] <-
+        #         statriver$discharge_ts[[stationrow]]$Optimized[dates]
+        #     opt$Residuals <- opt$Optimized - opt$Observations
+        #     comb$Optimized_ts <- opt
+        #     
+        #     # update GOF metrics after bias correction
+        #     # TODO: update so that monthly GOF is kept. Now each month stats 
+        #     # are lost.
+        #     trains <- comb$Optimized_ts$Train_or_test == "Train"
+        #     tests <- comb$Optimized_ts$Train_or_test == "Test"
+        #     
+        #     if(sum(tests, na.rm=TRUE) == 0) {
+        #         traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
+        #                               comb$Optimized_ts$Observations[trains])  
+        #         gofs <- data.frame(Train = traingof)
+        #     } else {
+        #         traingof <- hydroGOF::gof(comb$Optimized_ts$Optimized[trains], 
+        #                               comb$Optimized_ts$Observations[trains]) 
+        #         
+        #         testgof <- hydroGOF::gof(comb$Optimized_ts$Optimized[tests], 
+        #                              comb$Optimized_ts$Observations[tests])
+        #         
+        #         bothgof <- hydroGOF::gof(comb$Optimized_ts$Optimized, 
+        #                              comb$Optimized_ts$Observations)
+        #         
+        #         gofs <- data.frame(Train = traingof,
+        #                            Test = testgof,
+        #                            Together = bothgof)
+        #     }
+        #     
+        #     comb$Goodness_of_fit <- gofs
+        #     
+        # } else { # if no bias correction
             
             statriver <- combine_runoff(statriver, 
                                         list(Optimized = weights),
@@ -261,10 +269,10 @@ optimise_region <- function(HS,
                                         bias = rep(0,12),
                                         drop = drop,
                                         monthly = mon)
-        }
+        #}
         
         # update HS 
-        statriver$Optimisation_info[[stationrID]] <- comb
+        statriver$Optimisation_info[[stationrow]] <- comb
         statriver$Optimised_at <-
             upstations$riverID[station]
         
@@ -284,8 +292,8 @@ optimise_region <- function(HS,
         boundaryrID <- HS$NEXT[upstations$rind[station]]
         
         if (boundaryrID != -9999) {
-            boundary <- statriver$discharge_ts[[stationrID]] 
-            HS <- add_control(HS, boundary, boundaryrID, "add")
+            boundary <- statriver$discharge_ts[[stationrow]] 
+            HS <- add_control(HS, boundary, "m3/s", boundaryrID, "add")
         }
         
         

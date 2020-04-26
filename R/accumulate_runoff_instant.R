@@ -30,8 +30,13 @@ accumulate_runoff_instant <- function(HS,
         unlist() %>%
         match(IDs)
     
-    nextriver <- HS$NEXT %>%
-        match(IDs)
+    ## find next river
+    # ind <- hydrostreamer:::find_attribute(HS, "next_col", TRUE)
+    # nextriver <- dplyr::pull(HS, ind) %>%
+    #     match(IDs)
+    ind <- hydrostreamer:::find_attribute(HS, "next_col", TRUE)
+    nextriver <- dplyr::pull(HS, NEXT) %>%
+      match(IDs)
 
     
     discharge <- HS$runoff_ts
@@ -98,8 +103,6 @@ accumulate_runoff_instant <- function(HS,
         
         #update progressbar
         if (verbose) setTxtProgressBar(pb, prog)
-        
-        
     }
     
     output <- HS 

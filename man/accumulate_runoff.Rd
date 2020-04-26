@@ -4,8 +4,7 @@
 \alias{accumulate_runoff}
 \title{Apply river routing}
 \usage{
-accumulate_runoff(HS, method = c("instant", "simple", "muskingum"), ...,
-  verbose = FALSE)
+accumulate_runoff(HS, method = c("instant", "constant"), ..., verbose = FALSE)
 }
 \arguments{
 \item{HS}{A 'HS' object obtained by \code{\link{downscale_runoff}}}
@@ -39,7 +38,6 @@ runoff may result in computational instability. See further details from
 the documentation of each method:
 \itemize{
   \item \code{\link{accumulate_runoff_instant}}
-  \item \code{\link{accumulate_runoff_simple}}
-  \item \code{\link{accumulate_runoff_muskingum}}
+  \item \code{\link{accumulate_runoff_constant}}
 }
 }

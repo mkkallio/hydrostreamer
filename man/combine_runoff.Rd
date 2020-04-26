@@ -4,8 +4,14 @@
 \alias{combine_runoff}
 \title{Combines runoff in HS* objects}
 \usage{
-combine_runoff(HS, weights, intercept = 0, bias = 0, drop = FALSE,
-  monthly = FALSE)
+combine_runoff(
+  HS,
+  weights,
+  intercept = 0,
+  bias = 0,
+  drop = FALSE,
+  monthly = FALSE
+)
 }
 \arguments{
 \item{HS}{An \code{HS} object}
@@ -29,9 +35,8 @@ Returns the input \code{HS} object where runoff timeseries is
   replaced by the the combined timeseries'.
 }
 \description{
-The function provides the ability to combine runoff from \code{HSgrid}, 
-or \code{HS} using user provided weights. Function can process several input 
-weight sets at once.
+The function provides the ability to combine runoff from \code{HS} using
+ user provided weights. Function can process several input weight sets.
 }
 \details{
 If a named list of weights is provided to the function, their names will be 
@@ -53,12 +58,12 @@ The combination is only applied to columns \code{runoff_ts}, and
 \examples{
 \dontrun{
   weights <- c(0.2,0.2,0.3,0.3,0)
-  combined <- combine_runoff(HSgrid, weights)
+  combined <- combine_runoff(HS, weights)
   
   listweights <- list(weights1 = c(0.2,0.2,0.3,0.3,0),
                   weights2 = c(0.1,0.2,0.3,0.2,0.2),
                   thirdw = c(0,0,0,0.5,0.5))
- combined2 <- combine_runoff(HSgrid, listweights)
+ combined2 <- combine_runoff(HS, listweights)
 }
 
 

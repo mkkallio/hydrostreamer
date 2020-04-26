@@ -4,18 +4,18 @@
 \alias{split_river_with_grid}
 \title{Split river segments at runoff unit (polygon) boundaries.}
 \usage{
-split_river_with_grid(river, HSgrid, riverID = "riverID",
-  gridID = "gridID")
+split_river_with_grid(river, HS, riverID = "riverID", zoneID = "zoneID")
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{HSgrid}{A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.}
+\item{HS}{A 'HS' object, obtained with \code{\link{raster_to_HS}}.}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 
-\item{gridID}{Name of the column in \code{HSgrid} with unique IDs.}
+\item{zoneID}{Name of the column in \code{HS} with unique IDs.}
 }
 \value{
 Returns an 'sf' linestring object which has been split at 
@@ -24,7 +24,7 @@ Returns an 'sf' linestring object which has been split at
     \item \emph{ID}. Unique ID of the split river segments.
     \item \emph{riverID}. ID of the original river segment prior 
       to splitting.
-    \item \emph{gridID}. ID of the runoff unit split river segment 
+    \item \emph{zoneID}. ID of the runoff unit split river segment 
       is contained in. 
     \item Other columns inherited from \code{river}.
 }
@@ -44,8 +44,8 @@ data(basin)
 runoff <- brick(system.file("extdata", "runoff.tif", 
                             package = "hydrostreamer"))
 
-# create HSgrid
-grid <- raster_to_HSgrid(grid, aoi=basin)
+# create HS
+grid <- raster_to_HS(grid, aoi=basin)
 
 splitriver <- split_river_with_grid(river, grid, 
                                     riverID="ID")

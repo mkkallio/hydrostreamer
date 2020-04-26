@@ -36,7 +36,7 @@ ensemble_summary <- function(HS,
 
 #' @export
 ensemble_summary.list <- function(HS,
-                                  summarise_over_timeseries = TRUE, 
+                                  summarise_over_timeseries = FALSE, 
                                   aggregate_monthly = FALSE, 
                                   funs=c("min","mean","median","max"),
                                   drop = FALSE,
@@ -118,7 +118,7 @@ ensemble_summary.list <- function(HS,
 
 #' @export
 ensemble_summary.HS <- function(HS,
-                                summarise_over_timeseries = TRUE,
+                                summarise_over_timeseries = FALSE,
                                 aggregate_monthly = FALSE,
                                 funs=c("min","mean","median","max"), 
                                 drop = FALSE,
@@ -127,6 +127,7 @@ ensemble_summary.HS <- function(HS,
     
     runoff <- hasName(HS, "runoff_ts")
     discharge <- hasName(HS, "discharge_ts")
+    
     if (runoff) {
         data <- HS$runoff_ts
         data <- ensemble_summary(data, 
@@ -136,7 +137,12 @@ ensemble_summary.HS <- function(HS,
                                  drop = drop,
                                  ...,
                                  verbose = verbose)
-        HS$runoff_ts <- data
+        if(summarise_over_timeseries) {
+            HS$runoff_summary <- data
+        } else {
+            HS$runoff_ts <- data
+        }
+        
     }
     
     if (discharge) {
@@ -147,7 +153,12 @@ ensemble_summary.HS <- function(HS,
                                  funs,
                                  drop = drop,
                                  ...)
-        HS$discharge_ts <- data
+        if(summarise_over_timeseries) {
+            HS$discharge_summary <- data
+        } else {
+            HS$discharge_ts <- data
+        }
+        
     }
     
     HS <- reorder_cols(HS)

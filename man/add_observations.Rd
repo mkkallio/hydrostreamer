@@ -4,13 +4,15 @@
 \alias{add_observations}
 \title{Adds observation timeseries to a 'HS' object}
 \usage{
-add_observations(HS, timeseries, riverIDs, station_names = NULL)
+add_observations(HS, timeseries, unit, riverIDs, station_names = NULL)
 }
 \arguments{
 \item{HS}{An \code{HS} object.}
 
 \item{timeseries}{a data.frame with observations. Must contain column 
 \code{Date}.}
+
+\item{unit}{The unit of values in \code{timeseries}.}
 
 \item{riverIDs}{A vector of riverID of the river segments of the columns
 in timeseries.}

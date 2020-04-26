@@ -39,7 +39,7 @@ delineate_basin <- function(outlets,
                             drain.dir, 
                             riverID = "riverID", 
                             output = "vector",
-                            use_rsaga = TRUE, # TODO: discuss this parameter
+                            use_rsaga = TRUE,
                             verbose = FALSE) {
     
     VALUE <- NULL
@@ -58,32 +58,42 @@ delineate_basin <- function(outlets,
     rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(outlets))
     outlets$cell <- rp
     outlets <- outlets[!is.na(outlets$cell),]
-    ID <- outlets %>% dplyr::select_(riverID) %>% sf::st_set_geometry(NULL) %>% 
-        unlist()
+    #ID <- outlets %>% dplyr::select_(riverID) %>% sf::st_set_geometry(NULL) %>% 
+    #    unlist()
+    ID <- outlets %>% dplyr::pull(riverID)
+    #tempID <- 1:nrow(outlets)
     ny <- nrow(drain.dir)
     nx <- ncol(drain.dir)
     nseeds <- nrow(outlets)
     drdir <- raster::values(drain.dir)
+    drdir[is.na(drdir)] <- 0
     delbas <- vector("numeric", raster::ncell(drain.dir))
     #delbas[outlets$cell] <- ID
     delbas[outlets$cell] <- 1:nseeds
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
     
-    delbas <- .Fortran("delineate", 
-                       as.integer(nx), 
-                       as.integer(ny), 
-                       as.integer(nseeds), 
-                       as.integer(outlets$cell), 
-                       as.integer(ID), 
-                       as.integer(drdir), 
-                       as.integer(delbas), 
-                       PACKAGE = 'hydrostreamer')[[7]]
+    delbas <- delineatecpp(outlets$cell-1,
+                           ID,
+                           drdir,
+                           delbas,
+                           nx,
+                           ny)
+    
+    # delbas <- .Fortran("delineate", 
+    #                    as.integer(nx), 
+    #                    as.integer(ny), 
+    #                    as.integer(nseeds), 
+    #                    as.integer(outlets$cell), 
+    #                    as.integer(ID), 
+    #                    as.integer(drdir), 
+    #                    as.integer(delbas), 
+    #                    PACKAGE = 'hydrostreamer')[[7]]
     
     delbas[delbas == 0] <- NA
     
-    if (output %in% c("vector","v")) {
+    if (output %in% c("vector","'v")) {
         
-        if (verbose) message("Converting to vector.")
+        if (verbose) message("Converting to vector..")
         
         # count cells in each basin
         ncells <- rep(0, length(ID))
@@ -124,11 +134,11 @@ delineate_basin <- function(outlets,
             
             # vectorize raster
             RSAGA::rsaga.geoprocessor(lib = "shapes_grid",
-                                  module = 6,
-                                  env = saga_env,
-                                  param = list(GRID = delbas_grid_path,
-                                               POLYGONS = delbas_shapes_path),
-                                  show.output.on.console = verbose)
+                                      module = 6,
+                                      env = saga_env,
+                                      param = list(GRID = delbas_grid_path,
+                                                   POLYGONS = delbas_shapes_path),
+                                      show.output.on.console = verbose)
             
             # read from file and set CRS
             delbas <- sf::st_read(delbas_shapes_path, quiet = !verbose) %>%
@@ -148,13 +158,17 @@ delineate_basin <- function(outlets,
             # vectorize raster without RSAGA
             delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
                 sf::st_as_sf()
+            names(delbas)[1] <- "riverID"
+            #delbas$riverID <- ID[delbas$riverID]
             
         }
         
-        names(delbas)[1] <- "riverID"
+        
         #cols <- cbind(riverID = ID, NCELLS = ncells)
         #delbas <- merge(delbas, cols)
-        delbas$riverID <- ID[delbas$riverID]
+        names(delbas)[1] <- "riverID"
+        match <- match(delbas$riverID, ID)
+        delbas$NCELLS <- ncells[match]
         delbas$AREA_M2 <- sf::st_area(delbas)
         
     }

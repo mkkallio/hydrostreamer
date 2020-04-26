@@ -4,33 +4,30 @@
 \alias{create_HSweights}
 \title{Creates a \code{HSweights} object}
 \usage{
-create_HSweights(river, weights, HSgrid, riverID = "riverID")
+create_HSweights(target, weights, source)
 }
 \arguments{
-\item{river}{A river network as an \code{sf LINESTGRING} object}
+\item{target}{A river network as an \code{sf LINESTGRING} object}
 
-\item{weights}{A data.frame with columns "riverID" in "gridID", and "weight"
-corresponding to riverID in \code{river}, gridID in \code{HSgrid} and 
+\item{weights}{A data.frame with columns "riverID" in "zoneID", and "weight"
+corresponding to riverID in \code{river}, zoneID in \code{HS} and 
 a numeric weight.}
 
-\item{HSgrid}{A \code{HSgrid} object.}
-
-\item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\item{source}{A \code{HS} object.}
 }
 \value{
 Returns a \code{HSweights} object, which is a list of three 
   components:
   \itemize{
-    \item river: River network with routing information to be used in
+    \item target: River network with routing information to be used in
       downscaling step.
     \item weights: Weighting information for the downscaling step.
-    \item grid: \code{HSgrid} object with runoff timeseries information.
+    \item source: \code{HS} object with runoff timeseries information.
   }
 }
 \description{
 Creates a list object with class \code{HSweights}. The river object
 can be obtained with \code{\link{river_network}}, weights with
 \code{\link{compute_river_weights}} or \code{\link{compute_area_weights}},
-and grid with \code{\link{raster_to_HSgrid}}.
+and grid with \code{\link{raster_to_HS}}.
 }

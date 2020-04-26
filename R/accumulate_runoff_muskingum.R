@@ -19,7 +19,6 @@
 #'   \code{discharge_ts} containing routed discharge estimates for each river
 #'    segment. 
 #' 
-#' @export
 accumulate_runoff_muskingum <- function(HS, 
                                         velocity = 1,
                                         x,
@@ -28,7 +27,7 @@ accumulate_runoff_muskingum <- function(HS,
     riverID <- NULL
     UP_SEGMENTS <- NULL
     
-    lengths <- sf::st_length(HS) %>% unclass()
+    lengths <- sf::st_length(HS) %>% units::drop_units()
     IDs <- dplyr::select(HS, riverID) %>% 
         sf::st_set_geometry(NULL) %>% 
         unlist()
@@ -40,7 +39,9 @@ accumulate_runoff_muskingum <- function(HS,
         unlist() %>%
         match(IDs)
     
-    nextriver <- HS$NEXT %>%
+    ## find next river
+    ind <- find_attribute(HS, "next_col", TRUE)
+    nextriver <- dplyr::pull(HS, ind) %>%
         match(IDs)
     
     k <- lengths/velocity

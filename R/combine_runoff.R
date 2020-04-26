@@ -1,8 +1,7 @@
 #' Combines runoff in HS* objects
 #' 
-#' The function provides the ability to combine runoff from \code{HSgrid}, 
-#' or \code{HS} using user provided weights. Function can process several input 
-#' weight sets at once. 
+#' The function provides the ability to combine runoff from \code{HS} using
+#'  user provided weights. Function can process several input weight sets. 
 #' 
 #' If a named list of weights is provided to the function, their names will be 
 #' preserved in the output. Otherwise the combinations are named in a running
@@ -37,12 +36,12 @@
 #' @examples 
 #' \dontrun{
 #'   weights <- c(0.2,0.2,0.3,0.3,0)
-#'   combined <- combine_runoff(HSgrid, weights)
+#'   combined <- combine_runoff(HS, weights)
 #'   
 #'   listweights <- list(weights1 = c(0.2,0.2,0.3,0.3,0),
 #'                   weights2 = c(0.1,0.2,0.3,0.2,0.2),
 #'                   thirdw = c(0,0,0,0.5,0.5))
-#'  combined2 <- combine_runoff(HSgrid, listweights)
+#'  combined2 <- combine_runoff(HS, listweights)
 #' }
 #' 
 #' 
@@ -67,6 +66,7 @@ combine_runoff.list <- function(HS,
                                 monthly = FALSE) { 
     
     Date <- NULL
+    unit <- units::deparse_unit(dplyr::pull(HS[[1]], 2))
     
     if(!is.list(weights)) weights <- list(combination = weights)
     
@@ -96,8 +96,8 @@ combine_runoff.list <- function(HS,
     
     # check bias
     if(length(bias) != length(weights)) {
-        if(length(bias) == 1) bias <- rep(bias, 
-                                                    length(weights))
+        if(length(bias) == 1) bias <- rep(bias,length(weights))
+        
         if(monthly) {
             if(!is.list(bias)) {
                 bias <- list(bias)
@@ -179,13 +179,18 @@ combine_runoff.list <- function(HS,
                     p <- t(cbind(1,as.matrix(HS[[seg]][month,modelind])))
                     result <- as.vector(mw %*% p)
                     
-                    #if(bias_correct) {
-                        result <- result / (1 - bias[[w]][m] / 100)
-                    #}
+                    # #if(bias_correct) {
+                    #     result <- result / (1 - bias[[w]][m] / 100)
+                    # #}
+                    
                     data[month,w] <- result
                 }
             }
             data <- tibble::as_tibble(data)
+            
+            for(i in 1:ncol(data)) {
+                data[,i] <- units::as_units(dplyr::pull(data, i), unit)
+            }
             
             if(drop) {
                 new <- dplyr::select(HS[[seg]], Date)
@@ -209,19 +214,28 @@ combine_runoff.list <- function(HS,
             data <- matrix(NA, ncol = length(weights), nrow = nrow(HS[[seg]]))
             colnames(data) <- wnames
             for(w in seq_along(weights)) {
+                mw <- unlist(weights[[w]])
+                int <- intercept[[w]]
                 modelind <- which(colnames(HS[[seg]]) %in% names(weights[[w]]), 
                                   arr.ind=TRUE)
                 
-                wmean <- apply(HS[[seg]][,modelind], 1, weighted.mean, 
-                               weights[[w]])
-                wmean <- wmean + intercept[[w]]
+                order <- match(colnames(HS[[seg]])[modelind], names(mw))
+                mw <- c(int, mw[order])
                 
-                #if (bias_correct) {
-                    wmean <- wmean / (1 - bias[[w]] / 100)
-                #}
-                data[,w] <- wmean
+                p <- t(cbind(1,as.matrix(HS[[seg]][,modelind])))
+                result <- as.vector(mw %*% p)
+                
+                # #if (bias_correct) {
+                #     wmean <- wmean / (1 - bias[[w]] / 100)
+                # #}
+               
+                data[,w] <- result
             }
             data <- tibble::as_tibble(data)
+            
+            for(i in 1:ncol(data)) {
+                data[,i] <- units::as_units(dplyr::pull(data, i), unit)
+            }
             
             if(drop) {
                 new <- dplyr::select(HS[[seg]], Date)

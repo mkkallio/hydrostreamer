@@ -20,7 +20,8 @@ Description: hydrostreamer provides functions to downscale distributed runoff
   discharge at arbitrary segment.
 Depends: 
     R (>= 3.4.0),
-    sf
+    sf,
+    Rcpp (>= 1.0.3)
 Encoding: UTF-8
 Imports:
     dplyr,
@@ -37,16 +38,22 @@ Imports:
     tsibble,
     stringr,
     Matrix,
-    stats
+    stats,
+    Rcpp (>= 1.0.3),
+    units,
+    udunits2
 Suggests:
     knitr,
     rmarkdown,
     lwgeom,
     readr,
-    RSAGA
+    RSAGA,
+    testthat
+LinkingTo: 
+    Rcpp
 LazyData: true
 License: MIT + file LICENSE
 URL: https://mkkallio.github.io/hydrostreamer/
 BugReports: https://github.com/mkkallio/hydrostreamer/issues
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

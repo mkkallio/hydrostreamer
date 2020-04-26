@@ -5,10 +5,19 @@
 \title{Computes and regionalizes optimal estimate from multiple discharge 
 timeseries against observed streamflow}
 \usage{
-optimise_region(HS, routing = "simple", train = 0.5,
-  optim_method = "CLS", bias_correction = FALSE, log = FALSE,
-  combination = "ts", sampling = "random", region_type = "upstream",
-  no_station = "em", drop = TRUE, ..., verbose = FALSE)
+optimise_region(
+  HS,
+  routing = "instant",
+  train = 0.5,
+  optim_method = "CLS",
+  combination = "ts",
+  sampling = "random",
+  region_type = "upstream",
+  no_station = "em",
+  drop = TRUE,
+  ...,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{HS}{An \code{HS} object containing runoff
@@ -21,11 +30,6 @@ estimates.}
 
 \item{optim_method}{Method used to optimise. Default uses constrained
 linear regression. See details.}
-
-\item{bias_correction}{Whether to apply bias correction. Default FALSE.}
-
-\item{log}{Log-transform prediction and observation timeseries before 
-fitting. Defaults to \code{FALSE}.}
 
 \item{combination}{Whether to do the forecast combination for the entire
 timeseries, or each month of the year individually, or for full calendar 
@@ -76,4 +80,6 @@ which stands for "ensemble mean". For those river segments with no
 weights assigned from a station (segments with no downstream observation 
 station), an ensemble mean (each discharge prediction is given equal weight) 
 is computed.
+
+The function currnetly only supports instantaneous routing.
 }

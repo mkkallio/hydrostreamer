@@ -4,8 +4,14 @@
 \alias{delineate_basin}
 \title{Delineate multiple catchments from multiple input points}
 \usage{
-delineate_basin(outlets, drain.dir, riverID = "riverID",
-  output = "vector", use_rsaga = TRUE, verbose = FALSE)
+delineate_basin(
+  outlets,
+  drain.dir,
+  riverID = "riverID",
+  output = "vector",
+  use_rsaga = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{outlets}{An 'sf' point object, with locations of the catchment 

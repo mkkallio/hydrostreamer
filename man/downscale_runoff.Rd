@@ -4,16 +4,18 @@
 \alias{downscale_runoff}
 \title{Computes specific runoff generated in the river segment.}
 \usage{
-downscale_runoff(HSweights, unit = "mm/s", pycno = FALSE, n = 10,
-  dasy = NULL, verbose = FALSE)
+downscale_runoff(
+  HSweights,
+  pycno = FALSE,
+  n = 10,
+  dasy = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{HSweights}{An object of class 'HSweights', obtained with 
 \code{compute_HSweights}, or constructed with function
 \code{create_HSweights}.}
-
-\item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". 
-Defaults to mm/s (~ equivalent to kg/m2/s).}
 
 \item{pycno}{If \code{TRUE}, ignore weights and perform pycnophylactic
 interpolation for every timestep. EXPERIMENTAL AND 2-3 ORDERS OF MAGNITUDE

@@ -13,7 +13,8 @@ river_hierarchy(river, type = "strahler", riverID = "riverID")
 stream order implemented.}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 }
 \value{
 Returns the river network with added column with the selected river 

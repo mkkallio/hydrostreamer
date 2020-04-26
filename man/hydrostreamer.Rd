@@ -3,7 +3,6 @@
 \docType{package}
 \name{hydrostreamer}
 \alias{hydrostreamer}
-\alias{hydrostreamer-package}
 \title{hydrostreamer: A package for downscaling distributed runoff products on to 
 explicit river segments.}
 \description{
