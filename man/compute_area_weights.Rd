@@ -23,6 +23,10 @@ specific catchments.}
 
 \item{HS}{A 'HS' object, obtained with \code{\link{raster_to_HS}}.}
 
+\item{pycno}{Name of Pycnophylactic variable in \code{HS} input}
+
+\item{dasy}{Name of Dasymetric variable in \code{basins} input}
+
 \item{weights}{Name of a column in \code{river} to be used directly as 
 weights. Defaults to \code{NULL}. See Details.}
 

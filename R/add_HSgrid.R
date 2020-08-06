@@ -38,9 +38,8 @@ add_HS <- function(HS,
     
     test <- colSums(common_elements)
     if(!all(test == 1)) {
-        warning(paste0("Not all cells in HS included in the object to be ",
-                    "combined. Returning original with no added timeseries!!"))
-        return(HS)
+        stop("Not all cells in HS included in the object to be ",
+             "combined. Returning original with no added timeseries!!")
     }
     
     # add timeseries from runoff_ts in 'from' to runoff_ts in 'HS'
@@ -56,10 +55,10 @@ add_HS <- function(HS,
         if(test) warning("Runoff timeseries to be combined contain same
                          names - possible duplicated timeseries!")
         
-        new_tsibble <- dplyr::left_join(HS$runoff_ts[[gid]], 
+        new_tibble <- dplyr::left_join(HS$runoff_ts[[gid]], 
                                         fr,
                                         by="Date")
-        HS$runoff_ts[[gid]] <- new_tsibble
+        HS$runoff_ts[[gid]] <- new_tibble
     } 
     
     n_ts_new <- lapply(HS$runoff_ts, ncol) %>% 

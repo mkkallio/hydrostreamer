@@ -214,7 +214,7 @@ create_river <- function(dem,
         
         # read flow directions, set CRS and remove edge cells
         drain.dir <- raster::raster(fdir_path)
-        crs(drain.dir) <- p
+        raster::crs(drain.dir) <- p
         drain.dir <- raster::trim(drain.dir, values = 255)
         
         # reclassify drainage direction for hydrostreamer's understanding
@@ -223,13 +223,13 @@ create_river <- function(dem,
         drain.dir <- raster::reclassify(drain.dir, rcl)
         
         # find river outlets
-        outlets <- hydrostreamer::river_outlets(river, drain.dir)
+        outlets <- river_outlets(river, drain.dir)
         
         # find river segment basins
-        delbas <- hydrostreamer::delineate_basin(outlets,
-                                                 drain.dir,
-                                                 verbose = verbose,
-                                                 riverID = "SEGMENT_ID")        
+        delbas <- delineate_basin(outlets,
+                                  drain.dir,
+                                  verbose = verbose,
+                                  riverID = "SEGMENT_ID")        
     }
     
     ###

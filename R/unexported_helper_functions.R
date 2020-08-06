@@ -136,7 +136,7 @@ tesselate_voronoi <- function(vorPoints,
                          sf::st_cast("POLYGON") %>%
                          sf::st_sf() %>%
                          sf::st_join(vorPoints) %>%
-                         lwgeom::st_make_valid() %>% 
+                         sf::st_make_valid() %>% 
                          dplyr::group_by_(.dots = list(~ID)) %>%
                          dplyr::summarise() %>%
                          sf::st_intersection(sf::st_geometry(aoi))))
@@ -283,8 +283,7 @@ collect_listc <- function(ts, acc = FALSE) {
             colnames(temp) <- c("Date", names(ts))
             temp <- temp %>% 
                 dplyr::mutate(Date = lubridate::as_date(Date)) %>%
-                tibble::as_tibble() %>%
-                tsibble::as_tsibble(index = "Date")
+                tibble::as_tibble() 
             output[[tsi]] <- temp
         }
     }
@@ -308,7 +307,6 @@ init_ts <- function(ts) {
         colnames(tsib) <- c("Date", names(ts))
         tsib <- tibble::as_tibble(tsib)
         tsib$Date <- dates
-        tsib <- tsibble::as_tsibble(tsib, index = "Date")
         return(tsib)
     })
     names(output) <- colnames(ts[[1]])[-1]
@@ -381,6 +379,7 @@ mod_HS_attributes <- function(HS, next_col = NA, prev_col = NA,
             base::attr(HS, "HS") <- att
         }
         return(HS)
+        
     } else {
         test <- hasName(HS, col)
         if(!test) stop("Couldn't find column ", col, " in HS input.")
@@ -409,7 +408,7 @@ get_HS_attr <- function(HS) {
     return(base::attr(HS, "HS", exact = TRUE))
 }
 
-# goes through the columns in HS, and checks the value of "HS"
+# goes through the columns in HS, and checks the value of "HS" attributes
 find_attribute <- function(HS, attribute, value) {
     test <- sapply(HS, function(x) {
         att <- attr(x, "HS") 
@@ -480,7 +479,7 @@ unit_conversion <- function(obj, unit, areas = NULL) {
         obj <- units::set_units(obj, "m m-2 s-1")
         areas <- units::set_units(areas, "m2")
         obj <- obj * areas
-        obj <- obj * as_units(1, "m2")
+        obj <- obj * units::set_units(1, "m2")
     } 
     return(obj)
 }

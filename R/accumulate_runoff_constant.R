@@ -1,11 +1,11 @@
-#' Apply simple lag river routing
+#' Apply constant velocity river routing
 #' 
-#' Implements a simple lag-based routing algorithm which can be used with
-#' arbitrary intervals between runoff units. The river flow is 'slowed' down by
-#' computing how much water the river segment has at any one time. This 'storage'
-#' is added to the next timestep.
+#' Implements a simple constant velocity routing algorithm which can be used 
+#' with arbitrary timesteps.
 #'
-#' @inheritParams accumulate_runoff_muskingum
+#' @param velocity Flow velocity. Can be a constant, or a vector of flow 
+#'   velocity at each unique river segments. Defaults to 1 meter per second.
+#' @inheritParams accumulate_runoff_instant
 #'
 #' @return Returns the input object \code{HS}) with an added list column
 #'   \code{discharge_ts} containing routed discharge estimates for each river
@@ -13,11 +13,14 @@
 #' 
 #' @export 
 accumulate_runoff_constant <- function(HS, 
-                                     velocity = 1,
-                                     verbose=FALSE) {
+                                       velocity = 1,
+                                       verbose=FALSE) {
     
     riverID <- NULL
+    NEXT <- NULL
+    PREVIOUS <- NULL
     UP_SEGMENTS <- NULL
+    
     route <- "forward"
     
     test <- inherits(HS, "HS")
@@ -28,11 +31,21 @@ accumulate_runoff_constant <- function(HS,
     
     if(verbose) message("Preparing...")
     
+    # routing does not work for river networks of 1 segment - duplicate
+    test <- nrow(HS) == 1
+    if(test) {
+        single_segment <- TRUE
+        HS <- rbind(HS, HS)
+        HS$riverID[2] <- -9999
+    } else {
+        single_segment <- FALSE
+    }
+    
+    
+    
     #prepare required variables
     lengths <- sf::st_length(HS) %>% units::drop_units()
-    IDs <- dplyr::pull(HS, riverID) # %>% 
-    # sf::st_set_geometry(NULL) %>% 
-    # unlist()
+    IDs <- dplyr::pull(HS, riverID)
     
     order <- HS %>%
         dplyr::select(riverID, UP_SEGMENTS) %>%
@@ -43,14 +56,15 @@ accumulate_runoff_constant <- function(HS,
         match(IDs)
     
     ## find next river
-    ind <- hydrostreamer:::find_attribute(HS, "next_col", TRUE)
-    nextriver <- dplyr::pull(HS, NEXT) %>%
+    ind <- find_attribute(HS, "next_col", TRUE)
+    nextriver <- dplyr::pull(HS, ind) %>%
         match(IDs)
     
     duration <- lengths/velocity
     
     # timeserie
     flow <- HS$runoff_ts
+    names(flow) <- HS$riverID
     unit <- units::deparse_unit(dplyr::pull(flow[[1]], 2))
     nseg <- length(order)
     preds <- ncol(flow[[1]])-1
@@ -77,12 +91,12 @@ accumulate_runoff_constant <- function(HS,
     # test intervals
     test <- max(duration) > min(intervals)
     maxlen <- min(intervals)*velocity
-    if(test) stop(paste0("Constant routing does not currently support river ",
-                         "segments longer than through which water passes ",
-                         "during a single timestep. Consider breaking the ",
-                         "longest segments into smaller pieces. With the ",
-                         "current velocity, maximum segment length is ", 
-                         maxlen, " meters."))
+    if(test) stop("Constant routing does not currently support river ",
+                  "segments longer than through which water passes ",
+                  "during a single timestep. Consider breaking the ",
+                  "longest segments into smaller pieces. With the ",
+                  "current velocity, maximum segment length is ", 
+                  maxlen, " meters.")
     
     
     # inspect downstream for each segment
@@ -90,10 +104,13 @@ accumulate_runoff_constant <- function(HS,
     temp <- dplyr::select(HS, riverID, NEXT, PREVIOUS) %>%
         tibble::add_column(duration = duration) %>%
         sf::st_drop_geometry()
-    for(i in order) {
-        downstream[[i]] <- downstream(temp, temp$riverID[i]) %>%
-            dplyr::mutate(cumulative = cumsum(duration))
-    }
+ 
+        for(i in order) {
+            downstream[[i]] <- downstream(temp, temp$riverID[i]) %>%
+                dplyr::mutate(cumulative = cumsum(duration))
+        }
+ 
+   
     downstreamind <- lapply(downstream, function(x) match(x$riverID, 
                                                           names(flow)))
     
@@ -101,14 +118,38 @@ accumulate_runoff_constant <- function(HS,
     longest_duration <- max(unlist(sapply(downstream, 
                                    function(x) x$cumulative)))
     pad_n <- ceiling(longest_duration / min(intervals)) +1
+    
+    # dates with padding
+    dates_padded <- c(rep(NA, pad_n), dates, rep(NA, pad_n))
+    
 
-
+    
     # process control timeseries?
-    if (hasName(HS, "control_ts")) {
-        boundary <- TRUE
-        boundary_inds <- which(!sapply(HS$control_ts,is.null))
+    test <- hasName(HS, "control_ts")
+    if(test) {
+        boundary_runoff <- unname(which(sapply(HS$control_type, function(x) {
+            if(is.null(x)) {
+                return(FALSE)
+            } else {
+                return(x[2] == "runoff")
+            }
+        })))
+        if(length(boundary_runoff) == 0) {
+            rboundary <- FALSE
+        } else rboundary <- TRUE
+        boundary_discharge <- unname(which(sapply(HS$control_type, function(x) {
+            if(is.null(x)) {
+                return(FALSE)
+            } else {
+                return(x[2] == "discharge")
+            }
+        })))
+        if(length(boundary_discharge) == 0) {
+            dboundary <- FALSE
+        } else dboundary <- TRUE
     } else {
-        boundary <- FALSE
+        rboundary <- FALSE
+        dboundary <- FALSE
     }
     
     
@@ -127,8 +168,26 @@ accumulate_runoff_constant <- function(HS,
                      matrix(rep(Qin[nrow(Qin),], pad_n), ncol=preds, byrow=TRUE,
                             dimnames = list(NULL,colnames(Qin))))
         
-        if(boundary) {
-            test <- seg %in% boundary_inds
+        # apply boundary for runoff
+        if(rboundary) {
+            test <- seg %in% boundary_runoff
+            if(test) {
+                type <- HS$control_type[[seg]][1]
+            
+                inds <- dates_padded %in% HS$control_ts[[seg]]$Date
+                cts <- units::drop_units(dplyr::pull(HS$control_ts[[seg]], 2))
+                
+                if(type == "add") {
+                    Qin[inds,] <- Qin[inds,] + cts
+                } else if(type == "subtract") {
+                    Qin[inds,] <- Qin[inds,] - cts
+                } else if(type == "multiply") {
+                    Qin[inds,] <- Qin[inds,] * cts
+                } else if(type == "set") {
+                    Qin[inds,] <- 0
+                    Qin[inds,] <- Qin[inds,] + cts
+                } 
+            }
         }
             
         inflowmat[,seg,] <- Qin
@@ -138,11 +197,6 @@ accumulate_runoff_constant <- function(HS,
     
     #pad also intervals
     interval <- c(rep(intervals[[1]], pad_n), intervals)
-    
-    
-    
-    
-    
     
     # --------------------------------------------------------------------------
     # ROUTE FORWARD
@@ -156,7 +210,9 @@ accumulate_runoff_constant <- function(HS,
         # ----------------------------------------------------------------------
         # record contribution
        
-        record <- record_forward(downstream, downstreamind, interval)
+        record <- record_forward(downstream, 
+                                                 downstreamind, 
+                                                 interval)
         
         # ----------------------------------------------------------------------
         # route
@@ -169,6 +225,31 @@ accumulate_runoff_constant <- function(HS,
         }
     }
     outflowmat[inflownas] <- NA
+    
+    # apply discharge boundary
+    if(dboundary) {
+        for(seg in 1:nseg) {
+            test <- seg %in% boundary_discharge
+            if(test) {
+                type <- HS$control_type[[seg]][1]
+                
+                inds <- dates_padded %in% HS$control_ts[[seg]]$Date
+                cts <- units::drop_units(dplyr::pull(HS$control_ts[[seg]], 2))
+                
+                if(type == "add") {
+                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] + cts
+                } else if(type == "subtract") {
+                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] - cts
+                } else if(type == "multiply") {
+                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] * cts
+                } else if(type == "set") {
+                    outflowmat[inds,seg,] <- 0
+                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] + cts
+                } 
+            }
+        }
+    }
+    
     close(pb)
     
     # --------------------------------------------------------------------------
@@ -191,17 +272,28 @@ accumulate_runoff_constant <- function(HS,
             out[,i+1] <- outflowmat[1:nrow(out),seg,i]
         }
         out[nas] <- NA
-        out <- tsibble::as_tsibble(out, index="Date")
+        out <- dplyr::as_tibble(out)
         flow[[seg]] <- out
     }
     
     output <- HS 
     output$discharge_ts <- flow
     
-    output <- hydrostreamer:::reorder_cols(output)
-    output <- hydrostreamer:::assign_class(output, "HS")
+    if(single_segment) output <- output[1,]
+    
+    output <- reorder_cols(output)
+    output <- assign_class(output, "HS")
     return(output)
 }
+
+
+
+
+
+
+
+
+
 
 record_forward <- function(downstream, downstreamind, interval) {
     
@@ -265,6 +357,8 @@ record_forward <- function(downstream, downstreamind, interval) {
 
 record_reverse <- function(downstream, downstreamind, interval, inflowmat) {
     
+    nseg <- NULL
+    
     record <- lapply(1:nseg, function(x) {
         list(shares = NULL,
              tsteps = NULL,
@@ -326,43 +420,43 @@ record_reverse <- function(downstream, downstreamind, interval, inflowmat) {
 
 
 
-apply_boundary <- function(control_ts, discharge, type) {
-    # check and apply controls condition
-    
-    dateind <- discharge$Date %in% control_ts$Date
-    
-    # Set, of modify input runoff of the segment
-    if (type == "set") {
-        for(pred in 2:ncol(discharge)) {
-            discharge[dateind,pred] <- control_ts[,2]
-        }
-        
-        # if no downstream segments, go to next seg
-        if(!is.na(nextriver)) {
-            new_dis <- discharge[[nextriver[seg] ]][,-1] + 
-                discharge[,-1]
-            
-            discharge[[ nextriver[seg] ]][,-1] <- new_dis
-        }
-        
-    } else if (type == "add") {
-        for(pred in 2:ncol(discharge)) {
-            discharge[dateind,pred] <- 
-                discharge[dateind,pred] + control_ts[,2]
-        }
-        
-    } else if (type == "subtract") {
-        for(pred in 2:ncol(discharge)) {
-            discharge[dateind,pred] <- 
-                discharge[dateind,pred] - control_ts[,2]
-        }
-        
-    } else if (type == "multiply") {
-        for(pred in 2:ncol(discharge)) {
-            discharge[dateind,pred] <- 
-                discharge[dateind,pred] * control_ts[,2]
-        }
-    }
-    return(discharge)
-}
+# apply_boundary <- function(control_ts, discharge, type) {
+#     # check and apply controls condition
+#     
+#     dateind <- discharge$Date %in% control_ts$Date
+#     
+#     # Set, of modify input runoff of the segment
+#     if (type == "set") {
+#         for(pred in 2:ncol(discharge)) {
+#             discharge[dateind,pred] <- control_ts[,2]
+#         }
+#         
+#         # if no downstream segments, go to next seg
+#         if(!is.na(nextriver)) {
+#             new_dis <- discharge[[nextriver[seg] ]][,-1] + 
+#                 discharge[,-1]
+#             
+#             discharge[[ nextriver[seg] ]][,-1] <- new_dis
+#         }
+#         
+#     } else if (type == "add") {
+#         for(pred in 2:ncol(discharge)) {
+#             discharge[dateind,pred] <- 
+#                 discharge[dateind,pred] + control_ts[,2]
+#         }
+#         
+#     } else if (type == "subtract") {
+#         for(pred in 2:ncol(discharge)) {
+#             discharge[dateind,pred] <- 
+#                 discharge[dateind,pred] - control_ts[,2]
+#         }
+#         
+#     } else if (type == "multiply") {
+#         for(pred in 2:ncol(discharge)) {
+#             discharge[dateind,pred] <- 
+#                 discharge[dateind,pred] * control_ts[,2]
+#         }
+#     }
+#     return(discharge)
+# }
 

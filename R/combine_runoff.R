@@ -1,11 +1,12 @@
-#' Combines runoff in HS* objects
+#' Combines runoff and/or discharge in HS objects
 #' 
-#' The function provides the ability to combine runoff from \code{HS} using
-#'  user provided weights. Function can process several input weight sets. 
+#' The function provides the ability to do a weighted combination of  runoff 
+#' and/or discharge timeseries in \code{HS} object using user provided weights.
+#' Function can process several input weight sets. 
 #' 
 #' If a named list of weights is provided to the function, their names will be 
-#' preserved in the output. Otherwise the combinations are named in a running
-#' order.
+#' preserved in the combinations. Otherwise the combinations are named using a 
+#' running number.
 #' 
 #' If \code{intercept} is provided, it is added to the combined timeseries.
 #' If \code{bias} is provided, the combined timeseries is adjusted by
@@ -16,7 +17,7 @@
 #' every input timeseries.
 #' 
 #' The combination is only applied to columns \code{runoff_ts}, and 
-#' \code{discharge_ts}, if they exist. Columns \code{observation_ts} and 
+#' \code{discharge_ts}. Columns \code{observation_ts} and 
 #' \code{control_ts} are left untouched if present.
 #' 
 #' @param HS An \code{HS} object
@@ -39,8 +40,8 @@
 #'   combined <- combine_runoff(HS, weights)
 #'   
 #'   listweights <- list(weights1 = c(0.2,0.2,0.3,0.3,0),
-#'                   weights2 = c(0.1,0.2,0.3,0.2,0.2),
-#'                   thirdw = c(0,0,0,0.5,0.5))
+#'                       weights2 = c(0.1,0.2,0.3,0.2,0.2),
+#'                       weights3 = c(0,0,0,0.5,0.5))
 #'  combined2 <- combine_runoff(HS, listweights)
 #' }
 #' 
@@ -118,36 +119,6 @@ combine_runoff.list <- function(HS,
     }
     
     wnames <- names(weights)
-    # if(is.null(wnames)) wnames <- paste0("combination",1:length(weights))
-    # 
-    # if (bias == 0) {
-    #     bias_correct <- FALSE
-    # } else {
-    #     bias_correct <- TRUE   
-    # } 
-    
-    # test <- length(bias) == 1 || length(bias) == length(weights)
-    # if (!test) stop("Bias needs to be length 1 or the same length as",
-    #                 " weights")
-    # 
-    # test <- length(intercept) == 1 || length(intercept) == length(weights)
-    # if(!test) stop("Intercept needs to be length 1 or the same length as",
-    #                " weights")
-    
-    # check bias and intercept for monthly weights
-    # if(monthly) {
-    #     # bias
-    #     test <- is.list(bias)
-    #     if(!test) bias <- list(bias = bias)
-    #     
-    #     test <- all( sapply(bias, function(x) length(x) == 12))
-    #     if(!test) stop("Some input bias' do not include value for all months")
-    #     
-    #     # intercept
-    #     test <- all( sapply(intercept, function(x) length(x) == 12))
-    #     if(!test) stop("Some input intercepts' do not include value for ",
-    #                    "all months")
-    # }
 
     
     ### if combination is done for each month
@@ -178,10 +149,6 @@ combine_runoff.list <- function(HS,
                     month <- lubridate::month(HS[[seg]]$Date) == m
                     p <- t(cbind(1,as.matrix(HS[[seg]][month,modelind])))
                     result <- as.vector(mw %*% p)
-                    
-                    # #if(bias_correct) {
-                    #     result <- result / (1 - bias[[w]][m] / 100)
-                    # #}
                     
                     data[month,w] <- result
                 }
@@ -224,10 +191,6 @@ combine_runoff.list <- function(HS,
                 
                 p <- t(cbind(1,as.matrix(HS[[seg]][,modelind])))
                 result <- as.vector(mw %*% p)
-                
-                # #if (bias_correct) {
-                #     wmean <- wmean / (1 - bias[[w]] / 100)
-                # #}
                
                 data[,w] <- result
             }

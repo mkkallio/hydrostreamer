@@ -75,7 +75,6 @@
 #'     \item \code{HS}. The input HS object containing runoff information. 
 #' }
 #'  
-#' @export
 compute_HSweights <- function(HS, 
                               river,
                               basins = NULL,
@@ -86,22 +85,43 @@ compute_HSweights <- function(HS,
                               weights = NULL, 
                               aoi=NULL, 
                               riverID = "riverID", 
-                              verbose=FALSE) {
+                              verbose = FALSE) {
 
     ##############
     # CHECK INPUTS
     ##############
-    if(!"HS" %in% class(HS)) { 
-        stop("HS input should be of class HS, obtained with function 
+    test <- inherits(HS, "HS")
+    if(!test) { 
+        stop("HS input should be of class 'HS', obtained with function 
              raster_to_HS() or create_HS()")
+    }
+    test <- inherits(river, "sf")
+    if(!test) {
+        stop("river input should be of class 'sf'")
     }
     
     ### determine what to do
     test <- is.null(basins) 
     if(test) {
-        track <- "line" 
-        if(verbose) message(paste0("No basins provided - downscaling using ",
-                       "river lines"))
+        type <- sf::st_geometry_type(river, by_geometry = FALSE)
+        if(type %in% c("LINESTRING", "MULTILINESTRING")) {
+            track <- "line"
+            if(verbose) message(paste0("No basins provided - downscaling using ",
+                                       "river lines"))
+        } else if(type %in% c("POLYGON", "MULTIPOLYGON")) {
+            track <- "area"
+            if(verbose) message(paste0("Basins provided - interpolating ",
+                                       "area -> area"))
+            basins <- river
+        } else {
+            stop("Geometry of input 'river' is not LINESTRING, MULTILINESTRING",
+                 " POLYGON or MULTIPOLYGON. Consider using function ",
+                 "sf::st_collection_extract() to extract the desired type.")
+        }
+        
+        # track <- "line" 
+        # if(verbose) message(paste0("No basins provided - downscaling using ",
+        #                "river lines"))
     } else {
         track <- "area"
         if(verbose) message(paste0("Basins provided - interpolating ",
@@ -118,7 +138,8 @@ compute_HSweights <- function(HS,
 
         # check column names
         test <- hasName(river, riverID) && hasName(basins, riverID)
-        if(!test) stop("Both river and basins input must have column ", riverID)
+        if(!test) stop("Both river and basins input must have identically ",
+                       "named column",riverID,"specified by parameter riverID")
 
         test <- riverID == "riverID"
         if(!test) {
@@ -225,7 +246,7 @@ compute_HSweights <- function(HS,
         if(!is.null(dasymetric)) {
             splitriver <- compute_river_weights(river, 
                                                 HS, 
-                                                seg_weights = weights,
+                                                seg_weights = dasymetric,
                                                 split=TRUE)
         } else {
             splitriver <- compute_river_weights(river, 

@@ -4,13 +4,10 @@
 #' Computed goodness-of-fit statistics using \code{\link[hydroGOF]{gof}}
 #' for all the timeseries in the input \code{HS} object. 
 #' 
-#' By default, goodness-of-fit measures are computed for all timeseries in 
-#' the input data. 
-#' 
 #' @param HS A \code{HS} object with column \code{discharge_ts}.
 #' @param verbose Print progress indication or not.
 #' 
-#' @return Returns a list with gof-statistics for all the observations in
+#' @return Returns a tibble with gof-statistics for all the observations in
 #'  every discharge prediction in \code{HS}.
 #' 
 #' @export
@@ -20,12 +17,12 @@ flow_gof <- function(HS, verbose = FALSE) {
     Prediction <- NULL
     Station <- NULL
     if(!hasName(HS, "observation_ts")) {
-        stop("Observation timeseries missing. Please add one using
-             add_observations()")
+        stop("Observation timeseries missing. Please add one using ",
+             " add_observations()")
     }
     if(!hasName(HS, "discharge_ts")) {
-        stop("discharge timeseries missing. Please compute it using
-              accumulate_runoff()")
+        stop("discharge timeseries missing. Please compute it using ",
+              "accumulate_runoff()")
     }
  
     riverIDs <- lapply(HS$observation_ts, is.null)
@@ -41,6 +38,13 @@ flow_gof <- function(HS, verbose = FALSE) {
         data <- dplyr::left_join(data, 
                           HS$observation_ts[[ riverIDs[stat] ]],
                           by = "Date")
+        
+        test <- all(is.na(data$observations))
+        if(test) {
+            message("No observations for the data period. Skipping station ",
+                    HS$observation_station[[ riverIDs[stat] ]])
+            next
+        }
 
         gofs <- matrix(NA, ncol=20, nrow=(ncol(data)-2))
         colnames(gofs) <- c("ME", "MAE", "MSE", "RMSE", "NRMSE %", "PBIAS %",

@@ -35,7 +35,6 @@
 #'                                     riverID="ID")
 #' }
 #' 
-#' @export
 split_river_with_grid <- function(river, 
                                   HS, 
                                   riverID = "riverID", 

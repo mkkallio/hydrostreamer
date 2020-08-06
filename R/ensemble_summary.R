@@ -1,4 +1,4 @@
-#' Computes summary timeseries from HS* objects
+#' Computes summary timeseries in HS object
 #' 
 #' Allows easy computation of summaries across runoff datasets with user defined 
 #' functions. The functions provided are run either individually for, or across, 

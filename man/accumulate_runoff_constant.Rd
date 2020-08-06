@@ -2,19 +2,17 @@
 % Please edit documentation in R/accumulate_runoff_constant.R
 \name{accumulate_runoff_constant}
 \alias{accumulate_runoff_constant}
-\title{Apply simple lag river routing}
+\title{Apply constant velocity river routing}
 \usage{
 accumulate_runoff_constant(HS, velocity = 1, verbose = FALSE)
 }
 \arguments{
 \item{HS}{A \code{HS} object.}
 
-\item{velocity}{Flow velocity applied to compute parameter x. Can be a 
-constant, or a vector of flow velocity at each unique river segments.
-Flow velocity defaults at 1.}
+\item{velocity}{Flow velocity. Can be a constant, or a vector of flow 
+velocity at each unique river segments. Defaults to 1 meter per second.}
 
-\item{verbose}{Whether or not to print progress information. Defaults to 
-\code{FALSE}.}
+\item{verbose}{Whether to print progress indication or not.}
 }
 \value{
 Returns the input object \code{HS}) with an added list column
@@ -22,8 +20,6 @@ Returns the input object \code{HS}) with an added list column
    segment.
 }
 \description{
-Implements a simple lag-based routing algorithm which can be used with
-arbitrary intervals between runoff units. The river flow is 'slowed' down by
-computing how much water the river segment has at any one time. This 'storage'
-is added to the next timestep.
+Implements a simple constant velocity routing algorithm which can be used 
+with arbitrary timesteps.
 }

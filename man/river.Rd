@@ -4,11 +4,13 @@
 \name{river}
 \alias{river}
 \title{Example river network}
-\format{An 'sf' LINESTRING object with one attribute.
+\format{
+An 'sf' LINESTRING object with one attribute.
 \describe{
   \item{SEGMENT_ID}{unique ID}
   \item{geometry}{'sfc' geometry column}
-}}
+}
+}
 \usage{
 river
 }

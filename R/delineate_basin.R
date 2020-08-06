@@ -3,7 +3,7 @@
 #' This algorithm delineates multiple catchments from input point 
 #' locations and a drainage direction layer. Catchments are delineated 
 #' upstream from the point given, until another given outlet point is 
-#' met. The result is a set of catchments which are unique to the points 
+#' met. The result is a set of catchments which are unique to the outlets 
 #' given.
 #' 
 #'
@@ -13,7 +13,7 @@
 #' @param output Whether to return a raster or vectors of delineated catchments. 
 #' Accepts "vector", "v", "raster", or "r".
 #' @param use_rsaga Whether to try using RSAGA for basin vectorization or not.
-#' Even if TRUE, requires RSAGA environment to be found.
+#' Even if TRUE, requires RSAGA environment to be installed in the system.
 #' @inheritParams river_outlets
 #' @inheritParams compute_HSweights
 #'
@@ -78,16 +78,6 @@ delineate_basin <- function(outlets,
                            delbas,
                            nx,
                            ny)
-    
-    # delbas <- .Fortran("delineate", 
-    #                    as.integer(nx), 
-    #                    as.integer(ny), 
-    #                    as.integer(nseeds), 
-    #                    as.integer(outlets$cell), 
-    #                    as.integer(ID), 
-    #                    as.integer(drdir), 
-    #                    as.integer(delbas), 
-    #                    PACKAGE = 'hydrostreamer')[[7]]
     
     delbas[delbas == 0] <- NA
     
@@ -169,7 +159,8 @@ delineate_basin <- function(outlets,
         names(delbas)[1] <- "riverID"
         match <- match(delbas$riverID, ID)
         delbas$NCELLS <- ncells[match]
-        delbas$AREA_M2 <- sf::st_area(delbas)
+        delbas$AREA <- sf::st_area(delbas) %>% 
+            units::set_units("km^2")
         
     }
     

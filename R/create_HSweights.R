@@ -20,7 +20,6 @@
 #'     \item source: \code{HS} object with runoff timeseries information.
 #'   }
 #' 
-#' @export
 create_HSweights <- function(target, weights, source) {
     
     test <- all(c("riverID", "zoneID", "weights") %in% colnames(weights))
@@ -35,6 +34,6 @@ create_HSweights <- function(target, weights, source) {
     output <- list(target = target,
                    weights = weights,
                    source = source)
-    output <- hydrostreamer:::assign_class(output, "HSweights")
+    output <- assign_class(output, "HSweights")
     return(output)
 }

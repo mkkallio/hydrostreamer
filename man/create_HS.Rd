@@ -7,8 +7,12 @@
 create_HS(zones, runoff, unit, zoneID = "zoneID", name = "runoff_1")
 }
 \arguments{
+\item{zones}{An \code{sf POLYGON} object}
+
 \item{runoff}{a table of runoff where rows are timesteps and columns
 correspond to specific polygons in \code{grid}.}
+
+\item{unit}{Unit of the runoff timeseries}
 
 \item{zoneID}{Column name with unique IDs in \code{grid}.}
 
@@ -16,21 +20,16 @@ correspond to specific polygons in \code{grid}.}
 are added to the same \code{HS} object using \code{\link{add_HS}}, 
 each timeseries must have a unique name, or else they are replaced.
 @inheritParams raster_to_HS}
-
-\item{grid}{An \code{sf POLYGON} object}
 }
 \value{
 Returns a \code{HS} object with columns
   \itemize{
     \item zoneID: unique ID
-    \item area: area in square meters.
-    \item n_ts: number of runoff timeseries in the object.
-    \item runoff_ts: a list column containing a \code{tsibble} of
-      runoff timeseries.
+    \item runoff_ts: a list column containing the runoff timeseries.
   }
 }
 \description{
 Creates a \code{HS} from input where \code{grid} is a polygon grid
-representing the spatialunits of runoff, and /code{runoff} is a data frame
+representing the spatial units of runoff, and /code{runoff} is a data.frame
 containing column 'Date', and where column names match the grid IDs.
 }

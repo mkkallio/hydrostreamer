@@ -1,56 +1,3 @@
-# bias_correct <- function(combs, type = "ratio") {
-#     
-#     # get bias
-#     if (type == "ratio") {
-#         bias <- (100+(-combs$Goodness_of_fit[6, 1])) / 100
-#         combs[["Bias_correction"]] <- -combs$Goodness_of_fit[6, 1]
-#         
-#         # update timeseries with bias
-#         combs$Optimized_ts$Optimized <- combs$Optimized_ts$Optimized * bias
-#     }
-#     
-#     if (type == "abs") {
-#         bias <- combs$Goodness_of_fit[1,1]
-#         combs[["Bias_correction"]] <- -combs$Goodness_of_fit[1, 1]
-#         
-#         # update timeseries with bias
-#         combs$Optimized_ts$Optimized <- combs$Optimized_ts$Optimized + bias
-#         
-#     }
-#     
-#     #update residuals
-#     combs$Optimized_ts$Residuals <- combs$Optimized_ts$Optimized -
-#         combs$Optimized_ts$Observations
-#   
-#     
-#     trains <- combs$Optimized_ts$Train_or_test == "Train"
-#     tests <- combs$Optimized_ts$Train_or_test == "Test"
-#     
-#     if(sum(tests, na.rm=TRUE) == 0) {
-#         traingof <- hydroGOF::gof(combs$Optimized_ts$Optimized[trains], 
-#                                   combs$Optimized_ts$Observations[trains])  
-#         gofs <- data.frame(Train = traingof)
-#     } else {
-#         traingof <- hydroGOF::gof(combs$Optimized_ts$Optimized[trains], 
-#                                   combs$Optimized_ts$Observations[trains]) 
-#         
-#         testgof <- hydroGOF::gof(combs$Optimized_ts$Optimized[tests], 
-#                                  combs$Optimized_ts$Observations[tests])
-#         
-#         bothgof <- hydroGOF::gof(combs$Optimized_ts$Optimized, 
-#                                  combs$Optimized_ts$Observations)
-#         
-#         gofs <- data.frame(Train = traingof,
-#                            Test = testgof,
-#                            Together = bothgof)
-#     }
-#     
-#     combs$Goodness_of_fit <- gofs
-#     
-#     return(combs)
-# }
-
-
 train_test <- function(flow, train, sampling = "random", warned = FALSE) {
     vals <- which(complete.cases(flow))
     
@@ -87,21 +34,25 @@ combine_timeseries <- function(flow,
                                bias_correction,
                                log,
                                warned_overfit,
-                               warned_train) { 
+                               warned_train,
+                               ...) { 
     
     flowunit <- units::deparse_unit(dplyr::pull(flow, 2))
     obsunit <- units::deparse_unit(dplyr::pull(flow, observations))
     
-    tt <- hydrostreamer:::train_test(flow, train, sampling, warned_train)
+    tt <- train_test(flow, train, sampling, warned_train)
     warned_train <- tt$warned
     warned_overfit <- warned_overfit
     
     # warn about overfitting?
-    test <- length(tt$train) < ncol(flow)-2
-    if(test && optim_method %in% c("OLS", "GRC") && !warned_overfit) {
-        warning("Forecast combination is underdetermined, which leads to 
+    test <- is.function(optim_method)
+    if(!test) {
+        test <- length(tt$train) < ncol(flow)-2
+        if(test && optim_method %in% c("OLS", "GRC") && !warned_overfit) {
+            warning("Forecast combination is underdetermined, which leads to 
                 extreme overfitting")
-        warned_overfit <- TRUE
+            warned_overfit <- TRUE
+        }
     }
     
     # log transform?
@@ -111,7 +62,7 @@ combine_timeseries <- function(flow,
     
     ###########
     # Combine
-    combs <- hydrostreamer:::combinations(flow[tt$train,], optim_method)
+    combs <- combinations(flow[tt$train,], optim_method, ...)
     ###########
     
     # gather weights
@@ -124,10 +75,10 @@ combine_timeseries <- function(flow,
     # get intercept
     int <- combs$Intercept
 
-    # Create the optimized timeseries and make a tsibble
+    # Create the optimized timeseries and make a tibble
     w <- c(int, weights)
     modelind <- which(colnames(flow) %in% models, arr.ind=TRUE)
-    p <- t(cbind(0,as.matrix(flow[,modelind])))
+    p <- t(cbind(1,as.matrix(flow[,modelind])))
     Opt <- as.vector(w %*% p)
     
     if(log) {
@@ -144,12 +95,11 @@ combine_timeseries <- function(flow,
     Opt <- units::as_units(Opt, flowunit)
     observ <- dplyr::pull(flow, observations)
     
-    pred <- suppressMessages(data.frame(Date = flow$Date, 
-                                        Observations = observ,
-                                        Optimized = Opt,
-                                        Residuals = Opt - observ,
-                                        Train_or_test = whichtt) %>%
-                                 tsibble::as_tsibble())
+    pred <- tibble::tibble(Date = flow$Date, 
+                           Observations = observ,
+                           Optimized = Opt,
+                           Residuals = Opt - observ,
+                           Train_or_test = whichtt)
     
     # Goodness of fit
     trains <- whichtt == "Train" 
@@ -184,11 +134,6 @@ combine_timeseries <- function(flow,
                    Goodness_of_fit = gofs,
                    warned_overfit = warned_overfit,
                    warned_train = warned_train)
-    
-    
-    if (bias_correction) {
-        output <- bias_correct(output)
-    } 
     
     return(output)
 }
@@ -254,8 +199,7 @@ combine_monthly <- function(flow,
     opt_ts <- lapply(tempcombs, function(x) x$Optimized_ts)
     opt_ts <- do.call("bind_rows", opt_ts) %>%
         tibble::as_tibble() %>%
-        dplyr::arrange(Date) %>%
-        tsibble::as_tsibble(index = Date)
+        dplyr::arrange(Date) 
     
     
     # goodness-of-fit
@@ -336,82 +280,8 @@ combine_annual <- function(flow,
     
 }
 
-# # This is function ForecastComb::comb_CLS(), but edited according to 
-# # https://stackoverflow.com/a/28388394. 
-# # Edits marked with ###.
-# forecastcomb_comb_CLS <- function (x) {
-#     
-#     if (class(x) != "foreccomb") 
-#         stop("Data must be class 'foreccomb'. See ?foreccomb to bring data",
-#              " in in a correct format.", call. = FALSE)
-#     observed_vector <- x$Actual_Train
-#     prediction_matrix <- x$Forecasts_Train
-#     modelnames <- x$modelnames
-#     p <- NCOL(prediction_matrix)
-#     Rinv <- solve(safe_chol(t(prediction_matrix) %*% prediction_matrix))
-#     C <- cbind(rep(1, p), diag(p))
-#     b <- c(1, rep(0, p))
-#     d <- t(observed_vector) %*% prediction_matrix
-#     nn2 <- sqrt(norm(d,"2")) ###
-#     qp1 <- solve.QP(Dmat = Rinv*nn2, factorized = TRUE, dvec = d/(nn2^2),  ###
-#                    Amat = C, bvec = b, meq = 1)
-#     weights <- unname(qp1$sol)
-#     fitted <- as.vector(weights %*% t(prediction_matrix))
-#     accuracy_insample <- forecast::accuracy(fitted, observed_vector)
-#     if (is.null(x$Forecasts_Test) & is.null(x$Actual_Test)) {
-#         result <- structure(list(
-#                      Method = "Constrained Least Squares Regression", 
-#                      Models = modelnames, 
-#                      Weights = weights, 
-#                      Fitted = fitted, 
-#                      Accuracy_Train = accuracy_insample, 
-#                      Input_Data = list(Actual_Train = x$Actual_Train,
-#                                        Forecasts_Train = x$Forecasts_Train)), 
-#                 class = c("foreccomb_res"))
-#         rownames(result$Accuracy_Train) <- "Training Set"
-#     }
-#     if (is.null(x$Forecasts_Test) == FALSE) {
-#         newpred_matrix <- x$Forecasts_Test
-#         pred <- as.vector(weights %*% t(newpred_matrix))
-#         if (is.null(x$Actual_Test) == TRUE) {
-#             result <- structure(list(
-#                      Method = "Constrained Least Squares Regression", 
-#                      Models = modelnames, 
-#                      Weights = weights, 
-#                      Fitted = fitted, 
-#                      Accuracy_Train = accuracy_insample, 
-#                      Forecasts_Test = pred, 
-#                      Input_Data = list(Actual_Train = x$Actual_Train, 
-#                                        Forecasts_Train = x$Forecasts_Train, 
-#                                        Forecasts_Test = x$Forecasts_Test)), 
-#                 class = c("foreccomb_res"))
-#             rownames(result$Accuracy_Train) <- "Training Set"
-#         }
-#         else {
-#             newobs_vector <- x$Actual_Test
-#             accuracy_outsample <- forecast::accuracy(pred, newobs_vector)
-#             result <- structure(list(
-#                      Method = "Constrained Least Squares Regression", 
-#                      Models = modelnames, 
-#                      Weights = weights, 
-#                      Fitted = fitted, 
-#                      Accuracy_Train = accuracy_insample, 
-#                      Forecasts_Test = pred, 
-#                      Accuracy_Test = accuracy_outsample, 
-#                      Input_Data = list(Actual_Train = x$Actual_Train,
-#                                        Forecasts_Train = x$Forecasts_Train, 
-#                                        Actual_Test = x$Actual_Test, 
-#                                        Forecasts_Test = x$Forecasts_Test)),
-#                 class = c("foreccomb_res"))
-#             rownames(result$Accuracy_Train) <- "Training Set"
-#             rownames(result$Accuracy_Test) <- "Test Set"
-#         }
-#     }
-#     return(result)
-# }
 
-
-# from package 'lme4'; needed in forecastcomb_comb_CLS()
+# from package 'lme4'
 safe_chol <- function(m) {
     if (all(m==0)) return(m)
     if (nrow(m)==1) return(sqrt(m))
@@ -435,89 +305,52 @@ dmult <- function(m,s) {
     m
 }
 
-# Implements Granger-Ramanathan type B 
-# (Arsenault et al, 2016, 10.1016/j.jhydrol.2015.09.001)
-# Function is a ForecastComb::comb_OLS with small modification. 
-# comb_GR <- function (x, type) {
-#     if (class(x) != "foreccomb") 
-#         stop("Data must be class 'foreccomb'. See ?foreccomb, to bring data",
-#              " in correct format.", call. = FALSE)
-#     observed_vector <- x$Actual_Train
-#     prediction_matrix <- x$Forecasts_Train
-#     modelnames <- x$modelnames
-#     lin_model <- lm(observed_vector ~ 0 + prediction_matrix)
-#     if (type == "A") weights <- lin_model$coef
-#     if (type == "B") weights <- unname(lin_model$coef/sum(lin_model$coef))
-#     fitted <- as.vector(weights %*% t(prediction_matrix))
-#     intercept <- NA
-#     accuracy_insample <- forecast::accuracy(fitted, observed_vector)
-#     if (is.null(x$Forecasts_Test) & is.null(x$Actual_Test)) {
-#         result <- ForecastComb::foreccomb_res(method = 
-#                                     paste0("Granger-Ramanathan type ",type),
-#                         modelnames = modelnames, 
-#                         weights = weights, 
-#                         #intercept = intercept, 
-#                         fitted = fitted, 
-#                         accuracy_insample = accuracy_insample, 
-#                         input_data = list(Actual_Train = x$Actual_Train, 
-#                                           Forecasts_Train = x$Forecasts_Train))#, 
-#         #predict = predict.comb_OLS)
-#     }
-#     if (is.null(x$Forecasts_Test) == FALSE) {
-#         newpred_matrix <- x$Forecasts_Test
-#         pred <- as.vector(lin_model$coef %*% t(newpred_matrix))
-#         if (is.null(x$Actual_Test) == TRUE) {
-#             result <- ForecastComb::foreccomb_res(method = 
-#                                         paste0("Granger-Ramanathan type ",
-#                                                type), 
-#                         modelnames = modelnames, 
-#                         weights = weights, 
-#                         #intercept = intercept, 
-#                         fitted = fitted, 
-#                         accuracy_insample = accuracy_insample, 
-#                         pred = pred, 
-#                         input_data = list(Actual_Train = x$Actual_Train, 
-#                                           Forecasts_Train = x$Forecasts_Train, 
-#                                           Forecasts_Test = x$Forecasts_Test))#, 
-#             #predict = predict.comb_OLS)
-#         }
-#         else {
-#             newobs_vector <- x$Actual_Test
-#             accuracy_outsample <- forecast::accuracy(pred, newobs_vector)
-#             result <- ForecastComb::foreccomb_res(method = 
-#                                         paste0("Granger-Ramanathan type ",
-#                                                type), 
-#                         modelnames = modelnames, 
-#                         weights = weights, 
-#                         #intercept = intercept, 
-#                         fitted = fitted, 
-#                         accuracy_insample = accuracy_insample, 
-#                         pred = pred, 
-#                         accuracy_outsample = accuracy_outsample, 
-#                         input_data = list(Actual_Train = x$Actual_Train, 
-#                                           Forecasts_Train = x$Forecasts_Train, 
-#                                           Actual_Test = x$Actual_Test, 
-#                                           Forecasts_Test = x$Forecasts_Test))#, 
-#                         #predict = predict.comb_OLS)
-#         }
-#     }
-#     return(result)
-# }
-
-
 #### Draws heavily from ForecastComb package
-combinations <- function(flowmat, type="CLS") {
+combinations <- function(flowmat, type="CLS", ...) {
     
     # remove collinear timeseries
-    flowmat <- hydrostreamer:::remove_collinear(flowmat)
+    flowmat <- remove_collinear(flowmat)
     
     ncols <- ncol(flowmat)
-    obs <- flowmat$observations %>% unname
+    obs <- flowmat$observations %>% unname %>% units::drop_units()
     predmat <- flowmat[,-c(1, ncols)] %>% as.matrix
     models <- colnames(predmat)
     intercept <- 0
     
-    if(type == "CLS") {
+    test <- is.function(type)
+    if(test) {
+        method <- "Custom function optimisation"
+        args <- list(...)
+        
+        test <- is.null(args$control)
+        if(test) args$control <- list()
+        
+        test <- is.null(args$hessian)
+        if(test) args$hessian <- FALSE
+        
+        test <- is.null(args$method)
+        if(test) args$method <- "Nelder-Mead"
+        
+        test <- is.null(args$lower)
+        if(test) lower <- -Inf
+        
+        test <- is.null(args$upper)
+        if(test) upper <- Inf
+        
+        tst <- optim(par = rep(1/ncol(predmat), ncol(predmat)),
+                     fn = type,
+                     gr = args$gr,
+                     obs, predmat,
+                     method = args$method,
+                     lower = args$lower,
+                     upper = args$upper,
+                     control = args$control,
+                     hessian = args$hessian)
+            
+        weights <- tst$par
+        
+        
+    } else if(type == "CLS") {
         # This is borrows from ForecastComb::comb_CLS(), but edited  
         # according to https://stackoverflow.com/a/28388394. 
         method <- c("Constrained Least Squares; 0 < weights < 1; ",

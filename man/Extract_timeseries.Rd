@@ -23,7 +23,7 @@ control(HS, riverID = NULL)
 \code{NULL} (default), extracts timeseries from all river segments.}
 }
 \value{
-Returns a list of \code{tsibble}s with column Date and columns 
+Returns a list of \code{tibble}s with column Date and columns 
   named by riverID. Each element of the list is named by andcorrespond to a 
   timeseries in the timeseries column column specified by function name.
 }

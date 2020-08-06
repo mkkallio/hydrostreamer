@@ -1,6 +1,8 @@
 # hydrostreamer 0.5.0
 
-Another jump in the version number due to added functionality, and some breaking changes.
+Another jump in the version number due to added functionality. This is a sort
+of restart in spirit for the package. Expect code written for the earlier
+versions not working with this one. Some highlights below:
 
 ## New features
 

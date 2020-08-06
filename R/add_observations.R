@@ -1,14 +1,14 @@
 #' Adds observation timeseries to a 'HS' object
 #' 
 #' Adds observation timeseries to a HS object. This is needed in order to 
-#' evaluate performance of downscaled timeseries, or to perform data assimilation
-#' combining several downscaled times.
+#' evaluate performance of discharge estimates, or to perform data assimilation
+#' combining several estimates.
 #' 
 #' @param HS An \code{HS} object.
 #' @param timeseries a data.frame with observations. Must contain column 
 #'   \code{Date}.
 #' @param unit The unit of values in \code{timeseries}.
-#' @param riverIDs A vector of riverID of the river segments of the columns
+#' @param riverIDs A vector of riverID of the river segments in the column-order
 #'   in timeseries.
 #' @param station_names a vector of names for the stations in \code{timeseries}.
 #'   If not provided, station names are obtained from column names of
@@ -24,6 +24,8 @@ add_observations <- function(HS,
                              unit,
                              riverIDs, 
                              station_names = NULL) {
+    
+    Date <- NULL
     
     if (!any(c("Date", "Month") %in% colnames(timeseries))) {
         stop("Observations do not include column 'Date', or 'Month'.")

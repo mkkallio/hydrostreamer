@@ -86,8 +86,10 @@ raster_to_HS <- function(rasters,
         if(!test2) stop("length(names) != length(rasters)")
     }
     
-    total <- length(rasters)
-    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3) 
+    if (verbose) {
+        message(paste0("Converting ", nrasters, " raster(s) to HS.."))
+        pb <- txtProgressBar(min = 0, max = nrasters, style = 3) 
+    } 
     
     
     #---------------------------------------------------------------------------
@@ -139,6 +141,10 @@ raster_to_HS <- function(rasters,
             grid <- methods::as(grid, "sf")
         }
         
+        # extract only polygons - points or lines are irrelevant for areal
+        # interpolation
+        grid <- sf::st_collection_extract(grid, "POLYGON")
+        
         # create the output
         grid$zoneID <- 1:NROW(grid)
         
@@ -164,7 +170,7 @@ raster_to_HS <- function(rasters,
             }
             dates <- seq(dates, enddate, by = timestep)
         }  else {
-            test <- length(dates) == nlayers(raster)
+            test <- length(dates) == raster::nlayers(raster)
             if(test) stop(paste0("length(dates) != nlayers(raster) for raster",
                                  " number ",rast))
         }

@@ -80,7 +80,7 @@ river_outlets <- function(river, drain.dir) {
         if(!is.na(cell)) {
             bearing <- b[point]
             
-            prep <- hydrostreamer:::new_row_col(bearing, prc)
+            prep <- new_row_col(bearing, prc)
             
             cell <- raster::cellFromRowCol(drain.dir, prep$row, prep$col)
             coords <- raster::xyFromCell(drain.dir, cell)

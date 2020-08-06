@@ -2,9 +2,13 @@
 % Please edit documentation in R/interpolate_runoff.R
 \name{interpolate_runoff}
 \alias{interpolate_runoff}
-\title{Estimate runoff in target features
+\title{Estimate runoff in river reaches 
   
-Estimates runoff in either}
+Estimates runoff in individual segments of a river network represented as 
+either \code{sf LINESTRING} or \code{sf POLYGON} objects. Allows use of 
+simple Area Weighted Interpolation, Area-to-line interpolation, Dasymetric
+Mapping, Pycnophylactic Interpolation, or combined Pycnophylactic-Dasymetric
+Interpolation.}
 \usage{
 interpolate_runoff(
   HS,
@@ -12,7 +16,7 @@ interpolate_runoff(
   basins = NULL,
   dasymetric = NULL,
   pycnophylactic = NULL,
-  n = 20,
+  n = 10,
   intensive = TRUE,
   weights = NULL,
   aoi = NULL,
@@ -21,22 +25,25 @@ interpolate_runoff(
 )
 }
 \arguments{
-\item{HS}{A 'HS' object, obtained with \code{\link{raster_to_HS}}.}
+\item{HS}{A 'HS' object, obtained with \code{\link{raster_to_HS}} or 
+\code{\link{create_HS}}.}
 
-\item{river}{An 'sf' linestring feature representing a river network.}
+\item{river}{An 'sf' linestring or polygon feature representing a river 
+network}
 
-\item{basins}{An 'sf' polygon object.}
+\item{basins}{An 'sf' polygon object with corresponding catchments, if river
+input is a linestring. Optional.}
 
 \item{dasymetric}{Column name in \code{river} or in \code{basins} to be used 
 as the ancillary information in dasymetric mapping. If \code{NULL} 
-(default), no dasymetric mapping is performed. See details.}
+(default), no dasymetric mapping is performed.}
 
 \item{pycnophylactic}{Column in \code{HS} to be used as basis in 
 pycnophylactic interpolation. If \code{NULL}, or if \code{is.null(basins)},
-not performed. See details.}
+not performed.}
 
 \item{n}{Number of iterations when using pycnophylactic interpolation. 
-Default \code{25}.}
+Default \code{10}.}
 
 \item{intensive}{Whether the pycnophylactic variable is intensive (density,
 like runoff in mm), or not (in which case it is extensive, or counts like
@@ -56,20 +63,34 @@ of \code{basins}). Defaults to \code{NULL}.}
 \item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-Returns a list object with class 'HSweights', containing the following 
+Returns a \code{HS} object, containing the following 
   elements:
   \itemize{
-    \item \code{river}. The supplied river network with routing information. 
-      See \code{\link{river_network}} for details.
-    \item \code{weights}. River network lines or catchment polygon network 
-      which was used as the basis of weighting. See 
-      \code{\link{compute_area_weights}} or \code{\link{compute_river_weights}} 
-      for details.
-    \item \code{HS}. The input HS object containing runoff information. 
+    \item \code{riverID}. Unique identifier 
+    \item \code{runoff_ts}. Interpolated runoff timeseries at each river 
+      reach.
 }
 }
 \description{
-Estimate runoff in target features
-  
-Estimates runoff in either
+The river network can be any of three options: 1) a river network consisting
+of LINESTRINGs, in which case Area-to-Line interpolation is used. 2) A 
+network of POLYGONs, in which case Areal Interpolation (AWI, DM, or PP) 
+is used. 3) both LINESTRING river network, and a POLYGON network describing 
+the catchments of each individual segment of the LINESTRING network. In this 
+case, Areal Interpolation is used. The third option is useful for routing 
+purposes. If only catchments are given, only instantaneous routing can be 
+used, because river line length cannot be derived from polygon areas.
+}
+\details{
+The selection of areal interpolation method is determined by the input to the
+function. If \code{dasymetric} and \code{pycnophylactic} are NULL (default),
+simple Area Weighted Interpolation or Area-to-Line Interpolation is used. If
+\code{dasymetric} variable is given, Dasymetric Mapping is used instead. 
+If \code{pycnophylactic} is given, the function performs Pycnophylactic 
+Interpolation. And if both \code{dasymetric} and \code{pycnophylactic} are 
+given, the function first performs Pycnophylactic Interpolation, which is 
+further refined by the given dasymetric variable. Note that pycnophylactic
+interpolation is only available for polygon networks. Catchments for 
+linestring networks can be estimated using \code{\link{river_voronoi}},
+allowing pycnophylactic interpolation for line networks.
 }

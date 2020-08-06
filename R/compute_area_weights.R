@@ -13,6 +13,8 @@
 #'   specific catchments.
 #' @param riverID Column in \code{basins} containing unique IDs.
 #' @param zoneID Column in  \code{HS} with unique IDs.
+#' @param pycno Name of Pycnophylactic variable in \code{HS} input
+#' @param dasy Name of Dasymetric variable in \code{basins} input
 #' @inheritParams compute_HSweights
 #'
 #' @return Returns an 'sf' polygon feature (a union of basins, and HS) 
@@ -30,7 +32,6 @@
 #'       contained in.
 #' }
 #' 
-#' @export
 compute_area_weights <- function(basins, 
                                  HS,
                                  pycno = NULL,
@@ -46,6 +47,10 @@ compute_area_weights <- function(basins,
     ID <- NULL
     target_area <- NULL
     source_area <- NULL
+    denom <- NULL
+    variable <- NULL
+    bas_dasy <- NULL
+    . <- NULL
     
     # TEST INPUTS
     #############
@@ -89,19 +94,25 @@ compute_area_weights <- function(basins,
     if (hasName(basins,"weights")) {
         warning("Replacing existing 'weights' column")
     }
+
     
     # PROCESS
     #########
-    
+
+    HS$area <- sf::st_area(HS)
+        
     basins <- suppressWarnings(
         suppressMessages(
             HS %>% 
                 dplyr::select(zoneID, source_area = area) %>%
-                sf::st_intersection(basins, .)))
+                sf::st_intersection(basins, .) %>% 
+                sf::st_collection_extract("POLYGON") %>% 
+                dplyr::arrange(riverID)))
     
-    basins <- sf::st_collection_extract(basins, "POLYGON") %>%
-        tibble::add_column(target_area = sf::st_area(.)) %>%
-        dplyr::filter(target_area != units::set_units(0, "m^2"))
+    basins <-  basins %>%
+        dplyr::mutate(target_area = sf::st_area(.)) %>%
+        dplyr::filter(target_area != units::set_units(0, "m^2")) %>% 
+        dplyr::mutate(target_area = units::set_units(target_area, "km^2"))
     
     if(user_weights) {
         w <- dplyr::pull(basins, weights)
@@ -124,7 +135,12 @@ compute_area_weights <- function(basins,
             as.numeric()
         boundary[boundary == 0] <- NA
         
-        gridareas <- HS$area_m2
+        test <- hasName(HS, "area")
+        if(test) {
+            gridareas <- HS$area
+        } else {
+            gridareas <- units::set_units(sf::st_area(HS), "km2")
+        }
         
         if(dasymetric) {
             dasymetric_var <- dplyr::pull(basins, dasy)

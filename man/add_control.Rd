@@ -2,25 +2,29 @@
 % Please edit documentation in R/add_control.R
 \name{add_control}
 \alias{add_control}
-\title{Adds flow controls to a 'HS' object}
+\title{Adds flow controls to an 'HS' object}
 \usage{
-add_control(HS, timeseries, unit, riverIDs, control, verbose = FALSE)
+add_control(HS, timeseries, unit, riverIDs, control, type)
 }
 \arguments{
 \item{HS}{An \code{HS} object.}
 
 \item{timeseries}{a data frame with observations.}
 
-\item{unit}{The unit of values in \code{timeseries}.}
+\item{unit}{The unit of values in \code{timeseries}. Should be convertible to
+cubic meters per second.}
 
 \item{riverIDs}{A vector of riverID of the river segments of the columns
 in obs.}
 
 \item{control}{Type of control, see details.}
+
+\item{type}{Whether the control should apply to \code{runoff} input, or to
+\code{discharge} output.}
 }
 \value{
 Returns the \code{HS} object with added list column 
-  \code{observation_ts}.
+  \code{control_ts} and \code{control_type}.
 }
 \description{
 Adds flow control timeseries to a \code{HS} object. Control 

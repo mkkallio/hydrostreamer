@@ -18,12 +18,13 @@
 #'   enhanced with a runoff timeseries (list column \code{runoff_ts}. Runoff is 
 #'   given in \eqn{m^3/s}.
 #' 
-#' @export
 downscale_runoff <- function(HSweights,
                              pycno = FALSE,
                              n = 10,
                              dasy = NULL,
                              verbose = FALSE) {
+    
+    riverID <- NULL
     
     if(!inherits(HSweights, "HSweights")) {
         stop("Input should be of class HSweights. See ?compute_HSweights()")
@@ -37,18 +38,18 @@ downscale_runoff <- function(HSweights,
                 stop(paste0("Column name ", dasy, 
                             " not found in HSweights$weights"))
             }
-            dasy <- pull(HSweights$weights, dasy)
+            dasy <- dplyr::pull(HSweights$weights, dasy)
         }
         QTS <- downscale_pycno(HSweights,
                                n, 
                                dasy = dasy,
                                verbose = verbose)
     } else {
-        QTS <- hydrostreamer:::downscale_with_weights(HSweights, 
+        QTS <- downscale_with_weights(HSweights, 
                                       verbose = verbose)
     }
     
-    listc <- hydrostreamer:::spread_listc(QTS)
+    listc <- spread_listc(QTS)
     listc <- listc[order(as.numeric(names(listc)))]
     
     output <- HSweights$target %>% 
@@ -90,10 +91,11 @@ downscale_with_weights <- function(HSweights,
     wgIDs <- dplyr::pull(weights, zoneID) %>%
         match(gIDs)
     weightvec <- dplyr::pull(weights, weights)
-    gridareas <- dplyr::pull(grid, area) %>% units::set_units("m2")
+    
+    gridareas <- sf::st_area(grid) %>% units::set_units("m2")
         
     
-    runoff_ts <- hydrostreamer:::collect_listc(grid$runoff_ts)
+    runoff_ts <- collect_listc(grid$runoff_ts)
     ngrids <- length(runoff_ts)
     unidates <- lapply(grid$runoff_ts, function(x) x$Date) %>%
         unlist %>%
@@ -173,6 +175,12 @@ downscale_with_weights <- function(HSweights,
 ##### PYCNOPHYLACTIC INTERPOLATION FOR POLYGON NETWORKS
 downscale_pycno <- function(HS, n, dasy = NULL, verbose = FALSE) {
     
+    outID <- NULL
+    orig_id <- NULL
+    riverID <- NULL
+    geom <- NULL
+    convert <- NULL
+    
     if(verbose) message("Preprocessing..")
     
     # if (unit == "mm/s") convert <- TRUE
@@ -235,7 +243,7 @@ downscale_pycno <- function(HS, n, dasy = NULL, verbose = FALSE) {
     names <- colnames(HS$source$runoff_ts[[1]])
     nriver <- nrow(HS$target)
     rivers <- which(!is.na(pycno$riverID))
-    gridareas <- HS$source$area
+    gridareas <- sf::st_area(HS$source)
     unidates <- lapply(HS$source$runoff_ts, function(x) x$Date) %>%
         unlist %>%
         unique %>%

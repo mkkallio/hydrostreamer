@@ -1,4 +1,4 @@
-#' Create a segment-specific Voronoi diagram from an sf LINESTRING object.
+#' Create a segment-specific Voronoi Diagram from an sf LINESTRING object.
 #'
 #' The function creates Voronoi diagram for each segment in a directed 
 #' connected river network (\code{sf LINESTRING}), where the Voronoi 
@@ -33,10 +33,6 @@
 river_voronoi<- function(river, aoi, riverID = "riverID", verbose=FALSE) {
     
     ID <- NULL
-    
-    lwgeom <- requireNamespace("lwgeom", quietly = TRUE)
-    if(!lwgeom) stop("river_voronoi() requires package lwgeom. Please install
-                     the package and try again.")
   
     if(is.null(river)) stop("river network is required")
     if(is.null(aoi)) stop("area of interest is required")
@@ -71,7 +67,7 @@ river_voronoi<- function(river, aoi, riverID = "riverID", verbose=FALSE) {
              sf::st_cast("POLYGON") %>%
              sf::st_sf() %>%
              sf::st_join(vorPoints) %>%
-             lwgeom::st_make_valid() %>% 
+             sf::st_make_valid() %>% 
              dplyr::group_by_(riverID) %>%
              dplyr::summarise() %>%
              sf::st_intersection(sf::st_geometry(aoi))

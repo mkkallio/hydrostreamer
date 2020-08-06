@@ -4,11 +4,13 @@
 \name{basins}
 \alias{basins}
 \title{Catchment areas for 41 river segments}
-\format{An 'sf' POLYGON object with no attributes.
+\format{
+An 'sf' POLYGON object with no attributes.
 \describe{
   \item{SEGMENT_ID}{unique ID}
   \item{geometry}{'sfc' geometry column}
-}}
+}
+}
 \usage{
 basins
 }

@@ -1,4 +1,4 @@
-#' Adds flow controls to a 'HS' object
+#' Adds flow controls to an 'HS' object
 #' 
 #' Adds flow control timeseries to a \code{HS} object. Control 
 #' conditions should cover the entire timeseries in \code{HS}.
@@ -14,16 +14,24 @@
 #' 
 #' @param HS An \code{HS} object.
 #' @param timeseries a data frame with observations.
-#' @param unit The unit of values in \code{timeseries}.
+#' @param unit The unit of values in \code{timeseries}. Should be convertible to
+#'   cubic meters per second.
 #' @param riverIDs A vector of riverID of the river segments of the columns
 #'  in obs.
 #' @param control Type of control, see details.
+#' @param type Whether the control should apply to \code{runoff} input, or to
+#'   \code{discharge} output.
+#'   
 #'  
 #' @return Returns the \code{HS} object with added list column 
-#'   \code{observation_ts}.
+#'   \code{control_ts} and \code{control_type}.
 #' 
 #' @export
-add_control <- function(HS, timeseries, unit, riverIDs, control, verbose=FALSE) {
+add_control <- function(HS, timeseries, unit, riverIDs, 
+                        control, type) {
+    
+    Date <- NULL
+    
     if (!"Date" %in% colnames(timeseries)) {
         stop("timeseries do not include column 'Date'")
     } 
@@ -44,7 +52,7 @@ add_control <- function(HS, timeseries, unit, riverIDs, control, verbose=FALSE) 
     }
     
     
-    listc <- hydrostreamer:::spread_listc( list( timeseries = timeseries))
+    listc <- spread_listc( list( timeseries = timeseries))
     
     if (hasName(HS, "control_ts")) {
         control_ts <- HS$control_ts
@@ -55,22 +63,22 @@ add_control <- function(HS, timeseries, unit, riverIDs, control, verbose=FALSE) 
     if (hasName(HS, "control_type")) {
         controltype <- HS$control_type
     } else {
-        controltype <- rep(NA, nrow(HS))
+        controltype <- vector("list", nrow(HS))
     }
     
     
     
     for(i in seq_along(riverIDs)) {
         statpos <- which(HS$riverID == riverIDs[[i]])
-        test <- (is.null(length(statpos)) || length(statpos) == 0) & verbose
+        test <- (is.null(length(statpos)) || length(statpos) == 0)
         if(test) {
-            message(paste0("riverID ", riverIDs[[i]], " does not exist in 
+            warning(paste0("riverID ", riverIDs[[i]], " does not exist in 
                            HS - skipping station at ",riverIDs[i]))
                            
             next
         }
         control_ts[[statpos]] <- listc[[i]]
-        controltype[[statpos]] <- control
+        controltype[[statpos]] <- c(operation = control, target = type)
     }
     
     HS$control_ts <- control_ts

@@ -38,7 +38,6 @@
 #'     \item \emph{weights}. Weights computed for each river segment.
 #' }
 #'   
-#' @export
 compute_river_weights <- function(river, 
                                   grid, 
                                   seg_weights = NULL, 
@@ -63,7 +62,8 @@ compute_river_weights <- function(river,
     } else {
         dasymetric <- TRUE
         test <- hasName(river, seg_weights)
-        if(!test) stop("No column ", seg_weights," in basins input")
+        if(!test) stop("No column ", seg_weights," in river input")
+        
         test <- sum(is.null(river[,seg_weights]))
         test2 <- sum(is.na(river[,seg_weights]))
         if(test+test2 > 0) stop("Missing values in column ", seg_weights)

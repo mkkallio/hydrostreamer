@@ -7,10 +7,9 @@
 accumulate_runoff_instant(HS, verbose = FALSE)
 }
 \arguments{
-\item{HS}{A 'HS' object obtained by \code{\link{downscale_runoff}}}
+\item{HS}{A \code{HS} object.}
 
-\item{verbose}{Whether or not to print progress information. Defaults to 
-\code{FALSE}.}
+\item{verbose}{Whether to print progress indication or not.}
 }
 \value{
 Returns the input object \code{HS}) with an added list column

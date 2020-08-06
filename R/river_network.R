@@ -3,7 +3,6 @@
 #' The function adds connectivity information to the input \emph{river} object. 
 #' The function assumes that the input river is a "clean" river network: 
 #' connected segments share a node at the start or end of the segment. 
-#' Digitizing direction is required to be the direction of flow.
 #'
 #' @inheritParams compute_HSweights
 #' @param next_down Column with the ID(s) of the next segment rivers flows to

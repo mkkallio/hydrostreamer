@@ -2,7 +2,7 @@
 % Please edit documentation in R/ensemble_summary.R
 \name{ensemble_summary}
 \alias{ensemble_summary}
-\title{Computes summary timeseries from HS* objects}
+\title{Computes summary timeseries in HS object}
 \usage{
 ensemble_summary(
   HS,

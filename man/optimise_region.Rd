@@ -20,16 +20,16 @@ optimise_region(
 )
 }
 \arguments{
-\item{HS}{An \code{HS} object containing runoff
-estimates.}
+\item{HS}{An \code{HS} object with observation_ts and runoff_ts}
 
 \item{routing}{Routing algorithm to use. See 
 \code{\link{accumulate_runoff}} for options.}
 
 \item{train}{The share of timeseries used for training period.}
 
-\item{optim_method}{Method used to optimise. Default uses constrained
-linear regression. See details.}
+\item{optim_method}{A character object giving the optimisation method to be 
+used, or a function to be passed to  \code{\link[stats]{optim}}. 
+See details.}
 
 \item{combination}{Whether to do the forecast combination for the entire
 timeseries, or each month of the year individually, or for full calendar 
@@ -48,20 +48,15 @@ stations. See details.}
 \item{drop}{Drop existing timeseries (columns) in \code{runoff_ts}, 
 \code{discharge_ts}, or not.}
 
-\item{...}{Additional parameters passed to the \code{routing} algorithm.}
+\item{...}{Additional parameters passed to the \code{routing} algorithm 
+and/or to optimisation..}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-Returns an \code{HSflow} object with one discharge layer (the
-  optimized streamflow), and two additional columns in 
-  \code{HSflow$river}:
-  \itemize{
-    \item OPTIMIZED_STATION: Name of the station from HSobs which'
-      optimized weights were used at the river segment
-    \item OPTIMIZED_riverID: ID of the segment the weighted station
-      is located in.
-  }
+Returns an \code{HS} object with routed and optimised 
+\code{discharge_ts}, and additional optimisation information in 
+\code{Optimisation_info} and \code{Optimised_at}.
 }
 \description{
 Algorithm routes runoff using user specified routing algorithm, for
@@ -71,6 +66,10 @@ upstream from the optimisation point which do not contain observation
 information.
 }
 \details{
+See \code{\link{optimise_point}} for help with optimisation options. Note:
+unlike \code{optimise_point}, runoff does not need to be routed in advance,
+but it is done by the function automatically.
+
 Currently only one regionalization type is implemented: \code{
 upstream} uses the weights obtained for the nearest downstream
 station for the river segment.
@@ -80,6 +79,4 @@ which stands for "ensemble mean". For those river segments with no
 weights assigned from a station (segments with no downstream observation 
 station), an ensemble mean (each discharge prediction is given equal weight) 
 is computed.
-
-The function currnetly only supports instantaneous routing.
 }
