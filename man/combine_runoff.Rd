@@ -2,10 +2,16 @@
 % Please edit documentation in R/combine_runoff.R
 \name{combine_runoff}
 \alias{combine_runoff}
-\title{Combines runoff in HS* objects}
+\title{Combines runoff and/or discharge in HS objects}
 \usage{
-combine_runoff(HS, weights, intercept = 0, bias = NULL, drop = FALSE,
-  monthly = FALSE)
+combine_runoff(
+  HS,
+  weights,
+  intercept = 0,
+  bias = 0,
+  drop = FALSE,
+  monthly = FALSE
+)
 }
 \arguments{
 \item{HS}{An \code{HS} object}
@@ -16,7 +22,7 @@ runoff timeseries in \code{HS}, or a list of weight vectors.}
 \item{intercept}{If weights are associated with an intercept, include it here.
 Default intercept = 0.}
 
-\item{bias}{Bias in percentage. Defaults to \code{NULL}.}
+\item{bias}{Bias in percentage. Defaults to 0.}
 
 \item{drop}{Whether to remove source timeseries and replace them with 
 combinations, or keep source timeseries and add combination as new column.}
@@ -29,14 +35,14 @@ Returns the input \code{HS} object where runoff timeseries is
   replaced by the the combined timeseries'.
 }
 \description{
-The function provides the ability to combine runoff from \code{HSgrid}, 
-or \code{HS} using user provided weights. Function can process several input 
-weight sets at once.
+The function provides the ability to do a weighted combination of  runoff 
+and/or discharge timeseries in \code{HS} object using user provided weights.
+Function can process several input weight sets.
 }
 \details{
 If a named list of weights is provided to the function, their names will be 
-preserved in the output. Otherwise the combinations are named in a running
-order.
+preserved in the combinations. Otherwise the combinations are named using a 
+running number.
 
 If \code{intercept} is provided, it is added to the combined timeseries.
 If \code{bias} is provided, the combined timeseries is adjusted by
@@ -47,18 +53,18 @@ in the input, the output includes only those dates which are present in
 every input timeseries.
 
 The combination is only applied to columns \code{runoff_ts}, and 
-\code{discharge_ts}, if they exist. Columns \code{observation_ts} and 
+\code{discharge_ts}. Columns \code{observation_ts} and 
 \code{control_ts} are left untouched if present.
 }
 \examples{
 \dontrun{
   weights <- c(0.2,0.2,0.3,0.3,0)
-  combined <- combine_runoff(HSgrid, weights)
+  combined <- combine_runoff(HS, weights)
   
   listweights <- list(weights1 = c(0.2,0.2,0.3,0.3,0),
-                  weights2 = c(0.1,0.2,0.3,0.2,0.2),
-                  thirdw = c(0,0,0,0.5,0.5))
- combined2 <- combine_runoff(HSgrid, listweights)
+                      weights2 = c(0.1,0.2,0.3,0.2,0.2),
+                      weights3 = c(0,0,0,0.5,0.5))
+ combined2 <- combine_runoff(HS, listweights)
 }
 
 

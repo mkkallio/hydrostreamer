@@ -4,20 +4,26 @@
 \alias{compute_river_weights}
 \title{Compute weights for river segments within runoff area features.}
 \usage{
-compute_river_weights(river, grid, seg_weights = "length",
-  riverID = "riverID", split = TRUE)
+compute_river_weights(
+  river,
+  grid,
+  seg_weights = NULL,
+  riverID = "riverID",
+  split = TRUE
+)
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{grid}{A \code{HSgrid} object or an \code{sf POLYGON} object used for
+\item{grid}{A \code{HS} object or an \code{sf POLYGON} object used for
 areal interpolation.}
 
 \item{seg_weights}{A character vector specifying type of weights, or a 
 numerical vector. See Details. Defaults to "length".}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 
 \item{split}{Whether or not to use \code{\link{split_river_with_grid}} 
 before computing weights. Default is TRUE (assuming the river has not
@@ -28,15 +34,15 @@ Returns an 'sf' linestring object with attributes:
   \itemize{
     \item \emph{ID}. Unique ID of the feature.
     \item \emph{riverID}. ID of the river each segment is associated to.
-    \item \emph{gridID}. ID of the runoff unit the river segment is contained in.
+    \item \emph{zoneID}. ID of the runoff unit the river segment is contained in.
     \item \emph{weights}. Weights computed for each river segment.
 }
 }
 \description{
 Computes weights for each individual river segments falling in the 
-areal units of the runoff \emph{HSgrid}. Weight is computed from a 
+areal units of the runoff \emph{HS}. Weight is computed from a 
 numerical property of segments by \emph{x/sum(x)} where x are the 
-river segments contained in a areal unit of runoff (\emph{HSgrid}). 
+river segments contained in a areal unit of runoff (\emph{HS}). 
 This function is called by \code{\link{compute_HSweights}}.
 }
 \details{

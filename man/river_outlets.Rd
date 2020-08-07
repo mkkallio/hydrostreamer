@@ -29,7 +29,7 @@ Note that the logic of the function requires that the river network is
 derived from the same raster than the drainage directions input to the 
 function.
 
-Note: Drainage directions must be coded in 1-128:
+Note: Drainage directions must be coded in 1-128 as follows:
 \itemize{
   \item{1}{:East}
   \item{2}{:Southeast}

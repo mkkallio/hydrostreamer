@@ -2,32 +2,61 @@
 % Please edit documentation in R/compute_weights.R
 \name{compute_HSweights}
 \alias{compute_HSweights}
-\title{Computes weights \code{HSweights} from \code{HSgrid} and a river network
+\title{Computes weights \code{HSweights} from \code{HS} and a river network
   
 The function computes weights either based on catchment areas (polygons), 
 or line segments which intersect a polygon with runoff information. Weights 
 are assigned so that the sum of weights for area or line features within a 
 polygon equal to 1.}
 \usage{
-compute_HSweights(HSgrid, river, weights, aoi = NULL, basins = NULL,
-  riverID = "riverID", verbose = FALSE)
+compute_HSweights(
+  HS,
+  river,
+  basins = NULL,
+  dasymetric = NULL,
+  pycnophylactic = NULL,
+  n = 20,
+  intensive = TRUE,
+  weights = NULL,
+  aoi = NULL,
+  riverID = "riverID",
+  verbose = FALSE
+)
 }
 \arguments{
-\item{HSgrid}{A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.}
+\item{HS}{A 'HS' object, obtained with \code{\link{raster_to_HS}}.}
 
 \item{river}{An 'sf' linestring feature representing a river network.}
 
-\item{weights}{A character vector specifying type of weights, or a vector of user-
-specified weights. See Details.}
+\item{basins}{An 'sf' polygon object. If weights are set to "area", providing 
+basins skips the delineation process. ID column must have the name as 
+\code{riverID} See details. Optional. Defaults to \code{NULL}.}
 
-\item{aoi}{An area of interest. 'sf' polygon object. Optional.}
+\item{dasymetric}{Column name in \code{river} or in \code{basins} to be used 
+as the ancillary information in dasymetric mapping. If \code{NULL} 
+(default), no dasymetric mapping is performed. See details.}
 
-\item{basins}{An 'sf' polygon object. If weights are set to "area", providing basins 
-skips the delineation process. ID column must have the name as \code{riverID} See 
-Details. Optional.}
+\item{pycnophylactic}{Column in \code{HS} to be used as basis in 
+pycnophylactic interpolation. If \code{NULL}, or if \code{is.null(basins)},
+not performed. See details.}
+
+\item{n}{Number of iterations when using pycnophylactic interpolation. 
+Default \code{25}.}
+
+\item{intensive}{Whether the pycnophylactic variable is intensive (density,
+like runoff in mm), or not (in which case it is extensive, or counts like
+runoff in volume).}
+
+\item{weights}{Name of a column in \code{river} to be used directly as 
+weights. Defaults to \code{NULL}. See Details.}
+
+\item{aoi}{An area of interest ('sf' polygon object) used to intersect 
+\code{river}. Ignored, if basins provided (in which case, aoi is the union
+of \code{basins}). Defaults to \code{NULL}.}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
@@ -41,8 +70,7 @@ Returns a list object with class 'HSweights', containing the following
       which was used as the basis of weighting. See 
       \code{\link{compute_area_weights}} or \code{\link{compute_river_weights}} 
       for details.
-    \item \code{HSgrid}. HSgrid object containing runoff information. See 
-      \code{\link{raster_to_HSgrid}} for details.
+    \item \code{HS}. The input HS object containing runoff information. 
 }
 }
 \description{
@@ -76,7 +104,4 @@ further data is supplied, the function computes a Voronoi diagram from the
 river network (see \code{\link{river_voronoi}} for details). If the basins 
 are known, they can be supplied which allows skipping the delineation step 
 entirely.
-
-Area of interest is optional. If provided, the river network will be clipped using 
-the supplied AoI.
 }

@@ -4,15 +4,15 @@
 \alias{accumulate_runoff}
 \title{Apply river routing}
 \usage{
-accumulate_runoff(HS, method = c("instant", "simple", "muskingum"), ...,
-  verbose = FALSE)
+accumulate_runoff(HS, method = c("instant", "constant"), ..., verbose = FALSE)
 }
 \arguments{
-\item{HS}{A 'HS' object obtained by \code{\link{downscale_runoff}}}
+\item{HS}{A 'HS' object obtained by \code{\link{interpolate_runoff}}}
 
 \item{method}{Character string specifying the method to be used.}
 
-\item{...}{Arguments passed to the routing algorithm.}
+\item{...}{Arguments passed to the routing algorithm, and to 
+\code{\link{river_network}}, if it has not been run already.}
 
 \item{verbose}{Whether or not to print progress information. Defaults to 
 \code{FALSE}.}
@@ -24,22 +24,18 @@ Returns the input object \code{HS}) with an added list column
 }
 \description{
 Apply river routing using any of the provided methods. The function takes 
-\code{HS} object with runoff timeseries as an input.
+\code{HS} object with runoff timeseries as an input. See details.
 }
 \details{
-There are currently three routing algorithms implemented: 
+There are currently two routing algorithms implemented: 
 \code{'instant'}aneous flow, where all runoff is routed through the entire 
 river network at every timestep. There is no lag in instantaneous routing, 
 which  means it may not be reasonable for large river networks. 
-\code{'simple'} river routing contains a simple lag based on given flow 
-velocity and river segment lengths. \code{'muskingum'} implements a muskingum
-river routing algorithm where k (storage) parameter is computed from given 
-flow velocity and river segment length. Large difference in timesteps of 
-runoff may result in computational instability. See further details from 
+\code{'constant'} velocity river routing routes runoff down the river network
+with a constant, user specified velocity. See further details from 
 the documentation of each method:
 \itemize{
   \item \code{\link{accumulate_runoff_instant}}
-  \item \code{\link{accumulate_runoff_simple}}
-  \item \code{\link{accumulate_runoff_muskingum}}
+  \item \code{\link{accumulate_runoff_constant}}
 }
 }

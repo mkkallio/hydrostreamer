@@ -2,11 +2,17 @@
 % Please edit documentation in R/ensemble_summary.R
 \name{ensemble_summary}
 \alias{ensemble_summary}
-\title{Computes summary timeseries from HS* objects}
+\title{Computes summary timeseries in HS object}
 \usage{
-ensemble_summary(HS, summarise_over_timeseries = FALSE,
-  aggregate_monthly = FALSE, funs = c("min", "mean", "median", "max"),
-  drop = FALSE, ..., verbose = FALSE)
+ensemble_summary(
+  HS,
+  summarise_over_timeseries = FALSE,
+  aggregate_monthly = FALSE,
+  funs = c("min", "mean", "median", "max"),
+  drop = FALSE,
+  ...,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{HS}{\code{HS} object, or a list of data frames with column \code{Date}.}

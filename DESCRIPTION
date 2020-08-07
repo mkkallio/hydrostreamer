@@ -1,9 +1,8 @@
 Package: hydrostreamer
 Type: Package
-Title: A package for downscaling distributed runoff products on to 
+Title: A package for interpolating distributed runoff products on to 
   explicit river segments
-Version: 0.4.0
-Date: 2019-04-08
+Version: 0.5.0
 Author: Marko Kallio
 Authors@R: c(person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 
@@ -20,8 +19,7 @@ Description: hydrostreamer provides functions to downscale distributed runoff
   assignment. Simple river routing algorithms are also provided to estimate 
   discharge at arbitrary segment.
 Depends: 
-    R (>= 3.4.0),
-    sf
+    R (>= 3.5.0)
 Encoding: UTF-8
 Imports:
     dplyr,
@@ -32,22 +30,27 @@ Imports:
     raster,
     rgdal,
     lubridate,
-    ggplot2,
     quadprog,
-    ForecastComb,
-    forecast,
     tidyr,
-    tsibble,
-    stringr
+    stringr,
+    Matrix,
+    stats,
+    units,
+    udunits2,
+    Rcpp (>= 1.0.3),
+    sf (>= 0.8.0)
 Suggests:
     knitr,
     rmarkdown,
     lwgeom,
     readr,
-    RSAGA
+    RSAGA,
+    testthat
+LinkingTo: 
+    Rcpp
 LazyData: true
 License: MIT + file LICENSE
 URL: https://mkkallio.github.io/hydrostreamer/
 BugReports: https://github.com/mkkallio/hydrostreamer/issues
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1

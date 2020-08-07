@@ -6,16 +6,27 @@ compute_segment_weights <- function(segments, variable) {
     return(weights)
 }
 
+compute_dasymetric_weights <- function(segments, arealen, variable) {
+    weights <- rep(0, length(variable))
+    arealenvar <- arealen*variable
+    denom <- sum(arealen[segments]*variable[segments])
+    weights[segments] <- arealenvar[segments]/denom
+    return(weights)
+} 
+
 
 
 #helper function for delineate_basin
 next_cell_up <- function(cell, drain.dir) {
     
-    adj <- raster::adjacent(drain.dir, cell, directions=8, sorted=TRUE, pairs=FALSE)
+    adj <- raster::adjacent(drain.dir, cell, 
+                            directions=8, 
+                            sorted=TRUE, 
+                            pairs=FALSE)
     if (length(adj) < 8) return(NULL)
     dir <- drain.dir[adj]
     
-    out <- 0
+    out <- vector()
     
     if (dir[1] == 2) out <- c(out, adj[1])
     if (dir[2] == 4) out <- c(out, adj[2])
@@ -26,12 +37,13 @@ next_cell_up <- function(cell, drain.dir) {
     if (dir[7] == 64) out <- c(out, adj[7])
     if (dir[8] == 32) out <- c(out, adj[8])
     
-    if(length(out) == 1) return(NULL) else return(out[2:length(out)])
+    if(length(out) == 1) return(NULL) else return(out)
 }
 
 
 # helper for river_voronoi
-# moves starting and ending nodes either 0.0005 degrees, or 10 meters, depending on projection
+# moves starting and ending nodes either 0.0005 degrees, or 10 meters, 
+# depending on projection
 move_nodes <- function(river, verbose=FALSE) {
     
     rivgeom <- sf::st_geometry(river)
@@ -107,22 +119,27 @@ move_coords <- function(bear, dist) {
     return(c(x=movex, y=movey))
 }
 
-tesselate_voronoi <- function(vorPoints, aoi, riverID = "riverID", verbose = FALSE) {
+tesselate_voronoi <- function(vorPoints, 
+                              aoi, 
+                              riverID = "riverID", 
+                              verbose = FALSE) {
     if (verbose) message("Processing Voronoi tesselation")
     vorPoints <- suppressWarnings(sf::st_cast(vorPoints, "POINT"))
-    remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","gridID")
+    remove <- c("NEXT", "PREVIOUS", "DOWNSTREAM","zoneID")
     voronoi <- vorPoints[ , !(names(vorPoints) %in% remove)] %>%
         dplyr::rename_(ID = riverID)
     bbox <- sf::st_as_sfc(sf::st_bbox(aoi))
-    voronoi <- suppressMessages(suppressWarnings(sf::st_voronoi(sf::st_union(vorPoints), bbox) %>%
-                                                     sf::st_cast() %>%
-                                                     sf::st_cast("POLYGON") %>%
-                                                     sf::st_sf() %>%
-                                                     sf::st_join(vorPoints) %>%
-                                                     lwgeom::st_make_valid() %>% 
-                                                     dplyr::group_by_(.dots = list(~ID)) %>%
-                                                     dplyr::summarise() %>%
-                                                     sf::st_intersection(sf::st_geometry(aoi))))
+    voronoi <- suppressMessages(
+                suppressWarnings(
+                    sf::st_voronoi(sf::st_union(vorPoints), bbox) %>%
+                         sf::st_cast() %>%
+                         sf::st_cast("POLYGON") %>%
+                         sf::st_sf() %>%
+                         sf::st_join(vorPoints) %>%
+                         sf::st_make_valid() %>% 
+                         dplyr::group_by_(.dots = list(~ID)) %>%
+                         dplyr::summarise() %>%
+                         sf::st_intersection(sf::st_geometry(aoi))))
     return(voronoi)
 }
 
@@ -143,9 +160,9 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
     
     
     #------
-    # sometimes there are voronoi areas left which were not assigned any ID, and
-    # thus not dissolved. The following code merges them to the neighbouring 
-    # polygon with which it shares the longest border segment.
+    # sometimes there are voronoi areas left which were not assigned any ID, 
+    # and thus not dissolved. The following code merges them to the 
+    # neighbouring polygon with which it shares the longest border segment.
     
     
     IDs <- voronoi[, names(voronoi) %in% riverID] %>%
@@ -158,10 +175,12 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
         pp <- sf::st_cast(voronoi[v.na,], "POLYGON")
         for (i in 1:NROW(pp)) {
             #find which polygons touch the problem polygon
-            touching <- suppressMessages(sf::st_touches(pp[i,], voronoi, sparse=FALSE))
+            touching <- suppressMessages(
+                            sf::st_touches(pp[i,], voronoi, sparse=FALSE))
             tv <- voronoi[touching,]
             
-            #compute the lenghts of border line for every touching polygon and find which one is longest
+            # compute the lenghts of border line for every touching polygon 
+            # and find which one is longest
             len <- list()
             n <- table(touching)[2]
             for (tp in 1:n) {
@@ -173,11 +192,14 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
             longest <- which(len == max(len))
             
             #union the two polygons
-            v.union <- suppressMessages(suppressWarnings(sf::st_union(pp[i,], tv[longest,])))
+            v.union <- suppressMessages(
+                        suppressWarnings(
+                            sf::st_union(pp[i,], tv[longest,])))
             
             #replace geometry in voronoi
             row <- which(IDs == IDs[touching][longest])
-            v.union <- sf::st_set_geometry(voronoi[row,], sf::st_geometry(v.union))
+            v.union <- sf::st_set_geometry(voronoi[row,], 
+                                           sf::st_geometry(v.union))
             voronoi[row,] <- v.union
         }
         #remove geometries with NA id
@@ -189,232 +211,46 @@ fix_voronoi <- function(voronoi, riverID = "riverID", verbose = FALSE) {
 }
 
 
-
-new_row_col <- function(bearing, prc) {
-    prep <- data.frame(row=0, col=0)
-    if (bearing > -5 && bearing < 5) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col
-    } else if (bearing > 350 && bearing < 370) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col
-    } else  if (bearing > 40 && bearing < 50) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col+1
-    } else if (bearing > 80 && bearing < 100) {
-        prep$row <- prc$row
-        prep$col <- prc$col+1
-    } else if (bearing > 125 && bearing < 145) {
-        prep$row <- prc$row+1
-        prep$col <- prc$col+1
-    } else if (bearing > 170 && bearing < 190) {
-        prep$row <- prc$row+1
-        prep$col <- prc$col
-    } else if (bearing > 215 && bearing < 235) {
-        prep$row <- prc$row+1
-        prep$col <- prc$col-1
-    } else if (bearing > 260 && bearing < 280) {
-        prep$row <- prc$row
-        prep$col <- prc$col-1
-    } else if (bearing > 305 && bearing < 325) {
-        prep$row <- prc$row-1
-        prep$col <- prc$col-1
-    }
-    return(prep)
-} 
-
-
-
-# 
-# do_summary_fun <- function (list, 
-#                             funs, 
-#                             monthly,
-#                             ...) {
-#     
-#     Date <- NULL
-#     Month <- NULL
-#     
-#     output <- list()
-#     for(i in seq_along(list)) {
-#         data <- list[[i]]
-#         name <- names(list)[i]
-#         if(is.null(name)) name <- paste0("runoff",i)
-#         
-#         if(monthly) data$Month <- lubridate::month(data$Date)
-# 
-#         for (fun in funs) {
-#             
-#             # if input functions include quantile(), it needs to be handled in a
-#             # special way so that output list of tables have the correct names, 
-#             # and the table contains correct column headers. If not for this, 
-#             # the output table has 2 or more times columns leading to problems 
-#             # later on in downscaling.
-#             if (fun == "quantile" ) {
-#                 if (!methods::hasArg("probs")) stop('Argument probs for quantile 
-#                                                   missing')
-#                 p <- list(...)
-# 
-#                 p <- p[['probs']]
-# 
-#                 for(prob in seq_along(p)) {
-#                     elname <- paste0(name,"_Q",p[prob]*100,"%")
-#                     if(monthly) {
-#                         out <- data %>% 
-#                             dplyr::select(-Date) %>%
-#                             dplyr::group_by(Month) %>% 
-#                             dplyr::summarise_all(.funs=fun, probs=p[prob])
-#                         output[[elname]] <- out
-#                     } else {
-#                         out <- data %>% 
-#                             dplyr::group_by(Date) %>% 
-#                             dplyr::summarise_all(.funs=fun, probs=p[prob])
-#                         output[[elname]] <- out
-#                     }
-#                 }
-#                 
-#             } else {
-#                 elname <- paste0(name,"_",fun)
-#                 if(monthly) {
-#                     out <- data %>% 
-#                         dplyr::select(-Date) %>%
-#                         dplyr::group_by(Month) %>% 
-#                         dplyr::summarise_all(.funs=fun)
-#                     output[[elname]] <- out
-#                 } else {
-#                     out <- data %>% 
-#                         dplyr::group_by(Date) %>% 
-#                         dplyr::summarise_all(.funs=fun)
-#                     output[[elname]] <- out
-#                 }
-#             }
-#             
-#             
-#         }
-#     }
-#     return(output)
-# }
-# 
-# 
-# summarise_over_all <- function (list) {
-#     n <- length(list)
-#     temp <- list[[1]]
-#     for(i in 2:n) {
-#         temp <- bind_rows(temp, list[[i]])
-#     }
-#     name <- paste0("runoff")
-#     out <- list(temp)
-#     names(out) <- name
-#     return(out)
-# }
-# 
-
-
-
-# This is function ForecastComb::comb_CLS(), but edited according to 
-# https://stackoverflow.com/a/28388394. 
-# Edits marked with ###.
-forecastcomb_comb_CLS <- function (x) {
-
-    if (class(x) != "foreccomb") 
-        stop("Data must be class 'foreccomb'. See ?foreccomb to bring data in 
-             in a correct format.", 
-             call. = FALSE)
-    observed_vector <- x$Actual_Train
-    prediction_matrix <- x$Forecasts_Train
-    modelnames <- x$modelnames
-    p <- NCOL(prediction_matrix)
-    Rinv <- solve(safe_chol(t(prediction_matrix) %*% prediction_matrix))
-    C <- cbind(rep(1, p), diag(p))
-    b = c(1, rep(0, p))
-    d = t(observed_vector) %*% prediction_matrix
-    nn2 = sqrt(norm(d,"2")) ###
-    qp1 = solve.QP(Dmat = Rinv*nn2, factorized = TRUE, dvec = d/(nn2^2),  ###
-                   Amat = C, bvec = b, meq = 1)
-    weights = unname(qp1$sol)
-    fitted <- as.vector(weights %*% t(prediction_matrix))
-    accuracy_insample <- forecast::accuracy(fitted, observed_vector)
-    if (is.null(x$Forecasts_Test) & is.null(x$Actual_Test)) {
-        result <- structure(list(Method = "Constrained Least Squares Regression", 
-                                 Models = modelnames, 
-                                 Weights = weights, 
-                                 Fitted = fitted, 
-                                 Accuracy_Train = accuracy_insample, 
-                                 Input_Data = list(Actual_Train = x$Actual_Train,
-                                 Forecasts_Train = x$Forecasts_Train)), 
-                            class = c("foreccomb_res"))
-        rownames(result$Accuracy_Train) <- "Training Set"
-    }
-    if (is.null(x$Forecasts_Test) == FALSE) {
-        newpred_matrix <- x$Forecasts_Test
-        pred <- as.vector(weights %*% t(newpred_matrix))
-        if (is.null(x$Actual_Test) == TRUE) {
-            result <- structure(list(Method = "Constrained Least Squares Regression", 
-                                     Models = modelnames, 
-                                     Weights = weights, 
-                                     Fitted = fitted, 
-                                     Accuracy_Train = accuracy_insample, 
-                                     Forecasts_Test = pred, 
-                                     Input_Data = list(Actual_Train = x$Actual_Train, 
-                                                       Forecasts_Train = x$Forecasts_Train, 
-                                                       Forecasts_Test = x$Forecasts_Test)), 
-                                class = c("foreccomb_res"))
-            rownames(result$Accuracy_Train) <- "Training Set"
-        }
-        else {
-            newobs_vector <- x$Actual_Test
-            accuracy_outsample <- forecast::accuracy(pred, newobs_vector)
-            result <- structure(list(Method = "Constrained Least Squares Regression", 
-                                     Models = modelnames, 
-                                     Weights = weights, 
-                                     Fitted = fitted, 
-                                     Accuracy_Train = accuracy_insample, 
-                                     Forecasts_Test = pred, 
-                                     Accuracy_Test = accuracy_outsample, 
-                                     Input_Data = list(Actual_Train = x$Actual_Train,
-                                               Forecasts_Train = x$Forecasts_Train, 
-                                               Actual_Test = x$Actual_Test, 
-                                               Forecasts_Test = x$Forecasts_Test)),
-                                class = c("foreccomb_res"))
-            rownames(result$Accuracy_Train) <- "Training Set"
-            rownames(result$Accuracy_Test) <- "Test Set"
-        }
-    }
-    return(result)
+# fixed: Vili Virkki 24-07-2019
+new_row_col <- function (bearing, prc) {
+  prep <- data.frame(row = 0, col = 0)
+  if (bearing > -5 && bearing <= 22.5) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col
+  } else if (bearing > 337.5 && bearing < 370) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col
+  } else if (bearing > 22.5 && bearing <= 67.5) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col + 1
+  } else if (bearing > 67.5 && bearing <= 112.5) {
+    prep$row <- prc$row
+    prep$col <- prc$col + 1
+  } else if (bearing > 112.5 && bearing <= 157.5) {
+    prep$row <- prc$row + 1
+    prep$col <- prc$col + 1
+  } else if (bearing > 157.5 && bearing <= 202.5) {
+    prep$row <- prc$row + 1
+    prep$col <- prc$col
+  } else if (bearing > 202.5 && bearing <= 246.5) {
+    prep$row <- prc$row + 1
+    prep$col <- prc$col - 1
+  } else if (bearing > 246.5 && bearing <= 292.5) {
+    prep$row <- prc$row
+    prep$col <- prc$col - 1
+  } else if (bearing > 292.5 && bearing <= 337.5) {
+    prep$row <- prc$row - 1
+    prep$col <- prc$col - 1
+  }
+  return(prep)
 }
-
-
-# from package 'lme4'; needed in forecastcomb_comb_CLS()
-safe_chol <- function(m) {
-    if (all(m==0)) return(m)
-    if (nrow(m)==1) return(sqrt(m))
-    if (all(dmult(m,0)==0)) {  ## diagonal
-        return(diag(sqrt(diag(m))))
-    }
-    ## attempt regular Chol. decomp
-    if (!inherits(try(cc <- chol(m),silent=TRUE),"try-error"))
-        return(cc)
-    ## ... pivot if necessary ...
-    cc <- suppressWarnings(chol(m,pivot=TRUE))
-    oo <- order(attr(cc,"pivot"))
-    cc[,oo]
-    ## FIXME: pivot is here to deal with semidefinite cases,
-    ## but results might be returned in a strange format: TEST
-}
-
-# from package 'lme4'; needed in safe_chol()
-dmult <- function(m,s) {
-    diag(m) <- diag(m)*s
-    m
-}
-
-
-
 
 
 collect_listc <- function(ts, acc = FALSE) {
     
     Date <- NULL
     
+    unit <- units::deparse_unit(dplyr::pull(ts[[1]],2)) 
     unidates <- lapply(ts, function(x) x$Date) %>%
         unlist %>%
         unique %>%
@@ -435,9 +271,9 @@ collect_listc <- function(ts, acc = FALSE) {
         for(i in 1:nts) {
             if(ncol(ts[[i]])-1 < tsi) break
             dates <- unidates %in% ts[[i]]$Date 
-            act_ts[dates,i] <- unlist(ts[[i]][,tsi+1])
+            act_ts[dates,i] <-unlist(ts[[i]][,tsi+1])
         }
-        output[[ names[tsi] ]] <- act_ts     
+        output[[ names[tsi] ]] <- units::as_units(act_ts, unit)     
     }
     
     if(acc) {
@@ -447,8 +283,7 @@ collect_listc <- function(ts, acc = FALSE) {
             colnames(temp) <- c("Date", names(ts))
             temp <- temp %>% 
                 dplyr::mutate(Date = lubridate::as_date(Date)) %>%
-                tibble::as_tibble() %>%
-                tsibble::as_tsibble(index = "Date")
+                tibble::as_tibble() 
             output[[tsi]] <- temp
         }
     }
@@ -472,7 +307,6 @@ init_ts <- function(ts) {
         colnames(tsib) <- c("Date", names(ts))
         tsib <- tibble::as_tibble(tsib)
         tsib$Date <- dates
-        tsib <- tsibble::as_tsibble(tsib, index = "Date")
         return(tsib)
     })
     names(output) <- colnames(ts[[1]])[-1]
@@ -515,7 +349,7 @@ assign_class <- function(obj, class) {
 }
 
 reorder_cols <- function(HS) {
-    order <- c("riverID","gridID", "NEXT", "PREVIOUS", "STRAHLER", "runoff_ts", 
+    order <- c("riverID","zoneID", "NEXT", "PREVIOUS", "STRAHLER", "runoff_ts", 
                "discharge_ts", "observation_station", "observation_ts", 
                "control_type", "control_ts")
     order <- order[order %in% names(HS)]
@@ -525,4 +359,127 @@ reorder_cols <- function(HS) {
 }
 
 
+# if object has "HS" attributes, edit those without NULL
+# if object doesnt have "HS" attributes, initialize it with provided values
+mod_HS_attributes <- function(HS, next_col = NA, prev_col = NA, 
+                              col = NULL) {
+    
+    if(is.null(col)) {
+        test <- is.null(base::attr(HS, "HS", exact = TRUE))
+        if(test) {
+            att <- c(next_col = next_col, 
+                     prev_col = prev_col)
+            base::attr(HS, "HS") <- att
+        } else {
+            att <- base::attr(HS, "HS", exact = TRUE)
+            
+            if(!is.na(next_col)) att["next_col"] <- next_col
+            if(!is.na(prev_col)) att["prev_col"] <- prev_col
+            
+            base::attr(HS, "HS") <- att
+        }
+        return(HS)
+        
+    } else {
+        test <- hasName(HS, col)
+        if(!test) stop("Couldn't find column ", col, " in HS input.")
+        
+        ind <- which(colnames(HS) == col)
+        test <- is.null(base::attr(HS[[ind]], "HS", exact = TRUE))
+        if(test) {
+            att <- c(next_col = next_col, 
+                     prev_col = prev_col)
+            base::attr(HS[[ind]], "HS") <- att
+        } else {
+            att <- base::attr(HS[[ind]], "HS", exact = TRUE)
+            
+            if(!is.na(next_col)) att["next_col"] <- next_col
+            if(!is.na(prev_col)) att["prev_col"] <- prev_col
+            
+            base::attr(HS[[ind]], "HS") <- att
+        }
+        return(HS)
+    }
+    
+    
+}
+# 
+get_HS_attr <- function(HS) {
+    return(base::attr(HS, "HS", exact = TRUE))
+}
 
+# goes through the columns in HS, and checks the value of "HS" attributes
+find_attribute <- function(HS, attribute, value) {
+    test <- sapply(HS, function(x) {
+        att <- attr(x, "HS") 
+        test <- att[attribute] == value
+        if(length(test) == 0) return(FALSE) else return(test)
+    })
+    return(which(test))
+}
+
+# convert unit 
+convert_unit <- function(value, from = NULL, to1, to2, verbose = FALSE) {
+    
+    test <- inherits(value, "units")
+    if(!test) {
+        test <- is.null(from)
+        if(test) stop("input is not of class 'units', and 'from' not specified")
+        value <- units::set_units(value, from, mode="standard")
+    }
+    
+    
+    #try converting to first unit
+    conv <- try(units::set_units(value, to1, mode="standard"),
+                silent = TRUE)
+    
+    # if first conversion fails, try converting to alternative
+    if(class(conv) == "try-error") {
+        conv <- try(units::set_units(value, to2, mode="standard"),
+                    silent = TRUE)
+        
+        # stop conversion to alternative didnt work
+        if(class(conv) == "try-error") {
+            stop(paste0("Couldn't convert units. Are you sure the unit's type is ",
+                        "depth per time (e.g. mm/d) or volume per time ",
+                        "(e.g. m^3/s)?"))
+        }
+        
+        # return alternative
+        if(verbose) message("Unit converted from ", from, " to ", to2)
+        return(conv)
+    }
+    
+    # return first option
+    if(verbose) message("Unit converted from ", from, " to ", to1)
+    return(conv)
+}
+
+unit_conversion <- function(obj, unit, areas = NULL) {
+    units <- strsplit(unit, " ")[[1]]
+    
+    # check that all required elements are there and convertible
+    depth <- any(units %in% c("mm", "cm", "m", "km"))
+    area <- any(units %in% c("m-2", "km-2", "ha"))
+    time <- any(units %in% c("s-1", "min-1", "h-1", "d-1", 
+                             "week-1", "month-1"))
+    volume <- any(units %in% c("m3", "km3"))
+    
+    if(volume & time) {
+        obj <- convert_unit(obj, to1 = "m3/s")
+    } else if(volume & time & area) {
+        obj <- units::set_units(obj, "m3 m-2 s-1")
+        areas <- units::set_units(areas, "m2")
+        obj <- obj * areas
+    } else if(depth & time & !area) {
+        obj <- units::set_units(obj, "m s-1")
+        areas <- units::set_units(areas, "m2")
+        obj <- obj * areas
+    } else if(depth & time & area) {
+        obj <- units::set_units(obj, "m m-2 s-1")
+        areas <- units::set_units(areas, "m2")
+        obj <- obj * areas
+        obj <- obj * units::set_units(1, "m2")
+    } 
+    return(obj)
+}

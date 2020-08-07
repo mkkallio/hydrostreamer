@@ -3,7 +3,7 @@
 #' This algorithm delineates multiple catchments from input point 
 #' locations and a drainage direction layer. Catchments are delineated 
 #' upstream from the point given, until another given outlet point is 
-#' met. The result is a set of catchments which are unique to the points 
+#' met. The result is a set of catchments which are unique to the outlets 
 #' given.
 #' 
 #'
@@ -13,7 +13,7 @@
 #' @param output Whether to return a raster or vectors of delineated catchments. 
 #' Accepts "vector", "v", "raster", or "r".
 #' @param use_rsaga Whether to try using RSAGA for basin vectorization or not.
-#' Even if TRUE, requires RSAGA environment to be found.
+#' Even if TRUE, requires RSAGA environment to be installed in the system.
 #' @inheritParams river_outlets
 #' @inheritParams compute_HSweights
 #'
@@ -39,7 +39,7 @@ delineate_basin <- function(outlets,
                             drain.dir, 
                             riverID = "riverID", 
                             output = "vector",
-                            use_rsaga = TRUE, # TODO: discuss about this parameter
+                            use_rsaga = TRUE,
                             verbose = FALSE) {
     
     VALUE <- NULL
@@ -58,32 +58,32 @@ delineate_basin <- function(outlets,
     rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(outlets))
     outlets$cell <- rp
     outlets <- outlets[!is.na(outlets$cell),]
-    ID <- outlets %>% dplyr::select_(riverID) %>% sf::st_set_geometry(NULL) %>% 
-        unlist()
+    #ID <- outlets %>% dplyr::select_(riverID) %>% sf::st_set_geometry(NULL) %>% 
+    #    unlist()
+    ID <- outlets %>% dplyr::pull(riverID)
+    #tempID <- 1:nrow(outlets)
     ny <- nrow(drain.dir)
     nx <- ncol(drain.dir)
     nseeds <- nrow(outlets)
     drdir <- raster::values(drain.dir)
+    drdir[is.na(drdir)] <- 0
     delbas <- vector("numeric", raster::ncell(drain.dir))
-    delbas[outlets$cell] <- ID
-    #delbas[outlets$cell] <- 1:nseeds
+    #delbas[outlets$cell] <- ID
+    delbas[outlets$cell] <- 1:nseeds
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
     
-    delbas <- .Fortran("delineate", 
-                       as.integer(nx), 
-                       as.integer(ny), 
-                       as.integer(nseeds), 
-                       as.integer(outlets$cell), 
-                       as.integer(ID), 
-                       as.integer(drdir), 
-                       as.integer(delbas), 
-                       PACKAGE = 'hydrostreamer')[[7]]
+    delbas <- delineatecpp(outlets$cell-1,
+                           ID,
+                           drdir,
+                           delbas,
+                           nx,
+                           ny)
     
     delbas[delbas == 0] <- NA
     
-    if (output %in% c("vector","v")) {
+    if (output %in% c("vector","'v")) {
         
-        if (verbose) message("Converting to vector.")
+        if (verbose) message("Converting to vector..")
         
         # count cells in each basin
         ncells <- rep(0, length(ID))
@@ -117,7 +117,10 @@ delineate_basin <- function(outlets,
             # prepare files
             delbas_grid_path <- tempfile(fileext = ".sgrd")
             delbas_shapes_path <- tempfile(fileext = ".shp")
-            raster::writeRaster(delbas, delbas_grid_path, format="SAGA", overwrite=TRUE)
+            raster::writeRaster(delbas, 
+                                delbas_grid_path, 
+                                format="SAGA", 
+                                overwrite=TRUE)
             
             # vectorize raster
             RSAGA::rsaga.geoprocessor(lib = "shapes_grid",
@@ -131,26 +134,33 @@ delineate_basin <- function(outlets,
             delbas <- sf::st_read(delbas_shapes_path, quiet = !verbose) %>%
                 sf::st_set_crs(4326)
             
-            # select only river segment basins (leave out encircling zero values polygon)
-            # and only value (river ID) as attribute besides geometry
+            # select only river segment basins (leave out encircling zero 
+            # values polygon) and only value (river ID) as attribute besides
+            # geometry
             delbas <- delbas[2:nrow(delbas),]
             delbas <- dplyr::select(delbas, VALUE)
             
         } else {
             
-            if (verbose) message("Using raster::rasterToPolygons. This may take long.")
+            if (verbose) message("Using raster::rasterToPolygons.",
+                                 " This may take long.")
             
             # vectorize raster without RSAGA
             delbas <- raster::rasterToPolygons(delbas, dissolve=TRUE) %>%
                 sf::st_as_sf()
+            names(delbas)[1] <- "riverID"
+            #delbas$riverID <- ID[delbas$riverID]
             
         }
         
-        names(delbas)[1] <- "riverID"
+        
         #cols <- cbind(riverID = ID, NCELLS = ncells)
         #delbas <- merge(delbas, cols)
-        delbas$
-        delbas$AREA_M2 <- sf::st_area(delbas)
+        names(delbas)[1] <- "riverID"
+        match <- match(delbas$riverID, ID)
+        delbas$NCELLS <- ncells[match]
+        delbas$AREA <- sf::st_area(delbas) %>% 
+            units::set_units("km^2")
         
     }
     

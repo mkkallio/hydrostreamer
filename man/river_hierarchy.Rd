@@ -2,7 +2,7 @@
 % Please edit documentation in R/river_hierarchy.R
 \name{river_hierarchy}
 \alias{river_hierarchy}
-\title{Computes river hierarchies for a HSnetwork object.}
+\title{Computes river hierarchies for a HS object.}
 \usage{
 river_hierarchy(river, type = "strahler", riverID = "riverID")
 }
@@ -13,16 +13,15 @@ river_hierarchy(river, type = "strahler", riverID = "riverID")
 stream order implemented.}
 
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 }
 \value{
 Returns the river network with added column with the selected river 
   hierarchy.
 }
 \description{
-Computes river hierarchies from a routed river network, or from an unrouted,
- connected river network. In case the input river network is unrouted, 
- \code{\link{river_network}} is run before computing river hierarchy.
+Computes river hierarchies from a routed river network.
 }
 \examples{
 \dontrun{

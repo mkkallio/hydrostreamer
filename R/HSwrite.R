@@ -6,7 +6,7 @@
 #' Alternatively the function can output a timeseries specified by the user 
 #' (runoff, discharge, or control).
 #'
-#' @param x A \code{HSgrid}, or a \code{HS} object.
+#' @param x A \code{HS} object.
 #' @param filename Filename to write to.
 #' @param what What to write. Accepts \code{"geometry"} for writing the river
 #'   network or the runoff grid, or \code{"discharge_ts", "runoff_ts", 
@@ -27,6 +27,12 @@ HSwrite.HS <- function(x, filename, what = "geometry", ...) {
     ##################
     # WRITE OUT GEOMETRY
     if (what == "geometry") {
+        test <- hasName(x, "NEXT")
+        if(test) x$PREVIOUS <- lapply(x$NEXT, 
+                                      function(x) {
+                                          paste(x, collapse=" ")
+                                      }) %>% unlist()
+        
         test <- hasName(x, "PREVIOUS")
         if(test) x$PREVIOUS <- lapply(x$PREVIOUS, 
                                       function(x) {

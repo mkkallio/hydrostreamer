@@ -1,201 +1,227 @@
-hydrostreamer 0.4.0
+hydrostreamer 0.5.0
 ===================
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214523.svg)](https://doi.org/10.5281/zenodo.1214523)
 
-**hydrostreamer** is an R package to downscale distributed runoff data
-products by spatial relationship between the areal unit in runoff data,
-and an explicitly represented river network.
+**hydrostreamer** is an R package designed to allow swift investigation
+of surface water resources from existing distributed runoff datasets
+with arbitrary areal representations (regular or irregular polygons).
 
-**hydrostreamer** has featured in a number of conference presentations:
+Hydrostreamer workflow generally consists of three steps:
 
+1.  Areal interpolation of runoff to explicit river segments
+2.  Routing down the river network to estimate discharge
+3.  Model averaging, if streamflow observations are available.
+
+At the bare minimum, discharge can be estimated using only a single
+distributed runoff product and a river network. To include model
+averaging to the step, one further needs additional runoff datasets to
+provide multiple estimates of discharge, and a reference timeseries to
+perfgorm model averaging against.
+
+More information
+----------------
+
+**hydrostreamer** has featured in the following publications and
+conference presentations:
+
+-   Model description paper under preparation
+-   MODSIM 2019: Kallio et al, Downscaling runoff products using areal
+    interpolation: a combined pycnophylactic-dasymetric method. DOI:
+    10.36334/modsim.2019.k8.kallio
 -   EGU 2018: Kallio et al, [Spatial allocation of low resolution runoff
     model outputs to high resolution stream
     network](https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network)
-
 -   AGU 2018: Kallio et al, [Generating improved estimates of streamflow
     using model averaging of downscaled runoff products under
     uncertainty](https://www.researchgate.net/publication/330213179_Generating_improved_estimates_of_streamflow_using_model_averaging_of_downscaled_runoff_products_under_uncertainty)
-
 -   AGU 2018: Virkki et al, [The value of open-source river discharge
     estimation in the water governance context of the 3S river basin in
     Southeast
     Asia](https://www.researchgate.net/publication/331320855_AGU_2018_Poster_Presentation)
-
 -   EGU 2019: Nauditt et al, [Evaluating drought risk in data scarce
     tropical
     catchments](https://meetingorganizer.copernicus.org/EGU2019/EGU2019-18370.pdf)
 
--   A research paper is currently under preparation.
-
-In practise the downscaling occurs by dividing the value of runoff to
-all those river segments intersecting the areal unit (of runoff) using a
-numerical attribute for weighting. These attributes can be, for
-instance, length of the intersecting river segment, Strahler number, or
-area of the segment-specific catchment.
-
-![](http://markokallio.fi/hydrostreamer%20downscaling.png) *Downscaling
-in hydrostreamer can be done either using river segment lines, or by
-their catchment areas. This is an example in case of a gridded runoff
-product, but the areal units can be arbitrarily shaped*
-
 Installing
 ----------
 
-**hydrostreamer** is not yet on CRAN, so to install, use
-*devtools::install\_github()* in RStudio. You should have R version
-higher than 3.4.0 for the package to work properly.
-
-Note that while **hydrostreamer** is already a useful package, it is
-under development and may change without prior notice.
+**hydrostreamer** is not yet on CRAN, so to install, and needs to be
+installed from Github.
 
     # devtools::install_github("mkkallio/hydrostreamer")
 
 Basic usage
 -----------
 
-**hydrostreamer** workflow occurs in four steps:
-
-1.  Convert the runoff timeseries to a HSgrid object,
-2.  Compute weights for each river segment,
-3.  Downscale runoff, and
-4.  Apply river routing.
-
-Minimum data requirement is a distributed runoff timeseries, either as
-polygons or in a raster format, and a river network. Alternatively,
-river network can be derived from a Digital Elevation Model (DEM).
-
+Hydrostreamer includes some example data for demonstration purposes.
 First, load example data to R:
 
-    library(raster)
-
-    ## Loading required package: sp
-
     library(hydrostreamer)
-
-    ## Loading required package: sf
-
-    ## Linking to GEOS 3.6.1, GDAL 2.2.3, PROJ 4.9.3
-
+    library(raster)
     library(lubridate)
-
-    ## 
-    ## Attaching package: 'lubridate'
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     date
 
     data(example_rivers)
     data(example_basins)
     runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
 
-### 1. Convert raster timeseries to a HSgrid
+### 1. Convert raster timeseries to a **HS** object
 
-The first step in hydrostreamer is converting runoff into a *HSgrid*
-object. For a runoff input in a raster format, use
-*raster\_to\_HSgrid()* function. For input we need the raster, starting
-date of the timeseries and the granularity of input timesteps.
+The first step in hydrostreamer is converting runoff into a *HS* object.
+For a runoff input in a raster format, use *raster\_to\_HS()* function.
+For input we need the raster, starting date of the timeseries and the
+granularity of input timesteps.
 
-    HSgrid <- raster_to_HSgrid(runoff, 
-                             date = ymd("1980-01-01"), 
-                             timestep = "month", 
-                             aoi = st_union(basins),
-                             names = "LORA")
+    source_runoff <- raster_to_HS(runoff, 
+                       date = ymd("1980-01-01"), 
+                       timestep = "month", 
+                       unit = "mm/s",
+                       aoi = st_union(basins),
+                       names = "LORA")
+    source_runoff
 
-### 2. Compute weights for each river segment
+    ## 
+    ## Hydrostreamer
+    ## No. objects: 4
+    ## No. runoff timeseries: 1
+    ##   Included runoff timeseries: LORA
+    ## 
+    ## Simple feature collection with 4 features and 2 fields
+    ## geometry type:  POLYGON
+    ## dimension:      XY
+    ## bbox:           xmin: 107.275 ymin: 12.25 xmax: 107.625 ymax: 12.995
+    ## CRS:            +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0
+    ## # A tibble: 4 x 3
+    ##   zoneID runoff_ts                                                      geometry
+    ##    <int> <named list>                                              <POLYGON [°]>
+    ## 1      1 <tibble [396 x~ ((107.5 12.995, 107.5 12.5, 107.31 12.5, 107.31 12.505~
+    ## 2      2 <tibble [396 x~ ((107.625 12.5, 107.615 12.5, 107.5 12.5, 107.5 12.995~
+    ## 3      3 <tibble [396 x~ ((107.31 12.5, 107.5 12.5, 107.5 12.325, 107.495 12.32~
+    ## 4      4 <tibble [396 x~ ((107.5 12.5, 107.615 12.5, 107.615 12.485, 107.62 12.~
 
-Next, we weight the river segments within each segment, so that the
-weights of segments within a polygon add to 1. In **hydrostreamer** this
-can be done by
+The output of the function is an sf object with each raster cell as
+their own object, and two attributes: an ID and a list column with
+timeseries of values for each of the raster cell.
 
-1.  Catchment area of each river segment by
-    1.  user provided catchments
-    2.  drainage direction delineated basins (for river networks derived
-        from them)
-    3.  Medial axis delineated basins (Voronoi Diagram created from the
-        river network)
-2.  River segment properties
-    1.  divide runoff equally to all intersecting segments
-    2.  use stream order to weight the segments
-    3.  use segment length for weighting
-    4.  user provided attributes
-3.  More complex downscaling
+### 2. Interpolate
 
-Here, we use river segment specific catchment areas, which are provided
-in the example data. For information on the other options, see
-*help(compute\_HSweights)*.
+Next, we interpolate the values in the source zones to individual river
+reaches in the river network.
 
-    weights <- compute_HSweights(HSgrid, 
-                                 river, 
-                                 "area",
-                                 basins = basins,
-                                 aoi = st_union(basins), 
-                                 riverID = "SEGMENT_ID")
+    interpolated_runoff <- interpolate_runoff(source_runoff, river, 
+                                              riverID = "SEGMENT_ID")
 
-### 3. Downscale runoff
+    ## although coordinates are longitude/latitude, st_intersects assumes that they are planar
 
-With the weights computed, we can assign specific runoff to each river
-segment. This means that we disaggregate the low resolution runoff into
-its components - the river segments.
+    interpolated_runoff
 
-    downscaled_runoff <- downscale_runoff(weights)
+    ## 
+    ## Hydrostreamer
+    ## No. objects: 41
+    ## No. runoff timeseries: 1
+    ##   Included runoff timeseries: LORA
+    ## 
+    ## Simple feature collection with 41 features and 3 fields
+    ## geometry type:  LINESTRING
+    ## dimension:      XY
+    ## bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975
+    ## geographic CRS: WGS 84
+    ## # A tibble: 41 x 4
+    ##    riverID runoff_ts     SEGMENT_ID                                         geom
+    ##      <dbl> <named list>       <dbl>                             <LINESTRING [°]>
+    ##  1      56 <tibble [396~         56 (107.4125 12.2975, 107.4075 12.3025, 107.40~
+    ##  2      65 <tibble [396~         65 (107.4425 12.3425, 107.4375 12.3475, 107.43~
+    ##  3      67 <tibble [396~         67 (107.5475 12.3625, 107.5475 12.3675, 107.54~
+    ##  4      69 <tibble [396~         69 (107.3525 12.3675, 107.3575 12.3675, 107.36~
+    ##  5      70 <tibble [396~         70 (107.3675 12.3725, 107.3725 12.3775, 107.37~
+    ##  6      77 <tibble [396~         77 (107.5175 12.4125, 107.5175 12.4175, 107.51~
+    ##  7      79 <tibble [396~         79 (107.5625 12.4275, 107.5575 12.4325, 107.55~
+    ##  8      83 <tibble [396~         83 (107.5575 12.4375, 107.5625 12.4425, 107.56~
+    ##  9      85 <tibble [396~         85 (107.5925 12.4475, 107.5875 12.4525, 107.58~
+    ## 10      88 <tibble [396~         88 (107.4525 12.4575, 107.4475 12.4625, 107.44~
+    ## # ... with 31 more rows
 
-### 4. Apply river routing
+The warning received here is from the sf package because the coordinate
+system in the example dataset is in geographic coordinate system. The
+warning goes away if we first project the dataset to an appropriate
+coordinate reference system.
 
-The last step is to accumulate flow downstream. The previous step only
-assigned the grid cell value to the streams. However, often we want to
-know the discharge at certain points of the river to create a
-timeseries.
+The output changes so that zoneID identifying the source of runoff
+becomes riverID. runoff\_ts now contains timeseries of the interpolated
+runoff at each individual river segment.
 
-**hydrostreamer** currently (v. 0.2.0) only implements the simplest
-possible river routing, instantaneous flow, by adding all runoff to
-every segment downstream, at each timestep. This is an overly simple
-scheme, and there are plans to add more sophisticated river routing
-algorithms to the package.
+### 3. Apply river routing
 
-    streamflow <- accumulate_runoff(downscaled_runoff)
+Next, we route runoff down the river network in order to estimate
+discharge at each segment. Since the example data has a monthly
+timestep, and the river network is a small one, we use the simplest
+routing algorithm available: instantaneous routing. In this routing
+method, all runoff is assumed to flow through the entire network at the
+timestep it is created.
+
+    streamflow <- accumulate_runoff(interpolated_runoff, method = "instant")
+    streamflow
+
+    ## 
+    ## Hydrostreamer
+    ## No. objects: 41
+    ## No. runoff timeseries: 1
+    ##   Included runoff timeseries: LORA
+    ## No. discharge timeseries: 1
+    ##   Included discharge timeseries: LORA
+    ## 
+    ## Simple feature collection with 41 features and 7 fields
+    ## geometry type:  LINESTRING
+    ## dimension:      XY
+    ## bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975
+    ## geographic CRS: WGS 84
+    ## # A tibble: 41 x 8
+    ##    riverID NEXT  PREVIOUS runoff_ts discharge_ts UP_SEGMENTS SEGMENT_ID
+    ##      <dbl> <nam> <named > <named l> <named list>       <dbl>      <dbl>
+    ##  1      56 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         56
+    ##  2      65 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         65
+    ##  3      67 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         67
+    ##  4      69 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         69
+    ##  5      70 <dbl~ <dbl [2~ <tibble ~ <tibble [39~           2         70
+    ##  6      77 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         77
+    ##  7      79 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         79
+    ##  8      83 <dbl~ <dbl [2~ <tibble ~ <tibble [39~           2         83
+    ##  9      85 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         85
+    ## 10      88 <dbl~ <dbl [1~ <tibble ~ <tibble [39~           0         88
+    ## # ... with 31 more rows, and 1 more variable: geom <LINESTRING [°]>
+
+We see that there are now additional columns. NEXT and PREVIOUS give the
+routing information for the routing algorithm. discharge\_ts is a list
+column which contains timeseries of the estimated runoff, and
+UP\_SEGMENTS was created with the routing information, giving the number
+of river reaches upstream of each individual reach in the network.
 
 ### These functions are pipable
 
 The function usage has been developed so that they are all pipable.
 
-    streamflow <- raster_to_HSgrid(runoff, 
-                             date=ymd("1980-01-01"), 
-                             timestep="month", 
-                             aoi=st_union(basins),
-                             names="LORA") %>%
-        compute_HSweights(river,
-                          "area",
-                          aoi=st_union(basins),
-                          basins = basins,
-                          riverID = "SEGMENT_ID") %>%
-        downscale_runoff() %>%
+    streamflow <- raster_to_HS(runoff, 
+                               date=ymd("1980-01-01"), 
+                               timestep="month", 
+                               unit = "mm/s",
+                               aoi=st_union(basins),
+                               names="LORA") %>%
+        interpolate_runoff(river, riverID = "SEGMENT_ID") %>%
         accumulate_runoff()
 
-### Exporting
+    ## although coordinates are longitude/latitude, st_intersects assumes that they are planar
 
-**hydrostreamer** includes also a useful function to export the results
-to a GeoPackage, which can be viewed in any GIS software (such as
-ArcGIS, QGIS). We can also write the discharge (or runoff) as a table.
+    ## Warning in if (method == "instant") {: the condition has length > 1 and only the
+    ## first element will be used
 
-    HSwrite(streamflow, "downscaled_streamflow.gpkg")
-
-    ## Writing layer `downscaled_streamflow' to data source `downscaled_streamflow.gpkg' using driver `GPKG'
-    ## features:       41
-    ## fields:         6
-    ## geometry type:  Line String
-
-    HSwrite(streamflow, "downscaled_streamflow.csv", what = "discharge")
-
-    ## Loading required namespace: readr
+For a more thorough tutorial, see the included vignette.
 
 License
 -------
 
 The MIT License (MIT)
 
-Copyright (c) 2018 Marko K. Kallio
+Copyright (c) 2018-2020 Marko K. Kallio
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the

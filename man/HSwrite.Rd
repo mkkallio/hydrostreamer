@@ -7,7 +7,7 @@
 HSwrite(x, filename, what = "geometry", ...)
 }
 \arguments{
-\item{x}{A \code{HSgrid}, or a \code{HS} object.}
+\item{x}{A \code{HS} object.}
 
 \item{filename}{Filename to write to.}
 

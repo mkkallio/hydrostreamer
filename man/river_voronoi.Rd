@@ -2,7 +2,7 @@
 % Please edit documentation in R/river_voronoi.R
 \name{river_voronoi}
 \alias{river_voronoi}
-\title{Create a segment-specific Voronoi diagram from an sf LINESTRING object.}
+\title{Create a segment-specific Voronoi Diagram from an sf LINESTRING object.}
 \usage{
 river_voronoi(river, aoi, riverID = "riverID", verbose = FALSE)
 }

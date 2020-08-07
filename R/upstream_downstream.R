@@ -15,16 +15,12 @@
 #' @export
 upstream <- function(HSnetwork, ID, riverID = "riverID") {
     
-    if(!all(c("riverID", "NEXT", "PREVIOUS") %in% colnames(HSnetwork))) {
-        stop("river input should be of class HSnetwork, obtained with function 
-             river_network()")
-    }
-    
+
     if(!any(names(HSnetwork) == riverID)) {
         stop(paste0("ID column '", riverID,"' does not exist"))
     }
     
-    rIDs <- dplyr::select_(HSnetwork, riverID) %>% unlist
+    rIDs <- dplyr::select(HSnetwork, riverID) %>% unlist
     prevs <- HSnetwork$PREVIOUS
     
     
@@ -95,17 +91,14 @@ upstream <- function(HSnetwork, ID, riverID = "riverID") {
 #' 
 #' @export
 downstream <- function(HSnetwork, ID, riverID = "riverID") {
-    
-    if(!all(c("riverID", "NEXT", "PREVIOUS") %in% colnames(HSnetwork))) {
-        stop("river input should be of class HSnetwork, obtained with function 
-             river_network()")
-    }
+
+    . <- NULL
     
     if(!any(names(HSnetwork) == riverID)) {
         stop(paste0("ID column '", riverID,"' does not exist"))
     }
     
-    rIDs <- dplyr::select_(HSnetwork, riverID) %>% unlist
+    rIDs <- dplyr::select(HSnetwork, riverID) %>% unlist
     nexts <- HSnetwork$NEXT
     
     
@@ -151,9 +144,11 @@ downstream <- function(HSnetwork, ID, riverID = "riverID") {
         visit <- visitlist[[visitposition]]
         
     }
+    visitlist <- unlist(visitlist)[-sum(downstream)] %>% match(rIDs) %>%
+        c(which(rIDs == ID),.)
     
     # select all downstream segments
-    downstream <- HSnetwork[downstream,]
+    downstream <- HSnetwork[visitlist,]
     
     return(downstream)
 }

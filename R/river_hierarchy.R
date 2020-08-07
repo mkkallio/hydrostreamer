@@ -1,8 +1,6 @@
-#' Computes river hierarchies for a HSnetwork object.
+#' Computes river hierarchies for a HS object.
 #'
-#' Computes river hierarchies from a routed river network, or from an unrouted,
-#'  connected river network. In case the input river network is unrouted, 
-#'  \code{\link{river_network}} is run before computing river hierarchy.
+#' Computes river hierarchies from a routed river network.
 #'
 #' @param type Type hierarchy to compute. Currently only \code{strahler} 
 #'   stream order implemented.
@@ -30,12 +28,14 @@
 #' @export
 river_hierarchy <- function(river, type="strahler", riverID = "riverID") {
     
-    if(!any(class(river)=="sf")) {
-        stop("river input should be of class 'HSnetwork' obtained with function 
-             flow_network() or an 'sf' linestring object.")
+
+    # test if routing is needed, or if it has already been done
+    ind <- find_attribute(river, "next_col", TRUE)
+    test <- length(ind) == 0
+    if(test) {
+        stop("The input seems to be unrouted. Run 'river_network() before ",
+             "this function.")
     }
-    test <- !"HSnetwork" %in% class(river)
-    if (test) river <- river_network(river, riverID=riverID)
     
     from <- river$PREVIOUS
     to <- river$NEXT

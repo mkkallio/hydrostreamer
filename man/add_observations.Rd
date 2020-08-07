@@ -4,7 +4,7 @@
 \alias{add_observations}
 \title{Adds observation timeseries to a 'HS' object}
 \usage{
-add_observations(HS, timeseries, riverIDs, station_names = NULL)
+add_observations(HS, timeseries, unit, riverIDs, station_names = NULL)
 }
 \arguments{
 \item{HS}{An \code{HS} object.}
@@ -12,7 +12,9 @@ add_observations(HS, timeseries, riverIDs, station_names = NULL)
 \item{timeseries}{a data.frame with observations. Must contain column 
 \code{Date}.}
 
-\item{riverIDs}{A vector of riverID of the river segments of the columns
+\item{unit}{The unit of values in \code{timeseries}.}
+
+\item{riverIDs}{A vector of riverID of the river segments in the column-order
 in timeseries.}
 
 \item{station_names}{a vector of names for the stations in \code{timeseries}.
@@ -26,6 +28,6 @@ Returns the \code{HS} object with added list column
 }
 \description{
 Adds observation timeseries to a HS object. This is needed in order to 
-evaluate performance of downscaled timeseries, or to perform data assimilation
-combining several downscaled times.
+evaluate performance of discharge estimates, or to perform data assimilation
+combining several estimates.
 }

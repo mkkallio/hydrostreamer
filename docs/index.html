@@ -110,6 +110,13 @@
 </ol>
 <p>Minimum data requirement is a distributed runoff timeseries, either as polygons or in a raster format, and a river network. Alternatively, river network can be derived from a Digital Elevation Model (DEM).</p>
 <p>First, load example data to R:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(raster)
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(hydrostreamer)
+<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(lubridate)
+
+<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(example_rivers)
+<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/data">data</a></span>(example_basins)
+runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/system.file">system.file</a></span>(<span class="st">"extdata"</span>, <span class="st">"runoff.tif"</span>, <span class="dt">package =</span> <span class="st">"hydrostreamer"</span>))</code></pre></div>
 <div id="convert-raster-timeseries-to-a-hsgrid" class="section level3">
 <h3 class="hasAnchor">
 <a href="#convert-raster-timeseries-to-a-hsgrid" class="anchor"></a>1. Convert raster timeseries to a HSgrid</h3>

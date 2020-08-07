@@ -1,4 +1,4 @@
-#' Computes summary timeseries from HS* objects
+#' Computes summary timeseries in HS object
 #' 
 #' Allows easy computation of summaries across runoff datasets with user defined 
 #' functions. The functions provided are run either individually for, or across, 
@@ -31,16 +31,12 @@ ensemble_summary <- function(HS,
                              drop=FALSE,
                              ...,
                              verbose = FALSE) {
-    # if(aggregate_monthly && class(HS) != "HSflow") {
-    #     warning("Routing does not work appropriately for data aggregated to months. 
-    #             Use original timeseries for routing.")
-    # }
     UseMethod("ensemble_summary")
 }
 
 #' @export
 ensemble_summary.list <- function(HS,
-                                  summarise_over_timeseries = TRUE, 
+                                  summarise_over_timeseries = FALSE, 
                                   aggregate_monthly = FALSE, 
                                   funs=c("min","mean","median","max"),
                                   drop = FALSE,
@@ -70,7 +66,7 @@ ensemble_summary.list <- function(HS,
                     tidyr::gather(Pred, Value,-Month) %>%
                     dplyr::mutate(Stat = stringr::word(Pred, -1, sep="_"),
                                   Prediction = stringr::str_replace(Pred, 
-                                                                    paste0("_", Stat), "")) %>%
+                                                    paste0("_", Stat), "")) %>%
                     dplyr::select(Month, Prediction, Stat, Value)
             } else {
                 data <- data %>%
@@ -80,7 +76,7 @@ ensemble_summary.list <- function(HS,
                     tidyr::gather(Pred, Value) %>%
                     dplyr::mutate(Stat = stringr::word(Pred, -1, sep="_"),
                                   Prediction = stringr::str_replace(Pred, 
-                                                                    paste0("_", Stat), "")) %>%
+                                                    paste0("_", Stat), "")) %>%
                     dplyr::select(Prediction, Stat, Value)
             }
             
@@ -122,7 +118,7 @@ ensemble_summary.list <- function(HS,
 
 #' @export
 ensemble_summary.HS <- function(HS,
-                                summarise_over_timeseries = TRUE,
+                                summarise_over_timeseries = FALSE,
                                 aggregate_monthly = FALSE,
                                 funs=c("min","mean","median","max"), 
                                 drop = FALSE,
@@ -131,6 +127,7 @@ ensemble_summary.HS <- function(HS,
     
     runoff <- hasName(HS, "runoff_ts")
     discharge <- hasName(HS, "discharge_ts")
+    
     if (runoff) {
         data <- HS$runoff_ts
         data <- ensemble_summary(data, 
@@ -140,7 +137,12 @@ ensemble_summary.HS <- function(HS,
                                  drop = drop,
                                  ...,
                                  verbose = verbose)
-        HS$runoff_ts <- data
+        if(summarise_over_timeseries) {
+            HS$runoff_summary <- data
+        } else {
+            HS$runoff_ts <- data
+        }
+        
     }
     
     if (discharge) {
@@ -151,7 +153,12 @@ ensemble_summary.HS <- function(HS,
                                  funs,
                                  drop = drop,
                                  ...)
-        HS$discharge_ts <- data
+        if(summarise_over_timeseries) {
+            HS$discharge_summary <- data
+        } else {
+            HS$discharge_ts <- data
+        }
+        
     }
     
     HS <- reorder_cols(HS)

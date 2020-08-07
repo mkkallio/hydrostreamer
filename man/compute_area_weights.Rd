@@ -5,39 +5,62 @@
 \title{Compute weights for river catchment areas within the runoff area 
 features.}
 \usage{
-compute_area_weights(basins, HSgrid, riverID = "riverID",
-  gridID = "gridID")
+compute_area_weights(
+  basins,
+  HS,
+  pycno = NULL,
+  dasy = NULL,
+  weights = NULL,
+  n = 20,
+  intensive = TRUE,
+  riverID = "riverID",
+  zoneID = "zoneID"
+)
 }
 \arguments{
 \item{basins}{An 'sf' polygon feature specifying the river segment 
 specific catchments.}
 
-\item{HSgrid}{A 'HSgrid' object, obtained with \code{\link{raster_to_HSgrid}}.}
+\item{HS}{A 'HS' object, obtained with \code{\link{raster_to_HS}}.}
+
+\item{pycno}{Name of Pycnophylactic variable in \code{HS} input}
+
+\item{dasy}{Name of Dasymetric variable in \code{basins} input}
+
+\item{weights}{Name of a column in \code{river} to be used directly as 
+weights. Defaults to \code{NULL}. See Details.}
+
+\item{n}{Number of iterations when using pycnophylactic interpolation. 
+Default \code{25}.}
+
+\item{intensive}{Whether the pycnophylactic variable is intensive (density,
+like runoff in mm), or not (in which case it is extensive, or counts like
+runoff in volume).}
 
 \item{riverID}{Column in \code{basins} containing unique IDs.}
 
-\item{gridID}{Column in  \code{HSgrid} with unique IDs.}
+\item{zoneID}{Column in  \code{HS} with unique IDs.}
 }
 \value{
-Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
+Returns an 'sf' polygon feature (a union of basins, and HS) 
   with added attributes (columns):
   \itemize{
     \item \emph{ID}. Unique ID of the feature.
     \item \emph{riverID}. ID of the river segment each sub-catchment is 
       associated to.
-    \item \emph{gridID}. ID of the runoff unit the sub-catchment 
+    \item \emph{zoneID}. ID of the runoff unit the sub-catchment 
       is contained in.
     \item \emph{weights}. Weights computed for each sub-catchment.
-    \item \emph{b_area_m2}. Area of the sub-catchment (basin) in 
+    \item \emph{target_area}. Area of the sub-catchment (basin) in 
       \eqn{m^2}.
-    \item \emph{g_area_m2}. Area of the runoff unit sub-catchment is 
-      contained in. In \eqn{m^2}.
+    \item \emph{source_area}. Area of the runoff unit sub-catchment is 
+      contained in.
 }
 }
 \description{
 Computes weights for each individual river segment specific catchments 
-falling in the areal units of the runoff \emph{HSgrid}. Function first 
-takes a union between \emph{basins} and \emph{HSgrid} (creating new 
+falling in the areal units of the runoff \emph{HS}. Function first 
+takes a union between \emph{basins} and \emph{HS} (creating new 
 catchment units which fall inside only one runoff unit), and calculating 
 the area for each individual catchment unit. The weight is assigned by 
 dividing the area of sub-catchment with the area of runoff unit.

@@ -4,20 +4,27 @@
 \alias{downscale_runoff}
 \title{Computes specific runoff generated in the river segment.}
 \usage{
-downscale_runoff(HSweights, rID = "riverID", wID = "riverID",
-  unit = "mm/s", verbose = FALSE)
+downscale_runoff(
+  HSweights,
+  pycno = FALSE,
+  n = 10,
+  dasy = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{HSweights}{An object of class 'HSweights', obtained with 
 \code{compute_HSweights}, or constructed with function
 \code{create_HSweights}.}
 
-\item{rID}{Name of the column in river with unique IDs.}
+\item{pycno}{If \code{TRUE}, ignore weights and perform pycnophylactic
+interpolation for every timestep. EXPERIMENTAL AND 2-3 ORDERS OF MAGNITUDE
+SLOWER THAN USING WEIGHTS. Default FALSE.}
 
-\item{wID}{Name of the column in weights with IDs corresponding to rID.}
+\item{n}{Iterations in the pycnophylactic interpolation.}
 
-\item{unit}{Unit of runoff. Can be either "mm/s", or "m3/s". 
-Defaults to mm/s (~ equivalent to kg/m2/s).}
+\item{dasy}{name of the dasymetric variable in \code{HSweights$weights}.
+Experimental, used in pycnophylactic interpolation.}
 
 \item{verbose}{Print progress indication or not.}
 }

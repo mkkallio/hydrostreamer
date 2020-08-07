@@ -2,8 +2,8 @@
 #' features. 
 #' 
 #' Computes weights for each individual river segment specific catchments 
-#' falling in the areal units of the runoff \emph{HSgrid}. Function first 
-#' takes a union between \emph{basins} and \emph{HSgrid} (creating new 
+#' falling in the areal units of the runoff \emph{HS}. Function first 
+#' takes a union between \emph{basins} and \emph{HS} (creating new 
 #' catchment units which fall inside only one runoff unit), and calculating 
 #' the area for each individual catchment unit. The weight is assigned by 
 #' dividing the area of sub-catchment with the area of runoff unit.
@@ -12,68 +12,193 @@
 #' @param basins An 'sf' polygon feature specifying the river segment 
 #'   specific catchments.
 #' @param riverID Column in \code{basins} containing unique IDs.
-#' @param gridID Column in  \code{HSgrid} with unique IDs.
+#' @param zoneID Column in  \code{HS} with unique IDs.
+#' @param pycno Name of Pycnophylactic variable in \code{HS} input
+#' @param dasy Name of Dasymetric variable in \code{basins} input
 #' @inheritParams compute_HSweights
 #'
-#' @return Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
+#' @return Returns an 'sf' polygon feature (a union of basins, and HS) 
 #'   with added attributes (columns):
 #'   \itemize{
 #'     \item \emph{ID}. Unique ID of the feature.
 #'     \item \emph{riverID}. ID of the river segment each sub-catchment is 
 #'       associated to.
-#'     \item \emph{gridID}. ID of the runoff unit the sub-catchment 
+#'     \item \emph{zoneID}. ID of the runoff unit the sub-catchment 
 #'       is contained in.
 #'     \item \emph{weights}. Weights computed for each sub-catchment.
-#'     \item \emph{b_area_m2}. Area of the sub-catchment (basin) in 
+#'     \item \emph{target_area}. Area of the sub-catchment (basin) in 
 #'       \eqn{m^2}.
-#'     \item \emph{g_area_m2}. Area of the runoff unit sub-catchment is 
-#'       contained in. In \eqn{m^2}.
+#'     \item \emph{source_area}. Area of the runoff unit sub-catchment is 
+#'       contained in.
 #' }
 #' 
-#' @export
 compute_area_weights <- function(basins, 
-                                 HSgrid, 
+                                 HS,
+                                 pycno = NULL,
+                                 dasy = NULL,
+                                 weights = NULL,
+                                 n = 20,
+                                 intensive = TRUE,
                                  riverID = "riverID", 
-                                 gridID = "gridID") {
+                                 zoneID = "zoneID") {
     
-    area_m2 <- NULL
+    area <- NULL
     weights <- NULL
     ID <- NULL
-    b_area_m2 <- NULL
-    g_area_m2 <- NULL
+    target_area <- NULL
+    source_area <- NULL
+    denom <- NULL
+    variable <- NULL
+    bas_dasy <- NULL
+    . <- NULL
     
-    if(!any(names(basins) == riverID)) stop("riverID column '", 
-                                            riverID, "' does not exist in basins input")
+    # TEST INPUTS
+    #############
+    
+    if(!hasName(basins, riverID)) stop("riverID column '", 
+                                       riverID, 
+                                       "' does not exist in basins")
     if(!riverID == "riverID") basins <- dplyr::rename_(basins, 
-                                                       riverID = riverID)  
+                                                       riverID = riverID) 
     
-    HSgrid <- HSgrid %>% dplyr::select(gridID, g_area_m2 = area_m2)
+    if(is.null(pycno)) {
+        pycnophylactic <- FALSE
+    } else {
+        pycnophylactic <- TRUE
+        test <- hasName(HS, pycno)
+        if(!test) stop("No column ", pycno," in basins")
+        test <- sum(is.null(HS[,pycno]))
+        test2 <- sum(is.na(HS[,pycno]))
+        if(test+test2 > 0) stop("Missing values in column ", pycno)
+    }
     
+    if(is.null(dasy)) {
+        dasymetric <- FALSE
+    } else {
+        dasymetric <- TRUE
+        test <- hasName(basins, dasy)
+        if(!test) stop("No column ", dasy," in basins")
+        test <- sum(is.null(basins[,dasy]))
+        test2 <- sum(is.na(basins[,dasy]))
+        if(test+test2 > 0) stop("Missing values in column ", dasy)
+    }
+    
+    if(is.null(weights)) {
+        user_weights <- FALSE 
+    } else {
+        user_weights <- TRUE
+        test <- hasName(basins, weights)
+        if(!test) stop("No column ", weights," in basins")
+    }
+    
+    if (hasName(basins,"weights")) {
+        warning("Replacing existing 'weights' column")
+    }
+
+    
+    # PROCESS
+    #########
+
+    HS$area <- sf::st_area(HS)
+        
     basins <- suppressWarnings(
         suppressMessages(
-            sf::st_intersection(basins,HSgrid)
-        )
-    )
-
-    area <- sf::st_area(basins)
+            HS %>% 
+                dplyr::select(zoneID, source_area = area) %>%
+                sf::st_intersection(basins, .) %>% 
+                sf::st_collection_extract("POLYGON") %>% 
+                dplyr::arrange(riverID)))
     
-    # compute weight. unclass to get rid of the m^2 unit that gets 
-    # carried over from area
-    weight <- unclass(area)/unclass(basins$g_area_m2) %>%
-        unclass()
+    basins <-  basins %>%
+        dplyr::mutate(target_area = sf::st_area(.)) %>%
+        dplyr::filter(target_area != units::set_units(0, "m^2")) %>% 
+        dplyr::mutate(target_area = units::set_units(target_area, "km^2"))
     
-    if (any(names(basins) == "weights")) {
-        message("Replacing existing 'weights' column")
-        basins <- dplyr::select(basins, -weights)
+    if(user_weights) {
+        w <- dplyr::pull(basins, weights)
+        basins <- basins %>% dplyr::mutate(basins, 
+                                           weights = w) 
+        
+    } else if(pycnophylactic) {
+        pycno_var <- dplyr::pull(HS, pycno)
+        names(pycno_var) <- HS$zoneID
+        
+        #identify neighbours
+        touching <- sf::st_touches(basins)
+        
+        #identify boundary
+        boundary <- sf::st_touches(basins, 
+                                   sf::st_union(basins) %>%
+                                       sf::st_cast("POLYGON") %>%
+                                       sf::st_cast("LINESTRING"),
+                                   sparse = FALSE) %>%
+            as.numeric()
+        boundary[boundary == 0] <- NA
+        
+        test <- hasName(HS, "area")
+        if(test) {
+            gridareas <- HS$area
+        } else {
+            gridareas <- units::set_units(sf::st_area(HS), "km2")
+        }
+        
+        if(dasymetric) {
+            dasymetric_var <- dplyr::pull(basins, dasy)
+            pycno_res <- iterate_pycno(basins, 
+                                       dasy = dasymetric_var,
+                                       touching, 
+                                       boundary,
+                                       pycno_var, 
+                                       gridareas, 
+                                       n,
+                                       convert=!intensive)
+            
+        } else {
+            pycno_res <- iterate_pycno(basins, 
+                                       dasy = NULL,
+                                       touching, 
+                                       boundary,
+                                       pycno_var,
+                                       gridareas, 
+                                       n,
+                                       convert=!intensive)
+        }
+        
+        pycno_res <- pycno_res * units::drop_units(basins$target_area)
+        
+        
+        basins <- basins %>%
+            dplyr::mutate(weights = pycno_res) %>%
+            dplyr::group_by(zoneID) %>%
+            dplyr::mutate(sum = sum(weights),
+                          weights = weights/sum) %>%
+            dplyr::ungroup() %>%
+            dplyr::select(-sum) 
+        
+    } else if(!pycnophylactic && dasymetric) { # replicated above
+        dasymetric_var <- dplyr::pull(basins, dasy)
+        
+        basins <- basins %>%
+            tibble::add_column(variable = dasymetric_var) %>%
+            dplyr::group_by(zoneID) %>%
+            dplyr::mutate(bas_dasy = variable*units::drop_units(target_area),
+                          denom = sum(bas_dasy),
+                          weights = bas_dasy/denom) %>%
+            dplyr::ungroup() %>%
+            dplyr::select(-variable, -bas_dasy, -denom)
+        
+    } else if(!pycnophylactic && !dasymetric) {
+        basins <- dplyr::mutate(basins, 
+                                weights = basins$target_area/basins$source_area) 
+    } else {
+        stop("error")
     }
-    basins$weights <- weight
     
     #reorder and add columns 
     if (!any(names(basins) == "ID")) basins$ID <- 1:nrow(basins)
-    basins$weights <- weight
-    basins$b_area_m2 <- area
-    basins <- basins %>% dplyr::select(ID, riverID, gridID, weights,
-                                       b_area_m2, g_area_m2, 
+
+    basins <- basins %>% dplyr::select(ID, riverID, zoneID, weights,
+                                       target_area, source_area, 
                                        dplyr::everything())
     
     return(basins)

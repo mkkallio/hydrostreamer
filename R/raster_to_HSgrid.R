@@ -1,10 +1,11 @@
-#' Create HSgrid from a raster
+#' Create HS from a raster
 #' 
 #' Polygonizes a raster and adds the values in the raster stack to a data frame
 #' in list column \code{runoff_ts}.
 #'
 #' @param rasters A raster object, or a list of raster objects, or a list of
 #'   URIs to files readable by \code{raster} package.
+#' @param unit Unit of the timeseries, coercable with \code{units::set_units()}.
 #' @param date Date of the first layer in \code{raster}, or a vector of dates 
 #'   with the length of layers in \code{raster}, or a list of vectors of dates,
 #'   corresponding to the dates in each raster layer.
@@ -17,20 +18,23 @@
 #' @param names A name (names) for the runoff timeserie(s).
 #' @param verbose Print progress indication or not.
 #'
-#' @return See \code{\link{create_HSgrid}}.
+#' @return See \code{\link{create_HS}}.
 #'   
 #' @export
-raster_to_HSgrid <- function(rasters, 
-                             date, 
-                             timestep = NULL, 
-                             aoi = NULL, 
-                             names = NULL,
-                             verbose = FALSE) {
+raster_to_HS <- function(rasters, 
+                         unit,
+                         date, 
+                         timestep = NULL, 
+                         aoi = NULL, 
+                         names = NULL,
+                         verbose = FALSE) {
     
     . <- NULL
     Date <- NULL
-    gridID <- NULL
-    area_m2 <- NULL
+    zoneID <- NULL
+    
+    # -------------------------------------------------------------------------
+    # TEST
     
     # test rasters input
     test <- is.list(rasters)
@@ -44,7 +48,8 @@ raster_to_HSgrid <- function(rasters,
             if(test3) {
                 rasters <- list(rasters)
             } else {
-                stop("rasters input must be either a raster or an URI to a raster")
+                stop("rasters input must be either a raster or an ",
+                     "URI to a raster")
             }
         }
     }
@@ -81,8 +86,14 @@ raster_to_HSgrid <- function(rasters,
         if(!test2) stop("length(names) != length(rasters)")
     }
     
-    total <- length(rasters)
-    if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3) 
+    if (verbose) {
+        message(paste0("Converting ", nrasters, " raster(s) to HS.."))
+        pb <- txtProgressBar(min = 0, max = nrasters, style = 3) 
+    } 
+    
+    
+    #---------------------------------------------------------------------------
+    # PROCESS DATA
     
     # process all rasters
     for(rast in seq_along(rasters)) {
@@ -109,8 +120,8 @@ raster_to_HSgrid <- function(rasters,
                 raster <- raster::crop(raster, aoi)
                 aoi <- sf::st_as_sf(aoi)
             } else {
-                stop("Input area of interest should be an object of spatial class 
-                     from either 'sf' or 'sp' packages")
+                stop("Input area of interest should be an object of spatial",
+                    " class from either 'sf' or 'sp' packages")
             }
         }
         
@@ -130,15 +141,18 @@ raster_to_HSgrid <- function(rasters,
             grid <- methods::as(grid, "sf")
         }
         
-        # create the output
-        grid$gridID <- 1:NROW(grid)
-        grid$area_m2 <- sf::st_area(grid)
+        # extract only polygons - points or lines are irrelevant for areal
+        # interpolation
+        grid <- sf::st_collection_extract(grid, "POLYGON")
         
-        data <- dplyr::select(grid, -area_m2, -gridID) %>% 
+        # create the output
+        grid$zoneID <- 1:NROW(grid)
+        
+        data <- dplyr::select(grid, -zoneID) %>% 
             sf::st_set_geometry(NULL) %>% 
             t() %>% 
             data.frame()
-        colnames(data) <- grid$gridID
+        colnames(data) <- grid$zoneID
         rownames(data) <- NULL
         
         # process dates
@@ -148,25 +162,27 @@ raster_to_HSgrid <- function(rasters,
             if(timestep == "month") {
                 enddate <- dates %m+% months(raster::nlayers(raster) -1)
             } else if(timestep == "day") {
-                enddate <- dates %m+% lubridate::days(raster::nlayers(raster) -1)
+                enddate <- dates %m+% 
+                             lubridate::days(raster::nlayers(raster) -1)
             } else if(timestep == "hour") {
-                enddate <- dates %m+% lubridate::hours(raster::nlayers(raster) -1)
+                enddate <- dates %m+% 
+                             lubridate::hours(raster::nlayers(raster) -1)
             }
             dates <- seq(dates, enddate, by = timestep)
         }  else {
-            test <- length(dates) == nlayers(raster)
+            test <- length(dates) == raster::nlayers(raster)
             if(test) stop(paste0("length(dates) != nlayers(raster) for raster",
                                  " number ",rast))
         }
         data$Date <- dates
         
-        grid <-  dplyr::select(grid, gridID, area_m2)
+        grid <-  dplyr::select(grid, zoneID)
         
         if(rast == 1) {
-            output <- create_HSgrid(grid, data, name = names[[rast]])
+            output <- create_HS(grid, data, name = names[[rast]], unit = unit)
         } else {
-            add <- create_HSgrid(grid, data, name = names[[rast]])
-            output <- add_HSgrid(output, add)
+            add <- create_HS(grid, data, name = names[[rast]], unit = unit)
+            output <- add_HS(output, add)
          
             
         }

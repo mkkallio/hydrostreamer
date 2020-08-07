@@ -5,20 +5,18 @@
 \title{Computed goodness-of-fit statistics for discharge predictions
 against observed streamflow}
 \usage{
-flow_gof(HS)
+flow_gof(HS, verbose = FALSE)
 }
 \arguments{
-\item{HS}{A \code{HS} object with column \code{discharge_ts}}
+\item{HS}{A \code{HS} object with column \code{discharge_ts}.}
+
+\item{verbose}{Print progress indication or not.}
 }
 \value{
-Returns a list with gof-statistics for all the observations in
+Returns a tibble with gof-statistics for all the observations in
  every discharge prediction in \code{HS}.
 }
 \description{
 Computed goodness-of-fit statistics using \code{\link[hydroGOF]{gof}}
 for all the timeseries in the input \code{HS} object.
-}
-\details{
-By default, goodness-of-fit measures are computed for all timeseries in 
-the input data.
 }

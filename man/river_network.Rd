@@ -4,18 +4,38 @@
 \alias{river_network}
 \title{Generates routing information for river routing algorithms}
 \usage{
-river_network(river, riverID = "riverID", verbose = FALSE)
+river_network(
+  river,
+  next_down = NULL,
+  previous = NULL,
+  na_value = NULL,
+  force = FALSE,
+  riverID = "riverID",
+  verbose = FALSE
+)
 }
 \arguments{
 \item{river}{An 'sf' linestring feature representing a river network.}
 
+\item{next_down}{Column with the ID(s) of the next segment rivers flows to}
+
+\item{previous}{Column with the ID(s) of the previous segment river flows 
+from}
+
+\item{na_value}{Value in column \code{next_down} and \code{previous} 
+signifying no downstream/upstream segments}
+
+\item{force}{if the river already has routing information, overwrite it?}
+
 \item{riverID}{A character string which specifies the name of the column in 
-\code{river} containing unique river network identifiers. Defaults to "riverID".}
+\code{river} containing unique river network identifiers. Defaults to 
+\code{"riverID"}.}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
 \value{
-Returns the river network with class 'HSnetwork' with the following attributes:
+Returns the river network with class 'HSnetwork' with the following 
+  attributes:
 \itemize{
   \item riverID: Unique (renamed) river segment identifier.
   \item PREVIOUS: a list of riverID(s) of the previous river segment(s).
@@ -26,8 +46,7 @@ Returns the river network with class 'HSnetwork' with the following attributes:
 \description{
 The function adds connectivity information to the input \emph{river} object. 
 The function assumes that the input river is a "clean" river network: 
-connected segments share a node at the start or end of the segment. 
-Digitizing direction is required to be the direction of flow.
+connected segments share a node at the start or end of the segment.
 }
 \examples{
 \dontrun{

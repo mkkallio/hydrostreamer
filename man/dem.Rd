@@ -4,7 +4,9 @@
 \name{dem}
 \alias{dem}
 \title{DEM for examples}
-\format{RasterBrick / GeoTIFF}
+\format{
+RasterBrick / GeoTIFF
+}
 \usage{
 dem
 }

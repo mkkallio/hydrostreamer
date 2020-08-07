@@ -4,8 +4,14 @@
 \alias{delineate_basin}
 \title{Delineate multiple catchments from multiple input points}
 \usage{
-delineate_basin(outlets, drain.dir, riverID = "riverID",
-  output = "vector", use_rsaga = TRUE, verbose = FALSE)
+delineate_basin(
+  outlets,
+  drain.dir,
+  riverID = "riverID",
+  output = "vector",
+  use_rsaga = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{outlets}{An 'sf' point object, with locations of the catchment 
@@ -19,7 +25,7 @@ outlets for delineation. Obtained e.g. with \code{\link{river_outlets}}}
 Accepts "vector", "v", "raster", or "r".}
 
 \item{use_rsaga}{Whether to try using RSAGA for basin vectorization or not.
-Even if TRUE, requires RSAGA environment to be found.}
+Even if TRUE, requires RSAGA environment to be installed in the system.}
 
 \item{verbose}{Whether or not print progress indicators.}
 }
@@ -38,7 +44,7 @@ If output is \code{raster}, returns a raster with delineated areas.
 This algorithm delineates multiple catchments from input point 
 locations and a drainage direction layer. Catchments are delineated 
 upstream from the point given, until another given outlet point is 
-met. The result is a set of catchments which are unique to the points 
+met. The result is a set of catchments which are unique to the outlets 
 given.
 }
 \examples{

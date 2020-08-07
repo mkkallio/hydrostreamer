@@ -3,15 +3,10 @@
 \docType{package}
 \name{hydrostreamer}
 \alias{hydrostreamer}
-\alias{hydrostreamer-package}
-\title{hydrostreamer: A package for downscaling distributed runoff products on to 
-explicit river segments.}
+\title{hydrostreamer: A package for interpolatinng distributed runoff products on to 
+explicit river network}
 \description{
-hydrostreamer provides functions to downscale distributed runoff 
-data on to an explicitly represented river network. Downscaling is done by the 
-spatial relationship between an areal unit of runoff and an overlaid river 
-network. Value of the runoff unit is divided among intersecting river segments
-using weighted interpolation. hydrostreamer provides several methods for the 
-assignment. Simple river routing algorithms are also provided to estimate 
-discharge at arbitrary segment.
+Hydrostreamer provides functions to interpolate multiple distributed runoff 
+data on to an explicitly represented river network, route runoff down the 
+network, and optimise predictions against observed streamflow.
 }

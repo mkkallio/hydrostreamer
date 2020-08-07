@@ -4,8 +4,15 @@
 \alias{create_river}
 \title{Creates a river network and river segment drainage basins from a DEM}
 \usage{
-create_river(dem, minslope, threshold = 5, output_path = "",
-  do_basins = TRUE, rsaga_env = FALSE, verbose = FALSE)
+create_river(
+  dem,
+  minslope,
+  threshold = 5,
+  output_path = "",
+  do_basins = TRUE,
+  rsaga_env = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{dem}{A RasterLayer object in WGS84 coordinate system

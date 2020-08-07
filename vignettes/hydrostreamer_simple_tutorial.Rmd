@@ -16,19 +16,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-The development of 'hydrostreamer' was inspired by a study, where one component was estimating water availability in rural villages. In that study, water availability was estimated using a regional distributed hydrological model with 5km grid resolution. The problem in the study was how it represented the available water quantity at a village. First, the grid size was too coarse to represent the stream network accurately. A regional model with 5km grid size is quite fine, but for a village level estimates where distance to water source was an important attribute. Field representation (which raster in essence is) was not satisfactory.
-
-Hence, *hydrostreamer* was conceived. *hydrostreamer* takes an off-the-shelf runoff product of an arbitrary resolution, and assigns runoff to an explicitly represented river network. To keep things simple and approachable, there is no runoff modelling involved in the use of *hydrostreamer*, rather, it post-processes results from either hydrological or land surface models and with minimal input requirements. The concept of *hydrostreamer* is very simple and easy to grasp, with a design philosophy that it should be easy to use for anyone, without background in hydrology.
-
-In practise, similar ideas have been used in a number of existing solutions; for instance river routing software HydroROUT, [RAPID](https://github.com/c-h-david/rapid/), or [mizuRoute](https://github.com/NCAR/mizuRoute). These also take off-the-shelf runoff products, and apply river routing algorithms to predict streamflow at explicit (vector) river segments. What sets *hydrostreamer* apart from these solutions is that it is written in R, is easy to install and use, and most importantly, focus is not in river routing, but in the downscaling step.
-
 This tutorial aims to explain the workflow in *hydrostreamer* and showcase some of it's capabilities. More specific tutorials will be added in time, which concentrate on different parts of hydrostreamer
 
 # Using **hydrostreamer**
 
 Some example data have been included to the package for tutorial purposes. It includes 
 
-* 1 by 1 degree DEM at located in Southeast Asia. The DEM is originally ALOS World 3D at 30 meter resolution (Tanado et al 2014), which has been resampled to 0.005 degree resolution. 
+* 1 by 1 degree DEM located in Southeast Asia. The DEM is originally ALOS World 3D at 30 meter resolution (Tanado et al 2014), which has been resampled to 0.005 degree resolution. 
 
 * 1 by 1 degree runoff timeseries in the same area as the DEM. Runoff is sourced from the Linear Optimal Runoff Aggregate (LORA) at 0.5 degree resolution (see Hobeichi et al 2019). The unit of runoff is mm/s (kg/m2/s), and are provided with a monthly timestep.
 
@@ -43,8 +37,7 @@ library(hydrostreamer)
 library(raster)
 library(lubridate)
 library(dplyr)
-library(ggplot2)
-library(tidyr)
+library(sf)
 
 data(example_rivers)
 data(example_basins)
@@ -62,156 +55,193 @@ plot(river, add=TRUE)
 ```
 
 
-*hydrostreamer* main workflow occurs in four steps (and four functions):
+*hydrostreamer* main workflow occurs in three steps:
 
-1. Convert the runoff timeseries to a HSgrid object
-2. Compute weights for each river segment
-3. Downscale runoff
-4. Apply river routing
+1. Areal interpolation of runoff to explicit river segments
+2. Routing down the river network to estimate discharge
+3. Model averaging, if streamflow observations are available.
 
 ## 1. Converting raster runoff to a polygon network
 
-The raster layers are converted to polygons in order to do all the computations using only vector processing. Each cell of the raster is polygonized, and if an area of interest is provided, the polygons are clipped to it. This removes any unneeded grid cells. The resulting **HSgrid** object is a standard 'sf' object with information about each raster cell. The runoff timeseries (a [tsibble](https://github.com/tidyverts/tsibble)) can be found in a named list column *runoff_ts*. The elements are named by the ID, and can be accessed with the '$' notation.
+The raster layers are converted to polygons in order to do all the computations using only vector processing, and thus. Each cell of the raster is polygonized, and if an area of interest is provided, the polygons are clipped to it. This removes any unneeded grid cells. The resulting **HS** object is a standard 'sf' object with information about each raster cell. The runoff timeseries can be found in a named list column *runoff_ts*. The elements are named by the ID, and can be accessed with the '$' notation.
 
-We use **raster_to_HSgrid** to convert a raster timeseries to a HSgrid. Below, runoff is a *RasterBrick*, date is the date of the first layer in runoff, aoi is the area of interest.  
-```{r message=FALSE, warning=FALSE}
-HSgrid <- raster_to_HSgrid(runoff, 
-                         date = ymd("1980-01-01"), 
-                         timestep = "month", 
-                         aoi = st_union(basins),
-                         names = "LORA")
-names(HSgrid)
-plot(HSgrid[,"area_m2"])
-HSgrid$runoff_ts$`1`
-```
-
-HSgrid can also be created from an 'sf' (polygon) object and a runoff timeseries using function [create_HSgrid](https://mkkallio.github.io/hydrostreamer/reference/create_HSweights.html).
-
-## 2. Compute weights for downscaling
-
-Once the raster has been converted to *HSgrid*, we can compute the weights. *compute_HSweights()* provides a possibility to weight the segments by their respective catchment area, or by using river segment properties. In this tutorial we will use the provided catchment areas, and the river network itself to compute the weights.
-
-Below we provide five arguments to the segment weighting: *HSgrid* - which we just created in the previous step, *river* - the river network, *"length"* for weights - we'll use the river segment length as the basis of weighting, union of *basins* for area of interest - because we want only river segments within the area of interest. Finally, we tell the function that the river contains unique ID's in the column called *"SEGMENT_ID"*.
-
-For catchment-based weighting, the only difference is that the weights argument gets value *"area"*, and we provide the *basins* object to the argument with the same name.
-```{r message=FALSE, warning=FALSE}
-river_weights <- compute_HSweights(HSgrid, 
-                                   river, 
-                                   weights = "length",
-                                   aoi = st_union(basins),
-                                   riverID = "SEGMENT_ID")
-
-catchment_weights <- compute_HSweights(HSgrid, 
-                                       river, 
-                                       weights = "area",
-                                       basins = basins,
-                                       aoi = st_union(basins),
-                                       riverID = "SEGMENT_ID")
-```
-
-To illustrate the differences between these two approaches, we can plot the **weights** element in the resulting *HSweights* object.
-
-```{r}
-par(mfrow=c(1,2))
-plot(river_weights$weights[,"gridID"], reset=FALSE)
-plot(st_union(basins), add=TRUE)
-plot(catchment_weights$weights[,"gridID"])
-```
-
-The river segments and catchments are split at the borders of the runoff polygons. Weights are then divided among the river segments within each individual runoff polygon. The weights inside each runoff polygon always add to 1.
-
-```{r}
-par(mfrow=c(1,2))
-plot(river_weights$weights[,"weights"], reset=FALSE)
-plot(st_union(basins), add=TRUE)
-plot(catchment_weights$weights[,"weights"])
-
-river_weights$weights %>%
-    group_by(gridID) %>%
-    summarise(sum_of_weights = sum(weights))
-```
-
-The other elements of *HSweights* are the (routed) river network and the *HSgrid* object provided in the input to thhe constructing function. 
-
-## 3. downscale runoff
-
-Once a *HSweights* object has been created, we can apply the actual downscaling. The function condences the three elements of *HSweights* into an 'sf' object containing the river routing information, downscaled runoff timeseries (the unit is converted from a field, mm/s, to volume, m^3/s).
+We use **raster_to_HS** to convert a raster timeseries to a HS object.
 
 ```{r message=FALSE, warning=FALSE}
-catchment_downscaled <- downscale_runoff(catchment_weights)
-( river_downscaled <- downscale_runoff(river_weights) )
+source_runoff <- raster_to_HS(runoff, 
+                       unit = "mm/s",
+                       date = ymd("1980-01-01"), 
+                       timestep = "month", 
+                       aoi = st_union(basins),
+                       names = "LORA")
+source_runoff
+plot(source_runoff)
 
-
+# access runoff timeseries of the element with ID `2` 
+source_runoff$runoff_ts$`2`
 ```
 
-The downscaled runoff in *runoff_ts* is a named list column where each element is a *tsibble*. Like with HSgrid, each element can be accessed by its name - the ID of the river segment.
+HS objects can also be created from an 'sf' (polygon) object and a runoff timeseries using function [create_HS](https://mkkallio.github.io/hydrostreamer/reference/create_HS.html).
+
+## 2. Areal interpolation
+
+The four areal interpolation methods shown here are explained in more detail in our recent (2019) conference paper [here](https://mssanz.org.au/modsim2019/K8/kallio.pdf). The following figure is from the publication, visualizing the different methods:
+
+![Figure 1. Conceptual presentation of the areal interpolation methods and their result. Panel A presents the catchment areas (A1) and ancillary variable (A2) derived from a Digital Elevation Model (A0). Panel B shows the result of applying Areal Interpolation (B1), Dasymetric Mapping (B2), Pycnophylactic Interpolation (B3) and combined Pycnophylactic-Dasymetric Interpolation (B4) to input runoff data (B0).](http://markokallio.fi/modsim_fig1_density.png)
+
+
+### Area Weighted Interpolation
+
+Hydrostreamer implements several different areal interpolation methods, all of which can be accessed using the **interpolate_runoff** function. The simplest form implemented in hydrostreamer is Area Weighted Interpolation (AWI), which divides runoff from source zones to target river reaches .
 
 ```{r}
-( runoff180 <- catchment_downscaled$runoff_ts$`180` )
+AWI <- interpolate_runoff(source_runoff, basins, riverID = "SEGMENT_ID")
+AWI
 ```
 
-We can compare the downscaled results from the two approaches.
+The output contains the columns from basins, added with riverID and runoff timeseries converted to volume (cubic meters per second). 
 
 ```{r}
-plotdata <- left_join(runoff180, 
-                      river_downscaled$runoff_ts$`180`,
-                      by="Date")
-colnames(plotdata) <- c("Date", "Catchment", "River")
-plotdata <- gather(plotdata, 
-                   Approach,
-                   Runoff,
-                   -Date)
+AWI$runoff_ts$`56`
 
-ggplot(plotdata, aes(Date, Runoff, color=Approach)) + 
-    geom_line() +
-    labs(title = "Downscaled runoff at river segment 180",
-         y = 'Runoff in m3/s',
-         x = NULL)
+AWI$mean_runoff <- sapply(AWI$runoff_ts, function(x) mean(x$LORA))
+plot(AWI[,"mean_runoff"])
 ```
 
 
-## 4. Apply river routing
+### Dasymetric Mapping
 
-While the downscaled runoff at each river segment is already useful for many applications, often knowing river discharge is also desirable. *hydrostreamer* provides three simple river routing algorithms for this purpose: **instantaneous** routing, useful for e.g. estimating runoff in the entire upstream catchment of each river segment, **simple** lag based routing, and **Muskingum** routing scheme.    
+We can also refine the estimates using a dasymetric variable. Here I assume that more runoff is generated at higher elevations than lower, which may or may not be a good assumptions. It is, however, easy to extract from the DEM.
 
-Each routing method is accessible through the function *accumulate_runoff()*. Since the catchment provided here is small, and the timestep in runoff is one month, we'll just use instantaneous routing here. There would be negligible difference between lag routing and instantaneous routing in this case.
+In dasymetric mapping (DM), the output of area weighted interpolation is further refined by scaling it using an ancillary variable - in this case elevation.
+
+```{r}
+elevation_values <- raster::extract(dem, basins)
+basins$elevation <- sapply(elevation_values, mean)
+
+DM <- interpolate_runoff(source_runoff, basins, dasymetric = "elevation",
+                         riverID = "SEGMENT_ID")
+
+DM$mean_runoff <- sapply(DM$runoff_ts, function(x) mean(x$LORA))
+plot(DM[,"mean_runoff"])
+
+```
+
+### Pycnophylactic Interpolation
+
+A third possibility is to use Pycnophylactic Interpolation (PP).
+
+```{r}
+source_runoff$mean_runoff <- sapply(source_runoff$runoff_ts, function(x) {
+  mean(x$LORA)
+})
+
+PP <- interpolate_runoff(source_runoff, basins, pycnophylactic = "mean_runoff",
+                         riverID = "SEGMENT_ID")
+
+PP$mean_runoff <- sapply(PP$runoff_ts, function(x) mean(x$LORA))
+plot(PP[,"mean_runoff"])
+```
+
+
+### Combined Pycnophylactic - Dasymetric Interpolation
+
+The fourth option is to use a combination of PP and DM. In this case, PP is first performed instead of AWI, followed by the same scaling process with the 
+dasymetric variable. 
+
+```{r}
+PPDM <- interpolate_runoff(source_runoff, basins, 
+                         dasymetric = "elevation",
+                         pycnophylactic = "mean_runoff",
+                         riverID = "SEGMENT_ID")
+PPDM$mean_runoff <- sapply(PPDM$runoff_ts, function(x) mean(x$LORA))
+plot(PPDM[,"mean_runoff"])
+```
+
+
+
+### Area-to-Line interpolation
+
+All of the above examples are using catchment areas as the target units where runoff is estimated. However, existing vector-based river network data may not come specified with the DEM they were created with, or the processing steps are not clearly defined. In such cases, delieating the catchment areas for each segment may be difficult or outright impossible. For such cases, hydrostreamer provides the possibility to do interpolation from the source areas to linestrings. In such case, interpolation is based on the length of the linestring instead of the polygon area.
+
+```{r}
+A2L <- interpolate_runoff(source_runoff, river,
+                          riverID = "SEGMENT_ID")
+
+A2L$mean_runoff <- sapply(A2L$runoff_ts, function(x) mean(x$LORA))
+plot(A2L[,"mean_runoff"])
+
+# DASYMETRIC MAPPING WITH LINES
+river <- dplyr::filter(river, SEGMENT_ID %in% basins$SEGMENT_ID) %>% 
+  dplyr::mutate(elevation = basins$elevation)
+A2LDM <- interpolate_runoff(source_runoff, river,
+                            dasymetric = "elevation",
+                          riverID = "SEGMENT_ID")
+
+A2LDM$mean_runoff <- sapply(A2LDM$runoff_ts, function(x) mean(x$LORA))
+plot(A2LDM[,"mean_runoff"])
+```
+
+
+
+
+### Using both lines and basins
+
+The last example shown here is using both linestrings, and their respective catchment areas. The advantage here is that we can represent the rivers as they are in the network - as connected lines - and still use the catchment areas as a more accurate representation of the runoff produced in the catchment of the segment. In addition, using the lines allows us to use the constant river routing algorithm in the next step instead of only instantaneous routing. 
+
+```{r}
+RB <- interpolate_runoff(source_runoff,
+                         river,
+                         basins = basins,
+                         riverID = "SEGMENT_ID")
+
+RB$mean_runoff <- sapply(RB$runoff_ts, function(x) mean(x$LORA))
+plot(RB[,"mean_runoff"])
+```
+
+
+
+
+## 3. Apply river routing
+
+While the runoff generated at each river segment is already useful for many applications, knowing river discharge is often also desirable. hydrostreamer provides two simple river routing algorithms for this purpose: **instantaneous** routing, useful for e.g. estimating runoff in the entire upstream catchment of each river segment, and **constant** flow velocity routing.    
+
+Each routing method is accessible through the function *accumulate_runoff()*. Since the catchment provided here is small, and the timestep in runoff is one month, we'll just use instantaneous routing here. There would be negligible difference between constant velocity and instantaneous routing in this case.
+
+However, we cannot use the catchments-only downscaled runoff here directly because there is no routing information. Since we can derive the routing information for the river lines, we can use that same routing info for the catchments also.
+
+Note that running *river_network()* is not explicitly necessary, since the routing algorithm does it automatically if it has not been run in advance.
+
+```{r}
+routed_river <- river_network(river, riverID = "SEGMENT_ID")
+routed_river
+
+PPDM$NEXT <- routed_river$NEXT
+PPDM$PREVIOUS <- routed_river$PREVIOUS
+PPDM$UP_SEGMENTS <- routed_river$UP_SEGMENTS
+
+```
+
 
 ```{r message=FALSE, warning=FALSE}
-catchment_discharge <- accumulate_runoff(catchment_downscaled,
-                                         method = "instant")
-river_discharge <- accumulate_runoff(river_downscaled,
-                                     method = "instant")
+catchment_discharge <- accumulate_runoff(PPDM, method = "instant")
+river_discharge <- accumulate_runoff(RB, method = "instant")
+
+river_discharge
 ```
 
-We can also plot the estimated discharge from the two approaches at segment 180 by accessing the new list column *discharge_ts*. The predictions can be very different. 
+The algorithm adds a new list column discharge_ts, containing the routed discharge estimates.
+
+We can also plot the estimated discharge from the two approaches at segment 200 by accessing the new list column *discharge_ts*. 
 
 ```{r}
-plotdata <- left_join(catchment_discharge$discharge_ts$`180`, 
-                      river_discharge$discharge_ts$`180`,
-                      by="Date")
-colnames(plotdata) <- c("Date", "Catchment", "River")
-plotdata <- gather(plotdata, 
-                   Approach,
-                   Discharge,
-                   -Date)
-
-ggplot(plotdata, aes(Date, Discharge, color=Approach)) + 
-    geom_line() +
-    labs(title = "Downscaled discharge at river segment 180",
-         y = 'Q m3/s',
-         x = NULL)
+plot(catchment_discharge$discharge_ts$`200`, type = 'l')
+lines(river_discharge$discharge_ts$`200`, col='red')
+title(main = "PPDM discharge in black, and Area-to-Line discharge in red.",
+      sub = "Unit = m3/s, riverID = `200`")
 ```
-As seen from the plot, the two approaches can lead into very different estimations in small catchments - but as the river basin size increases, their predictions come closer and closer to one another. In this example basin, the big difference can be explained by the relationship between the runoff polygons and the river network; there are larger rivers which meet in the northern part of the basin. If weighted by line segments, the two rivers rare share the same grid. If weighted by basin, the catchments on both sides of the river cross over to the other runoff polygon.
 
-We recommend that segment specific catchments be used instead of river lines for weighting whenever possible, because it creates more realistic division of runoff into the river segments.
-
-## Exporting
-
-*hydrostreamer* also contains a function to export the results as a GeoPackage, since it is much easier to explore the data in a GIS software with GUI. 
-```{r message=FALSE, warning=FALSE, eval=FALSE}
-# HSwrite(catchment_discharge, "downscaled_streamflow.gpkg")
-# HSwrite(catchment_discharge, "downscaled_streamflow", what = "discharge")
-```
+As seen from the plots, in this catchment the difference between PPDM and Area-to-Line Interpolation is very small. In fact, we've found that as the basin size increases, the difference becomes increasingly small. This is particularly true for discharge at a monthly timestep. Larger difference can be expected with a daily timestep and with constant flow velocity routing.
 
 
 ## References
