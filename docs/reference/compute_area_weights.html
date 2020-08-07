@@ -9,21 +9,29 @@
 <title>Compute weights for river catchment areas within the runoff area 
 features. — compute_area_weights • hydrostreamer</title>
 
+
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -31,17 +39,17 @@ features. — compute_area_weights • hydrostreamer</title>
 
 
 
+
 <meta property="og:title" content="Compute weights for river catchment areas within the runoff area 
 features. — compute_area_weights" />
-
 <meta property="og:description" content="Computes weights for each individual river segment specific catchments 
-falling in the areal units of the runoff HSgrid. Function first 
-takes a union between basins and HSgrid (creating new 
+falling in the areal units of the runoff HS. Function first 
+takes a union between basins and HS (creating new 
 catchment units which fall inside only one runoff unit), and calculating 
 the area for each individual catchment unit. The weight is assigned by 
 dividing the area of sub-catchment with the area of runoff unit.
 This function is called by compute_HSweights." />
-<meta name="twitter:card" content="summary" />
+
 
 
 
@@ -55,9 +63,10 @@ This function is called by compute_HSweights." />
 <![endif]-->
 
 
+
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -71,7 +80,7 @@ This function is called by compute_HSweights." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
       </span>
     </div>
 
@@ -79,7 +88,7 @@ This function is called by compute_HSweights." />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -102,9 +111,13 @@ This function is called by compute_HSweights." />
   <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/mkkallio/hydrostreamer/">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -112,6 +125,7 @@ This function is called by compute_HSweights." />
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
@@ -119,25 +133,32 @@ This function is called by compute_HSweights." />
     <div class="page-header">
     <h1>Compute weights for river catchment areas within the runoff area 
 features.</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/compute_area_weights.R'><code>R/compute_area_weights.R</code></a></small>
     <div class="hidden name"><code>compute_area_weights.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    
     <p>Computes weights for each individual river segment specific catchments 
-falling in the areal units of the runoff <em>HSgrid</em>. Function first 
-takes a union between <em>basins</em> and <em>HSgrid</em> (creating new 
+falling in the areal units of the runoff <em>HS</em>. Function first 
+takes a union between <em>basins</em> and <em>HS</em> (creating new 
 catchment units which fall inside only one runoff unit), and calculating 
 the area for each individual catchment unit. The weight is assigned by 
 dividing the area of sub-catchment with the area of runoff unit.
 This function is called by <code><a href='compute_HSweights.html'>compute_HSweights</a></code>.</p>
-    
     </div>
 
-    <pre class="usage"><span class='fu'>compute_area_weights</span>(<span class='no'>basins</span>, <span class='no'>HSgrid</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>,
-  <span class='kw'>gridID</span> <span class='kw'>=</span> <span class='st'>"gridID"</span>)</pre>
-    
+    <pre class="usage"><span class='fu'>compute_area_weights</span>(
+  <span class='no'>basins</span>,
+  <span class='no'>HS</span>,
+  <span class='kw'>pycno</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>dasy</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>20</span>,
+  <span class='kw'>intensive</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>,
+  <span class='kw'>zoneID</span> <span class='kw'>=</span> <span class='st'>"zoneID"</span>
+)</pre>
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
@@ -147,48 +168,68 @@ This function is called by <code><a href='compute_HSweights.html'>compute_HSweig
 specific catchments.</p></td>
     </tr>
     <tr>
-      <th>HSgrid</th>
-      <td><p>A 'HSgrid' object, obtained with <code><a href='raster_to_HSgrid.html'>raster_to_HSgrid</a></code>.</p></td>
+      <th>HS</th>
+      <td><p>A 'HS' object, obtained with <code><a href='raster_to_HS.html'>raster_to_HS</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>pycno</th>
+      <td><p>Name of Pycnophylactic variable in <code>HS</code> input</p></td>
+    </tr>
+    <tr>
+      <th>dasy</th>
+      <td><p>Name of Dasymetric variable in <code>basins</code> input</p></td>
+    </tr>
+    <tr>
+      <th>weights</th>
+      <td><p>Name of a column in <code>river</code> to be used directly as 
+weights. Defaults to <code>NULL</code>. See Details.</p></td>
+    </tr>
+    <tr>
+      <th>n</th>
+      <td><p>Number of iterations when using pycnophylactic interpolation. 
+Default <code>25</code>.</p></td>
+    </tr>
+    <tr>
+      <th>intensive</th>
+      <td><p>Whether the pycnophylactic variable is intensive (density,
+like runoff in mm), or not (in which case it is extensive, or counts like
+runoff in volume).</p></td>
     </tr>
     <tr>
       <th>riverID</th>
       <td><p>Column in <code>basins</code> containing unique IDs.</p></td>
     </tr>
     <tr>
-      <th>gridID</th>
-      <td><p>Column in  <code>HSgrid</code> with unique IDs.</p></td>
+      <th>zoneID</th>
+      <td><p>Column in  <code>HS</code> with unique IDs.</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns an 'sf' polygon feature (a union of basins, and HSgrid) 
+    <p>Returns an 'sf' polygon feature (a union of basins, and HS) 
   with added attributes (columns):</p><ul>
 <li><p><em>ID</em>. Unique ID of the feature.</p></li>
 <li><p><em>riverID</em>. ID of the river segment each sub-catchment is 
       associated to.</p></li>
-<li><p><em>gridID</em>. ID of the runoff unit the sub-catchment 
+<li><p><em>zoneID</em>. ID of the runoff unit the sub-catchment 
       is contained in.</p></li>
 <li><p><em>weights</em>. Weights computed for each sub-catchment.</p></li>
-<li><p><em>b_area_m2</em>. Area of the sub-catchment (basin) in 
+<li><p><em>target_area</em>. Area of the sub-catchment (basin) in 
       \(m^2\).</p></li>
-<li><p><em>g_area_m2</em>. Area of the runoff unit sub-catchment is 
-      contained in. In \(m^2\).</p></li>
+<li><p><em>source_area</em>. Area of the runoff unit sub-catchment is 
+      contained in.</p></li>
 </ul>
 
-    
 
   </div>
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <h2>Contents</h2>
-    <ul class="nav nav-pills nav-stacked">
-      <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
-
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -196,13 +237,16 @@ specific catchments.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

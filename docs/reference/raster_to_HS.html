@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network — hydrostreamer • hydrostreamer</title>
+<title>Create HS from a raster — raster_to_HS • hydrostreamer</title>
 
 
 <!-- jquery -->
@@ -40,11 +39,9 @@ explicit river network — hydrostreamer • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network — hydrostreamer" />
-<meta property="og:description" content="Hydrostreamer provides functions to interpolate multiple distributed runoff 
-data on to an explicitly represented river network, route runoff down the 
-network, and optimise predictions against observed streamflow." />
+<meta property="og:title" content="Create HS from a raster — raster_to_HS" />
+<meta property="og:description" content="Polygonizes a raster and adds the values in the raster stack to a data frame
+in list column runoff_ts." />
 
 
 
@@ -127,20 +124,69 @@ network, and optimise predictions against observed streamflow." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/hydrostreamer.R'><code>R/hydrostreamer.R</code></a></small>
-    <div class="hidden name"><code>hydrostreamer.Rd</code></div>
+    <h1>Create HS from a raster</h1>
+    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/raster_to_HSgrid.R'><code>R/raster_to_HSgrid.R</code></a></small>
+    <div class="hidden name"><code>raster_to_HS.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Hydrostreamer provides functions to interpolate multiple distributed runoff 
-data on to an explicitly represented river network, route runoff down the 
-network, and optimise predictions against observed streamflow.</p>
+    <p>Polygonizes a raster and adds the values in the raster stack to a data frame
+in list column <code>runoff_ts</code>.</p>
     </div>
 
+    <pre class="usage"><span class='fu'>raster_to_HS</span>(
+  <span class='no'>rasters</span>,
+  <span class='no'>unit</span>,
+  <span class='no'>date</span>,
+  <span class='kw'>timestep</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
+)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>rasters</th>
+      <td><p>A raster object, or a list of raster objects, or a list of
+URIs to files readable by <code>raster</code> package.</p></td>
+    </tr>
+    <tr>
+      <th>unit</th>
+      <td><p>Unit of the timeseries, coercable with <code><a href='https://rdrr.io/pkg/units/man/set_units.html'>units::set_units()</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>date</th>
+      <td><p>Date of the first layer in <code>raster</code>, or a vector of dates 
+with the length of layers in <code>raster</code>, or a list of vectors of dates,
+corresponding to the dates in each raster layer.</p></td>
+    </tr>
+    <tr>
+      <th>timestep</th>
+      <td><p>Length of timestep in raster. Currently supporting 
+<code>"hour"</code>, <code>"day"</code>, <code>"month"</code>. Only needed if <code>date</code> is
+not a vector of dates.</p></td>
+    </tr>
+    <tr>
+      <th>aoi</th>
+      <td><p>Area of interest as an 'sf' polygon object, 
+'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
+recommended for all applications.</p></td>
+    </tr>
+    <tr>
+      <th>names</th>
+      <td><p>A name (names) for the runoff timeserie(s).</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Print progress indication or not.</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>See <code><a href='create_HS.html'>create_HS</a></code>.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

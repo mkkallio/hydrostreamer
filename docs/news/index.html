@@ -8,21 +8,29 @@
 
 <title>Changelog • hydrostreamer</title>
 
+
 <!-- jquery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha256-916EbMg70RQy9LHiGkXzG8hSg9EdNy97GazNG/aiY1w=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script>
+
+<!-- bootstrap-toc -->
+<link rel="stylesheet" href="../bootstrap-toc.css">
+<script src="../bootstrap-toc.js"></script>
 
 <!-- Font Awesome icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous" />
 
 <!-- clipboard.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js" integrity="sha256-FiZwavyI2V6+EXO1U+xzLG3IKldpiTFf3153ea9zikQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script>
 
-<!-- sticky kit -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
+<!-- headroom.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
@@ -30,7 +38,9 @@
 
 
 
+
 <meta property="og:title" content="Changelog" />
+
 
 
 
@@ -44,9 +54,10 @@
 <![endif]-->
 
 
+
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#toc">
     <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -60,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
       </span>
     </div>
 
@@ -68,7 +79,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fa fa-home fa-lg"></span>
+    <span class="fas fa fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -91,9 +102,13 @@
   <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/mkkallio/hydrostreamer/">
+    <span class="fab fa fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -101,18 +116,41 @@
 </div><!--/.navbar -->
 
       
+
       </header>
 
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Changelog <small></small></h1>
-      
+      <h1 data-toc-skip>Changelog <small></small></h1>
+      <small>Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="hydrostreamer-0-4-0" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-4-0" class="anchor"></a>hydrostreamer 0.4.0</h1>
+    <div id="hydrostreamer-050" class="section level1">
+<h1 class="page-header" data-toc-text="0.5.0">
+<a href="#hydrostreamer-050" class="anchor"></a>hydrostreamer 0.5.0</h1>
+<p>Another jump in the version number due to added functionality. This is a sort of restart in spirit for the package. Expect code written for the earlier versions not working with this one. Some highlights below:</p>
+<div id="new-features" class="section level2">
+<h2 class="hasAnchor">
+<a href="#new-features" class="anchor"></a>New features</h2>
+<ul>
+<li><p><code><a href="../reference/compute_HSweights.html">compute_HSweights()</a></code> is redesigned to support Dasymetric mapping and for simpler usage.</p></li>
+<li><p>In addition to a contiguous timeseries or calendar month combinations, calendar year combinations have been added.</p></li>
+</ul>
+</div>
+<div id="minor-fixes-and-enhancements" class="section level2">
+<h2 class="hasAnchor">
+<a href="#minor-fixes-and-enhancements" class="anchor"></a>Minor fixes and enhancements</h2>
+<ul>
+<li><p><code><a href="../reference/flow_gof.html">flow_gof()</a></code> is now faster for very large number of timeseries to evaluate.</p></li>
+<li><p>Two new combination options have been added; Granger-Ramanathan type A and type B (Ordinary Least Squares combination with no intercept (A), and OLS with no intercept and weights sum to unity (B)), as defined in Arsenault, et al. “A Comparative Analysis of 9 Multi-Model Averaging Approaches in Hydrological Continuous Streamflow Simulation.” Journal of Hydrology 529 (October 2015): 754–67. <a href="https://doi.org/10.1016/j.jhydrol.2015.09.001" class="uri">https://doi.org/10.1016/j.jhydrol.2015.09.001</a>.</p></li>
+<li><p>Combinations are now implemented in hydrostreamer itself: <code>ForecastComb</code> package is no longer a dependency</p></li>
+</ul>
+</div>
+</div>
+    <div id="hydrostreamer-040" class="section level1">
+<h1 class="page-header" data-toc-text="0.4.0">
+<a href="#hydrostreamer-040" class="anchor"></a>hydrostreamer 0.4.0</h1>
 <p>Large update which brings the package to version 0.4.0. Changes made to nearly all functions.</p>
 <ul>
 <li><p>The outputs from main functions are not ‘sf’ objects, with the runoff and discharge timeseries provided in list columns. This should enhance the usability of the package.</p></li>
@@ -122,20 +160,20 @@
 <li><p>The workflow is now pipeable.</p></li>
 </ul>
 </div>
-    <div id="hydrostreamer-0-3-2" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-3-2" class="anchor"></a>hydrostreamer 0.3.2</h1>
+    <div id="hydrostreamer-032" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.2">
+<a href="#hydrostreamer-032" class="anchor"></a>hydrostreamer 0.3.2</h1>
 <p>Fixed many issues, including:</p>
 <ul>
 <li><p>added <code>ForecastComb</code> in imports</p></li>
 <li><p>fixed <code><a href="../reference/delineate_basin.html">delineate_basin()</a></code></p></li>
-<li><p>Hopefully fixed the conflict issue between <code>raster</code> and <code>hydroGOF</code> packages. The issue appears to have been caused by <code>hydroGOF</code> importing <code>hydroTSM</code> importing <code>gstat</code> importing <code>spacetime</code>, which redefines class <code>RasterStack</code>. Sometimes manifests itself when loading an .RData file with a raster in it, causing automatic attachment of <code>raster</code>.</p></li>
+<li><p>Hopefully fixed the conflict issue between <code>raster</code> and <code>hydroGOF</code> packages.The issue appears to have been caused by <code>hydroGOF</code> importing <code>hydroTSM</code> importing <code>gstat</code> importing <code>spacetime</code>, which redefines class <code>RasterStack</code>. Sometimes manifests itself when loading an .RData file with a raster in it, causing automatic attachment of <code>raster</code>.</p></li>
 <li><p>Some other smaller fixes.</p></li>
 </ul>
 </div>
-    <div id="hydrostreamer-0-3-1" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-3-1" class="anchor"></a>hydrostreamer 0.3.1</h1>
+    <div id="hydrostreamer-031" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.1">
+<a href="#hydrostreamer-031" class="anchor"></a>hydrostreamer 0.3.1</h1>
 <p>Small update with mostly bugfixes.</p>
 <ul>
 <li><p>Fixed <a href="https://github.com/mkkallio/hydrostreamer/issues/2">issue</a> where Strahler based weighting of river segments did not work.</p></li>
@@ -143,9 +181,9 @@
 <li><p><code>HSgrid</code>, <code>HSweights</code>, <code>HSrunoff</code> and <code>HSflow</code> no longer lose their <code>list</code> class.</p></li>
 </ul>
 </div>
-    <div id="hydrostreamer-0-3-0" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-3-0" class="anchor"></a>hydrostreamer 0.3.0</h1>
+    <div id="hydrostreamer-030" class="section level1">
+<h1 class="page-header" data-toc-text="0.3.0">
+<a href="#hydrostreamer-030" class="anchor"></a>hydrostreamer 0.3.0</h1>
 <p>A major overhaul of the downscaling system and a number of additional features included. This update changes names of many functions and their outputs and thus introduces breaking changes. The overhaul, however, makes the package much more usable. Many of the changes are made to make further development of the package easier. This is a fairly experimental package with a number of bugs to be expected, but the main workflow works correctly.</p>
 <div id="changes-include-among-smaller-changes" class="section level2">
 <h2 class="hasAnchor">
@@ -153,10 +191,11 @@
 <ul>
 <li><p>date handling introduced, instead of sequential timestep numbers.</p></li>
 <li><p>Package now supports multiple input runoff timeseries, and the central functions support processing them all in one command.</p></li>
-<li>function names changed:
+<li>
+<p>function names changed:</p>
 <ul>
 <li>
-<code>polygrid_timeseries()</code> –&gt; <code><a href="../reference/raster_to_HSgrid.html">raster_to_HSgrid()</a></code>
+<code>polygrid_timeseries()</code> –&gt; <code>raster_to_HSgrid()</code>
 </li>
 <li>
 <code>compute_weights()</code> –&gt; <code><a href="../reference/compute_HSweights.html">compute_HSweights()</a></code>
@@ -172,7 +211,8 @@
 </li>
 </ul>
 </li>
-<li>New S3 object classes added:
+<li>
+<p>New S3 object classes added:</p>
 <ul>
 <li>
 <code>HSgrid</code> to store input runoff information</li>
@@ -188,7 +228,8 @@
 <code>HSoptim</code> to hold optimization information</li>
 </ul>
 </li>
-<li>Added two new routing functions:
+<li>
+<p>Added two new routing functions:</p>
 <ul>
 <li>
 <code>accumulate_runoff.muskingum()</code> - Muskingum routing</li>
@@ -196,7 +237,8 @@
 <code>accumulate_runoff.simple()</code> - Simple lag routing</li>
 </ul>
 </li>
-<li>Added forecast combination capabilities. It is now possible to get optimized flow estimates by
+<li>
+<p>Added forecast combination capabilities. It is now possible to get optimized flow estimates by</p>
 <ul>
 <li>
 <code><a href="../reference/optimise_point.html">optimise_point()</a></code> for optimising in point locations</li>
@@ -220,26 +262,26 @@
 </ul>
 </div>
 </div>
-    <div id="hydrostreamer-0-2-2" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-2-2" class="anchor"></a>hydrostreamer 0.2.2</h1>
+    <div id="hydrostreamer-022" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.2">
+<a href="#hydrostreamer-022" class="anchor"></a>hydrostreamer 0.2.2</h1>
 <ul>
 <li><p><code>compute_weights()</code> now calls the correct function when delineating basins from drainage directions.</p></li>
 <li><p><code>compute_segment_runoff()</code> has been partially re-implemented in Fortran, making it much faster</p></li>
 <li><p><code><a href="../reference/river_voronoi.html">river_voronoi()</a></code> is changed in the way it ensures no nodes are overlapping when tesselating Voronoi diagram. Should be faster now.</p></li>
 </ul>
 </div>
-    <div id="hydrostreamer-0-2-1" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-2-1" class="anchor"></a>hydrostreamer 0.2.1</h1>
+    <div id="hydrostreamer-021" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.1">
+<a href="#hydrostreamer-021" class="anchor"></a>hydrostreamer 0.2.1</h1>
 <ul>
 <li><p><code>flow_network()</code> now works correctly even if the last features in the river network did not have any downstream segments.</p></li>
 <li><p><code><a href="../reference/delineate_basin.html">delineate_basin()</a></code> is now re-implemented partly in Fortran, yielding a very large speed boost compared to the previous R native implementation.</p></li>
 </ul>
 </div>
-    <div id="hydrostreamer-0-2-0" class="section level1">
-<h1 class="page-header">
-<a href="#hydrostreamer-0-2-0" class="anchor"></a>hydrostreamer 0.2.0</h1>
+    <div id="hydrostreamer-020" class="section level1">
+<h1 class="page-header" data-toc-text="0.2.0">
+<a href="#hydrostreamer-020" class="anchor"></a>hydrostreamer 0.2.0</h1>
 <div id="minor-improvements-and-fixes" class="section level2">
 <h2 class="hasAnchor">
 <a href="#minor-improvements-and-fixes" class="anchor"></a>Minor improvements and fixes</h2>
@@ -271,22 +313,14 @@
 </div>
   </div>
 
-  <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
-    <div id="tocnav">
-      <h2>Contents</h2>
-      <ul class="nav nav-pills nav-stacked">
-        <li><a href="#hydrostreamer-0-4-0">0.4.0</a></li>
-        <li><a href="#hydrostreamer-0-3-2">0.3.2</a></li>
-        <li><a href="#hydrostreamer-0-3-1">0.3.1</a></li>
-        <li><a href="#hydrostreamer-0-3-0">0.3.0</a></li>
-        <li><a href="#hydrostreamer-0-2-2">0.2.2</a></li>
-        <li><a href="#hydrostreamer-0-2-1">0.2.1</a></li>
-        <li><a href="#hydrostreamer-0-2-0">0.2.0</a></li>
-      </ul>
-    </div>
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <nav id="toc" data-toggle="toc" class="sticky-top">
+      <h2 data-toc-skip>Contents</h2>
+    </nav>
   </div>
 
 </div>
+
 
       <footer>
       <div class="copyright">
@@ -294,13 +328,16 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.3.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
 </div>
+
       </footer>
    </div>
 
   
 
+
   </body>
 </html>
+
 

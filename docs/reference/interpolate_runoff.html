@@ -6,12 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Computes weights <code>HSweights</code> from <code>HS</code> and a river network
+<title>Estimate runoff in river reaches 
   
-The function computes weights either based on catchment areas (polygons), 
-or line segments which intersect a polygon with runoff information. Weights 
-are assigned so that the sum of weights for area or line features within a 
-polygon equal to 1. — compute_HSweights • hydrostreamer</title>
+Estimates runoff in individual segments of a river network represented as 
+either <code>sf LINESTRING</code> or <code>sf POLYGON</code> objects. Allows use of 
+simple Area Weighted Interpolation, Area-to-line interpolation, Dasymetric
+Mapping, Pycnophylactic Interpolation, or combined Pycnophylactic-Dasymetric
+Interpolation. — interpolate_runoff • hydrostreamer</title>
 
 
 <!-- jquery -->
@@ -44,15 +45,21 @@ polygon equal to 1. — compute_HSweights • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="Computes weights <code>HSweights</code> from <code>HS</code> and a river network
+<meta property="og:title" content="Estimate runoff in river reaches 
   
-The function computes weights either based on catchment areas (polygons), 
-or line segments which intersect a polygon with runoff information. Weights 
-are assigned so that the sum of weights for area or line features within a 
-polygon equal to 1. — compute_HSweights" />
-<meta property="og:description" content="The river network needs to be a &quot;clean&quot;, connected network. This means that 
-connected river segments share a node at the point of confluence, and all 
-linestrings are cut at segment intersections." />
+Estimates runoff in individual segments of a river network represented as 
+either <code>sf LINESTRING</code> or <code>sf POLYGON</code> objects. Allows use of 
+simple Area Weighted Interpolation, Area-to-line interpolation, Dasymetric
+Mapping, Pycnophylactic Interpolation, or combined Pycnophylactic-Dasymetric
+Interpolation. — interpolate_runoff" />
+<meta property="og:description" content="The river network can be any of three options: 1) a river network consisting
+of LINESTRINGs, in which case Area-to-Line interpolation is used. 2) A 
+network of POLYGONs, in which case Areal Interpolation (AWI, DM, or PP) 
+is used. 3) both LINESTRING river network, and a POLYGON network describing 
+the catchments of each individual segment of the LINESTRING network. In this 
+case, Areal Interpolation is used. The third option is useful for routing 
+purposes. If only catchments are given, only instantaneous routing can be 
+used, because river line length cannot be derived from polygon areas." />
 
 
 
@@ -135,29 +142,35 @@ linestrings are cut at segment intersections." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Computes weights <code>HSweights</code> from <code>HS</code> and a river network
+    <h1>Estimate runoff in river reaches 
   
-The function computes weights either based on catchment areas (polygons), 
-or line segments which intersect a polygon with runoff information. Weights 
-are assigned so that the sum of weights for area or line features within a 
-polygon equal to 1.</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/compute_weights.R'><code>R/compute_weights.R</code></a></small>
-    <div class="hidden name"><code>compute_HSweights.Rd</code></div>
+Estimates runoff in individual segments of a river network represented as 
+either <code>sf LINESTRING</code> or <code>sf POLYGON</code> objects. Allows use of 
+simple Area Weighted Interpolation, Area-to-line interpolation, Dasymetric
+Mapping, Pycnophylactic Interpolation, or combined Pycnophylactic-Dasymetric
+Interpolation.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/interpolate_runoff.R'><code>R/interpolate_runoff.R</code></a></small>
+    <div class="hidden name"><code>interpolate_runoff.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The river network needs to be a "clean", connected network. This means that 
-connected river segments share a node at the point of confluence, and all 
-linestrings are cut at segment intersections.</p>
+    <p>The river network can be any of three options: 1) a river network consisting
+of LINESTRINGs, in which case Area-to-Line interpolation is used. 2) A 
+network of POLYGONs, in which case Areal Interpolation (AWI, DM, or PP) 
+is used. 3) both LINESTRING river network, and a POLYGON network describing 
+the catchments of each individual segment of the LINESTRING network. In this 
+case, Areal Interpolation is used. The third option is useful for routing 
+purposes. If only catchments are given, only instantaneous routing can be 
+used, because river line length cannot be derived from polygon areas.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compute_HSweights</span>(
+    <pre class="usage"><span class='fu'>interpolate_runoff</span>(
   <span class='no'>HS</span>,
   <span class='no'>river</span>,
   <span class='kw'>basins</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>dasymetric</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>pycnophylactic</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>20</span>,
+  <span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>10</span>,
   <span class='kw'>intensive</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
   <span class='kw'>weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
@@ -170,34 +183,35 @@ linestrings are cut at segment intersections.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>HS</th>
-      <td><p>A 'HS' object, obtained with <code><a href='raster_to_HS.html'>raster_to_HS</a></code>.</p></td>
+      <td><p>A 'HS' object, obtained with <code><a href='raster_to_HS.html'>raster_to_HS</a></code> or 
+<code><a href='create_HS.html'>create_HS</a></code>.</p></td>
     </tr>
     <tr>
       <th>river</th>
-      <td><p>An 'sf' linestring feature representing a river network.</p></td>
+      <td><p>An 'sf' linestring or polygon feature representing a river 
+network</p></td>
     </tr>
     <tr>
       <th>basins</th>
-      <td><p>An 'sf' polygon object. If weights are set to "area", providing 
-basins skips the delineation process. ID column must have the name as 
-<code>riverID</code> See details. Optional. Defaults to <code>NULL</code>.</p></td>
+      <td><p>An 'sf' polygon object with corresponding catchments, if river
+input is a linestring. Optional.</p></td>
     </tr>
     <tr>
       <th>dasymetric</th>
       <td><p>Column name in <code>river</code> or in <code>basins</code> to be used 
 as the ancillary information in dasymetric mapping. If <code>NULL</code> 
-(default), no dasymetric mapping is performed. See details.</p></td>
+(default), no dasymetric mapping is performed.</p></td>
     </tr>
     <tr>
       <th>pycnophylactic</th>
       <td><p>Column in <code>HS</code> to be used as basis in 
 pycnophylactic interpolation. If <code>NULL</code>, or if <code><a href='https://rdrr.io/r/base/NULL.html'>is.null(basins)</a></code>,
-not performed. See details.</p></td>
+not performed.</p></td>
     </tr>
     <tr>
       <th>n</th>
       <td><p>Number of iterations when using pycnophylactic interpolation. 
-Default <code>25</code>.</p></td>
+Default <code>10</code>.</p></td>
     </tr>
     <tr>
       <th>intensive</th>
@@ -230,42 +244,26 @@ of <code>basins</code>). Defaults to <code>NULL</code>.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns a list object with class 'HSweights', containing the following 
+    <p>Returns a <code>HS</code> object, containing the following 
   elements:</p><ul>
-<li><p><code>river</code>. The supplied river network with routing information. 
-      See <code><a href='river_network.html'>river_network</a></code> for details.</p></li>
-<li><p><code>weights</code>. River network lines or catchment polygon network 
-      which was used as the basis of weighting. See 
-      <code><a href='compute_area_weights.html'>compute_area_weights</a></code> or <code><a href='compute_river_weights.html'>compute_river_weights</a></code> 
-      for details.</p></li>
-<li><p><code>HS</code>. The input HS object containing runoff information.</p></li>
+<li><p><code>riverID</code>. Unique identifier</p></li>
+<li><p><code>runoff_ts</code>. Interpolated runoff timeseries at each river 
+      reach.</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Weights should be one of the following: "equal", "length", "strahler", "area", 
-or a numeric vector which specifies the weight for each river segment.</p><ul>
-<li><p><code>equal</code> option assigns equal weights to all river segments within 
-  a polygon.</p></li>
-<li><p><code>length</code> option weights river segments within a polygon based on 
-  the length of the segment.</p></li>
-<li><p><code>strahler</code> option weights river segments based on the Strahler 
-  number computed for the 
-  supplied river network.</p></li>
-<li><p>A numeric vector with length equal to the number of features in
-   <code>river</code>. Weights will be computed within a polygon: \(x_i/sum(x)\)</p></li>
-<li><p><code>area</code> option weights the river segments based on segment-specific 
-  catchment area falling inside a polygon. See more details below.</p></li>
-</ul>
-
-<p>If line-based weights (equal, length, strahler, user specified vector) are 
-used, the river network is split at grid cell boundaries before determining 
-polygon-segment relationship.</p>
-<p>"area" weights can be used when catchment-based weighting is desired. If no 
-further data is supplied, the function computes a Voronoi diagram from the 
-river network (see <code><a href='river_voronoi.html'>river_voronoi</a></code> for details). If the basins 
-are known, they can be supplied which allows skipping the delineation step 
-entirely.</p>
+    <p>The selection of areal interpolation method is determined by the input to the
+function. If <code>dasymetric</code> and <code>pycnophylactic</code> are NULL (default),
+simple Area Weighted Interpolation or Area-to-Line Interpolation is used. If
+<code>dasymetric</code> variable is given, Dasymetric Mapping is used instead. 
+If <code>pycnophylactic</code> is given, the function performs Pycnophylactic 
+Interpolation. And if both <code>dasymetric</code> and <code>pycnophylactic</code> are 
+given, the function first performs Pycnophylactic Interpolation, which is 
+further refined by the given dasymetric variable. Note that pycnophylactic
+interpolation is only available for polygon networks. Catchments for 
+linestring networks can be estimated using <code><a href='river_voronoi.html'>river_voronoi</a></code>,
+allowing pycnophylactic interpolation for line networks.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

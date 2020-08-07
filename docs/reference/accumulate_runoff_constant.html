@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network — hydrostreamer • hydrostreamer</title>
+<title>Apply constant velocity river routing — accumulate_runoff_constant • hydrostreamer</title>
 
 
 <!-- jquery -->
@@ -40,11 +39,9 @@ explicit river network — hydrostreamer • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network — hydrostreamer" />
-<meta property="og:description" content="Hydrostreamer provides functions to interpolate multiple distributed runoff 
-data on to an explicitly represented river network, route runoff down the 
-network, and optimise predictions against observed streamflow." />
+<meta property="og:title" content="Apply constant velocity river routing — accumulate_runoff_constant" />
+<meta property="og:description" content="Implements a simple constant velocity routing algorithm which can be used 
+with arbitrary timesteps." />
 
 
 
@@ -127,20 +124,41 @@ network, and optimise predictions against observed streamflow." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/hydrostreamer.R'><code>R/hydrostreamer.R</code></a></small>
-    <div class="hidden name"><code>hydrostreamer.Rd</code></div>
+    <h1>Apply constant velocity river routing</h1>
+    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/accumulate_runoff_constant.R'><code>R/accumulate_runoff_constant.R</code></a></small>
+    <div class="hidden name"><code>accumulate_runoff_constant.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Hydrostreamer provides functions to interpolate multiple distributed runoff 
-data on to an explicitly represented river network, route runoff down the 
-network, and optimise predictions against observed streamflow.</p>
+    <p>Implements a simple constant velocity routing algorithm which can be used 
+with arbitrary timesteps.</p>
     </div>
 
+    <pre class="usage"><span class='fu'>accumulate_runoff_constant</span>(<span class='no'>HS</span>, <span class='kw'>velocity</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>HS</th>
+      <td><p>A <code>HS</code> object.</p></td>
+    </tr>
+    <tr>
+      <th>velocity</th>
+      <td><p>Flow velocity. Can be a constant, or a vector of flow 
+velocity at each unique river segments. Defaults to 1 meter per second.</p></td>
+    </tr>
+    <tr>
+      <th>verbose</th>
+      <td><p>Whether to print progress indication or not.</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>Returns the input object <code>HS</code>) with an added list column
+  <code>discharge_ts</code> containing routed discharge estimates for each river
+   segment.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

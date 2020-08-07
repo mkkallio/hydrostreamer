@@ -6,8 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network — hydrostreamer • hydrostreamer</title>
+<title>Combine <code>HS</code> objects or add new runoff input from raster. — add_HS • hydrostreamer</title>
 
 
 <!-- jquery -->
@@ -40,11 +39,10 @@ explicit river network — hydrostreamer • hydrostreamer</title>
 
 
 
-<meta property="og:title" content="hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network — hydrostreamer" />
-<meta property="og:description" content="Hydrostreamer provides functions to interpolate multiple distributed runoff 
-data on to an explicitly represented river network, route runoff down the 
-network, and optimise predictions against observed streamflow." />
+<meta property="og:title" content="Combine <code>HS</code> objects or add new runoff input from raster. — add_HS" />
+<meta property="og:description" content="Combines the runoff_ts columns from two HS objects, or adds new
+runoff timeseries from a raster. **All** geometries in HS must be present
+in the object to be added, or combination will not done." />
 
 
 
@@ -127,20 +125,76 @@ network, and optimise predictions against observed streamflow." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>hydrostreamer: A package for interpolatinng distributed runoff products on to 
-explicit river network</h1>
-    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/hydrostreamer.R'><code>R/hydrostreamer.R</code></a></small>
-    <div class="hidden name"><code>hydrostreamer.Rd</code></div>
+    <h1>Combine <code>HS</code> objects or add new runoff input from raster.</h1>
+    <small class="dont-index">Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/R/add_HSgrid.R'><code>R/add_HSgrid.R</code></a></small>
+    <div class="hidden name"><code>add_HS.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Hydrostreamer provides functions to interpolate multiple distributed runoff 
-data on to an explicitly represented river network, route runoff down the 
-network, and optimise predictions against observed streamflow.</p>
+    <p>Combines the <code>runoff_ts</code> columns from two HS objects, or adds new
+runoff timeseries from a raster. **All** geometries in HS must be present
+in the object to be added, or combination will not done.</p>
     </div>
 
+    <pre class="usage"><span class='fu'>add_HS</span>(
+  <span class='no'>HS</span>,
+  <span class='kw'>from</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>rasters</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>unit</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>date</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>timestep</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>aoi</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
+  <span class='kw'>names</span> <span class='kw'>=</span> <span class='kw'>NULL</span>
+)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>HS</th>
+      <td><p>an existing <code>HS</code> object.</p></td>
+    </tr>
+    <tr>
+      <th>from</th>
+      <td><p>A <code>HS</code> object to add from. Optional.</p></td>
+    </tr>
+    <tr>
+      <th>rasters</th>
+      <td><p>A raster object, or a list of raster objects, or a list of
+URIs to files readable by <code>raster</code> package.</p></td>
+    </tr>
+    <tr>
+      <th>unit</th>
+      <td><p>Unit of the timeseries, coercable with <code><a href='https://rdrr.io/pkg/units/man/set_units.html'>units::set_units()</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>date</th>
+      <td><p>Date of the first layer in <code>raster</code>, or a vector of dates 
+with the length of layers in <code>raster</code>, or a list of vectors of dates,
+corresponding to the dates in each raster layer.</p></td>
+    </tr>
+    <tr>
+      <th>timestep</th>
+      <td><p>Length of timestep in raster. Currently supporting 
+<code>"hour"</code>, <code>"day"</code>, <code>"month"</code>. Only needed if <code>date</code> is
+not a vector of dates.</p></td>
+    </tr>
+    <tr>
+      <th>aoi</th>
+      <td><p>Area of interest as an 'sf' polygon object, 
+'SpatialPolygons', or 'SpatialPolygonsDataFrame'. Optional, but 
+recommended for all applications.</p></td>
+    </tr>
+    <tr>
+      <th>names</th>
+      <td><p>A name (names) for the runoff timeserie(s).</p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>Returns the input <code>HS</code> object with added columns in 
+  runoff_ts column.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
