@@ -150,8 +150,8 @@ optimise_region <- function(HS,
         
         # route
         statriver <- accumulate_runoff(statriver, 
-                                       method = routing)#,
-                                       #...)
+                                       method = routing,
+                                       ...)
         
         stationrow <- which(statriver$riverID == upstations$riverID[station])
         flow <- dplyr::left_join(statriver$discharge_ts[[ stationrow ]],
@@ -313,42 +313,43 @@ optimise_region <- function(HS,
     
     if(no_station == "em") {
         
-        
         # choose only segments which are left
         statriver <- HS[!HS$riverID %in% optimizedIDs$riverID,]
-        # statriver <- statriver[order(statriver$riverID),]
         
-        # mean combination first so that we dont need to route everything
-        # and then take mean. instead, route the mean directly
-        statriver <- dplyr::select(statriver, -discharge_ts)
-        statriver <- ensemble_summary(statriver, 
-                                      summarise_over_timeseries = FALSE,
-                                      aggregate_monthly = FALSE,
-                                      funs = "mean",
-                                      drop=TRUE)
-        # route
-        statriver <- accumulate_runoff(statriver, 
-                                       method = routing)#,
-                                       #...)
-
-        # update HS 
-        for(i in seq_along(statriver$Optimisation_info)) {
-            statriver$Optimisation_info[[i]] <- 
-                "Ensemble Mean - not optimized"
+        if(nrow(statriver) != 0) {
+            
+            # mean combination first so that we dont need to route everything
+            # and then take mean. instead, route the mean directly
+            statriver <- dplyr::select(statriver, -discharge_ts)
+            statriver <- ensemble_summary(statriver, 
+                                          summarise_over_timeseries = FALSE,
+                                          aggregate_monthly = FALSE,
+                                          funs = "mean",
+                                          drop=TRUE)
+            # route
+            statriver <- accumulate_runoff(statriver, 
+                                           method = routing,
+                                           ...)
+            
+            # update HS 
+            for(i in seq_along(statriver$Optimisation_info)) {
+                statriver$Optimisation_info[[i]] <- 
+                    "Ensemble Mean - not optimized"
+            }
+            statriver$Optimised_at <- NA
+            
+            update <- HS$riverID %in% statriver$riverID
+            HS$discharge_ts[update] <- statriver$discharge_ts
+            HS$runoff_ts[update] <- statriver$runoff_ts
+            HS$Optimised_at[update] <- statriver$Optimised_at
+            HS$Optimisation_info[update] <- statriver$Optimisation_info
+            
+            # mark which river segments have already been optimized
+            optimizedIDs <- rbind(optimizedIDs, 
+                                  data.frame(riverID = statriver$riverID, 
+                                             OPTIMIZED_STATION = "Ensemble Mean",
+                                             OPTIMIZED_riverID = NA))
         }
-        statriver$Optimised_at <- NA
-        
-        update <- HS$riverID %in% statriver$riverID
-        HS$discharge_ts[update] <- statriver$discharge_ts
-        HS$runoff_ts[update] <- statriver$runoff_ts
-        HS$Optimised_at[update] <- statriver$Optimised_at
-        HS$Optimisation_info[update] <- statriver$Optimisation_info
-        
-        # mark which river segments have already been optimized
-        optimizedIDs <- rbind(optimizedIDs, 
-                              data.frame(riverID = statriver$riverID, 
-                                         OPTIMIZED_STATION = "Ensemble Mean",
-                                         OPTIMIZED_riverID = NA))
     }
     
     if (verbose) setTxtProgressBar(pb, station+1)

@@ -250,7 +250,7 @@ accumulate_runoff_constant <- function(HS,
         }
     }
     
-    close(pb)
+    if(verbose) close(pb)
     
     # --------------------------------------------------------------------------
     # ROUTE REVERSE

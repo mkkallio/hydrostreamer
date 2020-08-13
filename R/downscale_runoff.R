@@ -77,7 +77,7 @@ downscale_with_weights <- function(HSweights,
     riverID <- NULL
     
     river <- HSweights$target
-    weights <- HSweights$weights
+    weights <- units::drop_units(HSweights$weights)
     grid <- HSweights$source
     
     nriv <- NROW(river)
@@ -115,8 +115,7 @@ downscale_with_weights <- function(HSweights,
         nts <- nrow(runoff_ts[[g]])
         runoffTS <- runoff_ts[[g]]
         
-        QTS <- matrix(0, nrow = nts, ncol = nriv) %>% 
-            units::as_units("m3/s")
+        QTS <- matrix(0, nrow = nts, ncol = nriv) 
         
         
         unit <- units::deparse_unit(runoffTS)
@@ -126,30 +125,18 @@ downscale_with_weights <- function(HSweights,
                                         gridareas[rep(1:ng, each = nts)])
         } 
         
+        # remove units after conversion to speed up computation, and add them back
+        # later on.
+        runoffTS <- units::drop_units(runoffTS)
+        
         for (seg in 1:nseg) {
             if (is.na(wrIDs[seg])) next
             QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] + 
                 weightvec[seg] *
                 runoffTS[, wgIDs[seg] ]
         }
-        
-        # if(convert) {
-            # for (seg in 1:nseg) {
-            #     if (is.na(wrIDs[seg])) next
-            #     QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] +
-            #         weightvec[seg] *
-            #         runoffTS[, wgIDs[seg] ] *
-            #         gridareas[ wgIDs[seg] ] / as_units(1000, unitless)
-            # 
-            # }
-        # } else {
-        #     for (seg in 1:nseg) {
-        #         if (is.na(wrIDs[seg])) next
-        #         QTS[, wrIDs[seg] ] <- QTS[, wrIDs[seg] ] + 
-        #             weightvec[seg] *
-        #             runoffTS[, wgIDs[seg] ]
-        #     }
-        # }
+
+        QTS <- units::set_units(QTS, "m3/s")
         QTS <- dplyr::as_tibble(QTS)
         colnames(QTS) <- rIDs
         QTS$Date <- unidates

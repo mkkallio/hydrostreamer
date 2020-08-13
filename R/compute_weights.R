@@ -254,16 +254,12 @@ compute_HSweights <- function(HS,
                                                 seg_weights = NULL,
                                                 split=TRUE)
         }
-        
 
         # create output
         HSweights <- create_HSweights(target = river, 
                                       weights = splitriver, 
                                       source = HS)
-        
     }
     
-    
-    if(verbose) message("Done.")
     return(HSweights)
 }

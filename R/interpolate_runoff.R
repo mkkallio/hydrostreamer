@@ -86,7 +86,7 @@ interpolate_runoff <- function(HS,
     
     
     if(verbose) {
-        msg <- paste0("Starting Interpolation from ", nrow(HS), " source zones ",
+        msg <- paste0("Starting interpolation from ", nrow(HS), " source zones ",
                       "to ", nrow(river), " target zones.")
         message(msg)
     }
