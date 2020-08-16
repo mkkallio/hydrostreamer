@@ -92,6 +92,8 @@ river_network <- function(river,
     #TO_ALL <- vector("list", nSegments)
     nup <- rep(0, nrow(river))
     
+    if(verbose) message("Creating routing information..")
+    
     ##########
     # create NEXT, PREVIOUS from intersecting nodes, or from provided next_down
     # column. 

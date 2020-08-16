@@ -54,11 +54,11 @@ accumulate_runoff <- function(HS,
   
   # ----------------------------------------------------------------------------
   # route
-  if(method == "instant") {
+  if(method[1] == "instant") {
     
     output <- accumulate_runoff_instant(HS, verbose = verbose)
     
-  } else if (method == "constant") {
+  } else if (method[1] == "constant") {
     
     params <- list(...)
     

@@ -19,6 +19,45 @@ accumulate_runoff_instant <- function(HS,
   UP_SEGMENTS <- NULL
   NEXT <- NULL
   
+  # ----------------------------------------------------------------------------
+  # test input 
+  
+  test <- inherits(HS, "HS")
+  if(!test) stop("HS must be of class HS")
+  
+  
+  # process control timeseries?
+  test <- hasName(HS, "control_ts")
+  if(test) {
+    boundary_runoff <- unname(which(sapply(HS$control_type, function(x) {
+      if(is.null(x)) {
+        return(FALSE)
+      } else {
+        return(x[2] == "runoff")
+      }
+    })))
+    if(length(boundary_runoff) == 0) {
+      rboundary <- FALSE
+    } else rboundary <- TRUE
+    boundary_discharge <- unname(which(sapply(HS$control_type, function(x) {
+      if(is.null(x)) {
+        return(FALSE)
+      } else {
+        return(x[2] == "discharge")
+      }
+    })))
+    if(length(boundary_discharge) == 0) {
+      dboundary <- FALSE
+    } else dboundary <- TRUE
+  } else {
+    rboundary <- FALSE
+    dboundary <- FALSE
+  }
+  
+  
+  # ----------------------------------------------------------------------------
+  # do routing
+  
   lengths <- sf::st_length(HS) %>% unclass()
   IDs <- dplyr::select(HS, riverID) %>% 
     sf::st_set_geometry(NULL) %>% 
@@ -42,17 +81,21 @@ accumulate_runoff_instant <- function(HS,
   
   # process all of downscaled runoff
   total <- length(order)
-  if (verbose) pb <- txtProgressBar(min = 0, max = total, style = 3)
+  if (verbose) {
+    message("Routing..")
+    pb <- txtProgressBar(min = 0, max = total, style = 3)
+  }
   prog <- 0
   for (seg in order) {
     # progress ind
     prog <- prog + 1
     
-    # check and apply controls condition
-    if (hasName(HS, "control_ts")) {
-      if(!is.null(HS$control_ts[[seg]])) {
+    # check and apply runoff boundary conditions - these are routed
+    if(rboundary) {
+      test <- seg %in% boundary_runoff
+      if(test) {
         control_ts <- HS$control_ts[[seg]]
-        type <- HS$control_type[[seg]]
+        type <- HS$control_type[[seg]][1]
         dateind <- discharge[[seg]]$Date %in% control_ts$Date
         
         
@@ -99,6 +142,52 @@ accumulate_runoff_instant <- function(HS,
     # update next segment discharge
     new_dis <- discharge[[ nextriver[seg] ]][,-1] + discharge[[seg]][,-1]
     discharge[[ nextriver[seg] ]][,-1] <- new_dis
+    
+    
+    
+    # check and apply runoff boundary conditions - these are routed
+    if(dboundary) {
+      test <- seg %in% boundary_discharge
+      if(test) {
+        control_ts <- HS$control_ts[[seg]]
+        type <- HS$control_type[[seg]][1]
+        dateind <- discharge[[seg]]$Date %in% control_ts$Date
+        
+        
+        # Set, of modify input runoff of the segment
+        if (type == "set") {
+          for(pred in 2:ncol(discharge[[seg]])) {
+            discharge[[seg]][dateind,pred] <- control_ts[,2]
+          }
+          
+          # if no downstream segments, go to next seg
+          if(!is.na(nextriver[[seg]])) {
+            new_dis <- discharge[[nextriver[seg] ]][,-1] + 
+              discharge[[seg]][,-1]
+            
+            discharge[[ nextriver[seg] ]][,-1] <- new_dis
+          }
+          next
+        } else if (type == "add") {
+          for(pred in 2:ncol(discharge[[seg]])) {
+            discharge[[seg]][dateind,pred] <- 
+              discharge[[seg]][dateind,pred] + control_ts[,2]
+          }
+        } else if (type == "subtract") {
+          for(pred in 2:ncol(discharge[[seg]])) {
+            discharge[[seg]][dateind,pred] <- 
+              discharge[[seg]][dateind,pred] - control_ts[,2]
+          }
+        } else if (type == "multiply") {
+          for(pred in 2:ncol(discharge[[seg]])) {
+            discharge[[seg]][dateind,pred] <- 
+              discharge[[seg]][dateind,pred] * control_ts[,2]
+          }
+          
+        }
+        
+      }
+    }
     
     #update progressbar
     if (verbose) setTxtProgressBar(pb, prog)

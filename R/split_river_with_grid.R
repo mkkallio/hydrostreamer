@@ -43,14 +43,14 @@ split_river_with_grid <- function(river,
     ID <- NULL
     
     #if("HS" %in% class(HS)) HS <- HS$grid
-    grid <- HS %>% dplyr::select_(zoneID)
+    grid <- HS %>% dplyr::select(!!zoneID)
     
     river <- suppressMessages(suppressWarnings(sf::st_intersection(river, 
                                                                    grid)))
     
     #add unique IDs
     if( any(names(river) == riverID) ) {
-        river <- river %>% dplyr::rename_(riverID = riverID)
+        river <- river %>% dplyr::rename(riverID = !!riverID)
     }
     river$ID <- 1:NROW(river)
     river <- river %>% dplyr::select(ID, riverID, zoneID, dplyr::everything())

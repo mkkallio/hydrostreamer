@@ -42,7 +42,7 @@ library(sf)
 data(example_rivers)
 data(example_basins)
 runoff <- brick(system.file("extdata", "runoff.tif", package = "hydrostreamer"))
-data(example_dem)
+dem <- brick(system.file("extdata", "dem.tif", package = "hydrostreamer")) 
 
 plot(runoff[[1]]) 
 plot(st_union(basins), add=TRUE)

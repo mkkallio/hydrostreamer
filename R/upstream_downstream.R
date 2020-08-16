@@ -28,7 +28,7 @@ upstream <- function(HSnetwork, ID, riverID = "riverID") {
     curr <- which(rIDs == ID)
     
     # set NEXT of curr to -9999 (it'll be outlet)
-    HSnetwork$NEXT[curr] <- -9999
+    # HSnetwork$NEXT[curr] <- -9999
     
     # upstream is a logical vector specifying all upstream segments
     upstream <- vector("logical", nrow(HSnetwork))

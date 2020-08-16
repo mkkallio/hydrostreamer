@@ -147,7 +147,8 @@ combine_monthly <- function(flow,
                             bias_correction,
                             log,
                             warned_overfit,
-                            warned_train) {
+                            warned_train,
+                            ...) {
     
     # prepare
     Date <- NULL
@@ -169,7 +170,8 @@ combine_monthly <- function(flow,
                                              bias_correction,
                                              log,
                                              warned_overfit,
-                                             warned_train)
+                                             warned_train,
+                                             ...)
         
         warned_overfit <- tempcombs[[m]]$warned_overfit
         warned_train <- tempcombs[[m]]$warned_train
@@ -206,18 +208,22 @@ combine_monthly <- function(flow,
     trains <- opt_ts$Train_or_test == "Train" 
     tests <- opt_ts$Train_or_test == "Test"
     if(sum(tests, na.rm=TRUE) == 0) {
-        traingof <- hydroGOF::gof(opt_ts$Optimized[trains], 
-                                  opt_ts$Observations[trains])  
+        traingof <- hydroGOF::gof(as.numeric(opt_ts$Optimized[trains]), 
+                                  as.numeric(opt_ts$Observations[trains]),
+                                  na.rm=TRUE)  
         gofs <- data.frame(Train = traingof)
     } else {
-        traingof <- hydroGOF::gof(opt_ts$Optimized[trains], 
-                                  opt_ts$Observations[trains]) 
+        traingof <- hydroGOF::gof(as.numeric(opt_ts$Optimized[trains]), 
+                                  as.numeric(opt_ts$Observations[trains]),
+                                  na.rm=TRUE) 
         
-        testgof <- hydroGOF::gof(opt_ts$Optimized[tests], 
-                                 opt_ts$Observations[tests])
+        testgof <- hydroGOF::gof(as.numeric(opt_ts$Optimized[tests]), 
+                                 as.numeric(opt_ts$Observations[tests]),
+                                 na.rm=TRUE)
         
-        bothgof <- hydroGOF::gof(opt_ts$Optimized, 
-                                 opt_ts$Observations)
+        bothgof <- hydroGOF::gof(as.numeric(opt_ts$Optimized), 
+                                 as.numeric(opt_ts$Observations),
+                                 na.rm=TRUE)
         
         gofs <- data.frame(Train = traingof,
                            Test = testgof,
@@ -251,7 +257,8 @@ combine_annual <- function(flow,
                            bias_correction,
                            log,
                            warned_overfit,
-                           warned_train) {
+                           warned_train,
+                           ...) {
 
     # determine which years to combine in the first station iteration
     years <- flow$Date %>% lubridate::year() %>% unique
@@ -274,7 +281,8 @@ combine_annual <- function(flow,
                                  bias_correction,
                                  log,
                                  warned_overfit,
-                                 warned_train)
+                                 warned_train,
+                                 ...)
     
     return(output)
     

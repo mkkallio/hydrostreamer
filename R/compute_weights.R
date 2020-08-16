@@ -171,7 +171,6 @@ compute_HSweights <- function(HS,
 
 
         # 2. compute basin weights
-        if(verbose) message("\n Computing weights..")
         if(!is.null(weights)) {
             basins <- compute_area_weights(basins, 
                                            HS, 

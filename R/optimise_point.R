@@ -92,7 +92,6 @@ optimise_point <- function(HS,
             next
         }
         
-        #flow <- remove_collinear(flow)
         
         ############################################
         # Forecast combination entire timeseries or monthly or annually

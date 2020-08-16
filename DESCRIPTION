@@ -1,8 +1,8 @@
 Package: hydrostreamer
 Type: Package
-Title: A package for interpolating distributed runoff products on to 
-  explicit river segments
-Version: 0.5.0
+Title: A Package for Interpolating Distributed Runoff Rroducts on to 
+  Explicit River Segments
+Version: 1.0.0
 Author: Marko Kallio
 Authors@R: c(person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 
@@ -11,13 +11,10 @@ Authors@R: c(person("Marko", "Kallio", email = "marko@markokallio.fi",
                   role = c("aut"),
                   comment = c(ORCID = "0000-0002-2603-3420")))
 Maintainer: Marko Kallio <marko@markokallio.fi>
-Description: hydrostreamer provides functions to downscale distributed runoff 
-  data on to an explicitly represented river network. Downscaling is done by the 
-  spatial relationship between an areal unit of runoff and an overlaid river 
-  network. Value of the runoff unit is divided among intersecting river segments
-  using weighted interpolation. hydrostreamer provides several methods for the 
-  assignment. Simple river routing algorithms are also provided to estimate 
-  discharge at arbitrary segment.
+Description: This package provides functions to interpolate multiple 
+  distributed runoff data on to an explicitly represented river network, 
+  route runoff down the network, and optimise predictions against observed 
+  streamflow.
 Depends: 
     R (>= 3.5.0)
 Encoding: UTF-8
@@ -28,7 +25,6 @@ Imports:
     methods,
     tibble,
     raster,
-    rgdal,
     lubridate,
     quadprog,
     tidyr,
@@ -36,7 +32,6 @@ Imports:
     Matrix,
     stats,
     units,
-    udunits2,
     Rcpp (>= 1.0.3),
     sf (>= 0.8.0)
 Suggests:

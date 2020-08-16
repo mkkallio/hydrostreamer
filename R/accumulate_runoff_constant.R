@@ -31,7 +31,8 @@ accumulate_runoff_constant <- function(HS,
     
     if(verbose) message("Preparing...")
     
-    # routing does not work for river networks of 1 segment - duplicate
+    # routing does not work for river networks of 1 segment: duplicate and
+    # remove duplicate at the end
     test <- nrow(HS) == 1
     if(test) {
         single_segment <- TRUE
