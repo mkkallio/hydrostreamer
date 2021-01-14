@@ -8,11 +8,11 @@
 #' a single numerical value.
 #' 
 #' @param HS \code{HS} object, or a list of data frames with column \code{Date}.
-#' @param summarise_over_timeseries Apply function(s) to each column-wise (to
+#' @param summarise_over_timeseries Apply function(s) column-wise (to
 #'   each timeseries separately, \code{TRUE}), or row-wise for each date in 
 #'   timeseries(\code{FALSE}, default).
-#' @param aggregate_monthly Apply results to the 12 months of the year. Defaults
-#'   to \code{FALSE}.
+#' @param aggregate_monthly Return results as averages for the 12 months of the
+#'   year? Defaults to \code{FALSE}.
 #' @param funs Functions to evaluate. By default, computes \code{min, mean, 
 #' median and max}.
 #' @param drop Drop existing timeseries in \code{runoff_ts}, \code{discharge_ts},

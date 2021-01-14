@@ -186,8 +186,8 @@ plot.HS <- function(x, ...) {
 #'   \code{NULL} (default), extracts timeseries from all river segments.
 #'   
 #' @return Returns a list of \code{tibble}s with column Date and columns 
-#'   named by riverID. Each element of the list is named by andcorrespond to a 
-#'   timeseries in the timeseries column column specified by function name.
+#'   named by riverID. Each element of the list is named by and correspond to a 
+#'   different timeseries.
 #' 
 #' @name Extract_timeseries
 NULL
@@ -236,7 +236,7 @@ observations <- function(HS, riverID = NULL) {
                         riverID[test]))
         }
     }
-    out <- get_ts(HS, riverID, what="observation")
+    out <- get_ts(HS, riverID, what="observation_ts")
     return(out)
 }
 

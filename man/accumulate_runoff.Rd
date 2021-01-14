@@ -4,12 +4,17 @@
 \alias{accumulate_runoff}
 \title{Apply river routing}
 \usage{
-accumulate_runoff(HS, method = c("instant", "constant"), ..., verbose = FALSE)
+accumulate_runoff(
+  HS,
+  routing_method = c("instant", "constant"),
+  ...,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{HS}{A 'HS' object obtained by \code{\link{interpolate_runoff}}}
 
-\item{method}{Character string specifying the method to be used.}
+\item{routing_method}{Character string specifying the method to be used.}
 
 \item{...}{Arguments passed to the routing algorithm, and to 
 \code{\link{river_network}}, if it has not been run already.}

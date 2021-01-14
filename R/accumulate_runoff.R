@@ -16,7 +16,7 @@
 #' }
 #'
 #' @param HS A 'HS' object obtained by \code{\link{interpolate_runoff}}
-#' @param method Character string specifying the method to be used. 
+#' @param routing_method Character string specifying the method to be used. 
 #' @param ... Arguments passed to the routing algorithm, and to 
 #'   \code{\link{river_network}}, if it has not been run already.
 #' @param verbose Whether or not to print progress information. Defaults to 
@@ -28,7 +28,7 @@
 #' 
 #' @export
 accumulate_runoff <- function(HS, 
-                              method=c("instant", "constant"), 
+                              routing_method=c("instant", "constant"), 
                               ..., 
                               verbose = FALSE) {
   # ----------------------------------------------------------------------------
@@ -54,11 +54,11 @@ accumulate_runoff <- function(HS,
   
   # ----------------------------------------------------------------------------
   # route
-  if(method[1] == "instant") {
+  if(routing_method[1] == "instant") {
     
     output <- accumulate_runoff_instant(HS, verbose = verbose)
     
-  } else if (method[1] == "constant") {
+  } else if (routing_method[1] == "constant") {
     
     params <- list(...)
     

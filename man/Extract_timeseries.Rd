@@ -24,8 +24,8 @@ control(HS, riverID = NULL)
 }
 \value{
 Returns a list of \code{tibble}s with column Date and columns 
-  named by riverID. Each element of the list is named by andcorrespond to a 
-  timeseries in the timeseries column column specified by function name.
+  named by riverID. Each element of the list is named by and correspond to a 
+  different timeseries.
 }
 \description{
 These functions can be used to quickly extract segment specific timeseries

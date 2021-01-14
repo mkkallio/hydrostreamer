@@ -16,7 +16,7 @@ IntegerVector delineatecpp(IntegerVector seeds,
 
         c2v[0] = seeds[i]; 
         
-        // c2v is a vector, this keeps track which position of c2v to record to
+        // c2v is a vector, this keeps track which position of c2v we add to
         int c2vi = 0;  
         
         // visit position (of the c2v vector)
@@ -30,12 +30,12 @@ IntegerVector delineatecpp(IntegerVector seeds,
         while(keep) { 
             vpos = vpos + 1;
             currcell = c2v[vpos];
+            
             if(currcell == 0) {
                 keep = false;
                 break;
             }
-            delbas[currcell] = basID[i]; // delbas is the output; matrix of of basins
-            
+
             //if current cell is one of seeds, go to the next cell
             bool test = false;
             if(vpos > 0) {
@@ -46,9 +46,12 @@ IntegerVector delineatecpp(IntegerVector seeds,
                     }
                 }
             }
+            
             if(test == true) {
                 continue;
             }
+            
+            delbas[currcell] = basID[i]; // record ID for current cell
             
             // neighbour locations
             IntegerVector neigh(8);
@@ -77,36 +80,43 @@ IntegerVector delineatecpp(IntegerVector seeds,
             if(drdir(neigh[0]) == 2) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[0];
-                
             } 
+            
             if(drdir[neigh[1]] == 4) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[1];
             }
+            
             if(drdir[neigh[2]] == 8) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[2];
             }
+            
             if(drdir[neigh[3]] == 1) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[3];
             }
+            
             if(drdir[neigh[4]] == 16) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[4];
             }
+            
             if(drdir[neigh[5]] == 128) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[5];
             }
+            
             if(drdir[neigh[6]] == 64) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[6];
             }
+            
             if(drdir[neigh[7]] == 32) {
                 c2vi = c2vi + 1;
                 c2v[c2vi] = neigh[7];
             } 
+            
         }
     }
     return(delbas);

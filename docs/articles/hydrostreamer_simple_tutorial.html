@@ -31,7 +31,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -79,13 +79,13 @@
 
       
 
-      </header><div class="row">
+      </header><script src="hydrostreamer_simple_tutorial_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>hydrostreamer tutorial</h1>
                         <h4 class="author">Marko Kallio</h4>
             
-            <h4 class="date">2020-08-13</h4>
+            <h4 class="date">2021-01-14</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/mkkallio/hydrostreamer/blob/master/vignettes/hydrostreamer_simple_tutorial.Rmd"><code>vignettes/hydrostreamer_simple_tutorial.Rmd</code></a></small>
       <div class="hidden name"><code>hydrostreamer_simple_tutorial.Rmd</code></div>
@@ -107,25 +107,27 @@
 <li><p>River segment specific catchment areas, delineated from the provided DEM. Catchments are provided for a subset (n = 41) of the river segments.</p></li>
 </ul>
 <p>Let’s first load the data and inspect it:</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">hydrostreamer</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">raster</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">lubridate</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">dplyr</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">sf</span>)
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mkkallio.github.io/hydrostreamer/">hydrostreamer</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/raster">raster</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">example_rivers</span>)
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">example_basins</span>)
-<span class="no">runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/brick.html">brick</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span>(<span class="st">"extdata"</span>, <span class="st">"runoff.tif"</span>, <span class="kw">package</span> <span class="kw">=</span> <span class="st">"hydrostreamer"</span>))
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">example_dem</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">example_rivers</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">example_basins</span><span class="op">)</span>
+<span class="va">runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/brick.html">brick</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"runoff.tif"</span>, package <span class="op">=</span> <span class="st">"hydrostreamer"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">dem</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/raster/man/brick.html">brick</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"dem.tif"</span>, package <span class="op">=</span> <span class="st">"hydrostreamer"</span><span class="op">)</span><span class="op">)</span> 
 
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">runoff</span><span class="kw">[[</span><span class="fl">1</span>]])
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/sf/man/geos_combine.html">st_union</a></span>(<span class="no">basins</span>), <span class="kw">add</span><span class="kw">=</span><span class="fl">TRUE</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">river</span>, <span class="kw">add</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">runoff</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> 
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html">st_union</a></span><span class="op">(</span><span class="va">basins</span><span class="op">)</span>, add<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">river</span>, add<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-1-1.png" width="700"></p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r">
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">dem</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/sf/man/geos_combine.html">st_union</a></span>(<span class="no">basins</span>), <span class="kw">add</span><span class="kw">=</span><span class="fl">TRUE</span>)
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">river</span>, <span class="kw">add</span><span class="kw">=</span><span class="fl">TRUE</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">dem</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html">st_union</a></span><span class="op">(</span><span class="va">basins</span><span class="op">)</span>, add<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">river</span>, add<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-1-2.png" width="700"></p>
 <p><em>hydrostreamer</em> main workflow occurs in three steps:</p>
 <ol style="list-style-type: decimal">
@@ -138,13 +140,14 @@
 <a href="#converting-raster-runoff-to-a-polygon-network" class="anchor"></a>1. Converting raster runoff to a polygon network</h2>
 <p>The raster layers are converted to polygons in order to do all the computations using only vector processing, and thus. Each cell of the raster is polygonized, and if an area of interest is provided, the polygons are clipped to it. This removes any unneeded grid cells. The resulting <strong>HS</strong> object is a standard ‘sf’ object with information about each raster cell. The runoff timeseries can be found in a named list column <em>runoff_ts</em>. The elements are named by the ID, and can be accessed with the ‘$’ notation.</p>
 <p>We use <strong>raster_to_HS</strong> to convert a raster timeseries to a HS object.</p>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="no">source_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/raster_to_HS.html">raster_to_HS</a></span>(<span class="no">runoff</span>,
-                       <span class="kw">unit</span> <span class="kw">=</span> <span class="st">"mm/s"</span>,
-                       <span class="kw">date</span> <span class="kw">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">ymd</a></span>(<span class="st">"1980-01-01"</span>),
-                       <span class="kw">timestep</span> <span class="kw">=</span> <span class="st">"month"</span>,
-                       <span class="kw">aoi</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/pkg/sf/man/geos_combine.html">st_union</a></span>(<span class="no">basins</span>),
-                       <span class="kw">names</span> <span class="kw">=</span> <span class="st">"LORA"</span>)
-<span class="no">source_runoff</span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">source_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/raster_to_HS.html">raster_to_HS</a></span><span class="op">(</span><span class="va">runoff</span>, 
+                       unit <span class="op">=</span> <span class="st">"mm/s"</span>,
+                       date <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd.html">ymd</a></span><span class="op">(</span><span class="st">"1980-01-01"</span><span class="op">)</span>, 
+                       timestep <span class="op">=</span> <span class="st">"month"</span>, 
+                       aoi <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_combine.html">st_union</a></span><span class="op">(</span><span class="va">basins</span><span class="op">)</span>,
+                       names <span class="op">=</span> <span class="st">"LORA"</span><span class="op">)</span>
+<span class="va">source_runoff</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Hydrostreamer</span>
 <span class="co">#&gt; No. objects: 4</span>
@@ -155,7 +158,7 @@
 <span class="co">#&gt; geometry type:  POLYGON</span>
 <span class="co">#&gt; dimension:      XY</span>
 <span class="co">#&gt; bbox:           xmin: 107.275 ymin: 12.25 xmax: 107.625 ymax: 12.995</span>
-<span class="co">#&gt; CRS:            +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0</span>
+<span class="co">#&gt; CRS:            +proj=longlat +datum=WGS84 +no_defs</span>
 <span class="co">#&gt; # A tibble: 4 x 3</span>
 <span class="co">#&gt;   zoneID runoff_ts                                                      geometry</span>
 <span class="co">#&gt;    &lt;int&gt; &lt;named list&gt;                                              &lt;POLYGON [°]&gt;</span>
@@ -163,11 +166,12 @@
 <span class="co">#&gt; 2      2 &lt;tibble [396 x~ ((107.625 12.5, 107.615 12.5, 107.5 12.5, 107.5 12.995~</span>
 <span class="co">#&gt; 3      3 &lt;tibble [396 x~ ((107.31 12.5, 107.5 12.5, 107.5 12.325, 107.495 12.32~</span>
 <span class="co">#&gt; 4      4 &lt;tibble [396 x~ ((107.5 12.5, 107.615 12.5, 107.615 12.485, 107.62 12.~</span>
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">source_runoff</span>)</pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">source_runoff</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
 <span class="co"># access runoff timeseries of the element with ID `2` </span>
-<span class="no">source_runoff</span>$<span class="no">runoff_ts</span>$<span class="no">`2`</span>
+<span class="va">source_runoff</span><span class="op">$</span><span class="va">runoff_ts</span><span class="op">$</span><span class="va">`2`</span>
 <span class="co">#&gt; # A tibble: 396 x 2</span>
 <span class="co">#&gt;    Date               LORA</span>
 <span class="co">#&gt;    &lt;date&gt;           [mm/s]</span>
@@ -181,7 +185,7 @@
 <span class="co">#&gt;  8 1980-08-01 2.818044e-05</span>
 <span class="co">#&gt;  9 1980-09-01 6.625702e-05</span>
 <span class="co">#&gt; 10 1980-10-01 5.431649e-05</span>
-<span class="co">#&gt; # ... with 386 more rows</span></pre></body></html></div>
+<span class="co">#&gt; # ... with 386 more rows</span></code></pre></div>
 <p>HS objects can also be created from an ‘sf’ (polygon) object and a runoff timeseries using function <a href="https://mkkallio.github.io/hydrostreamer/reference/create_HS.html">create_HS</a>.</p>
 </div>
 <div id="areal-interpolation" class="section level2">
@@ -189,15 +193,16 @@
 <a href="#areal-interpolation" class="anchor"></a>2. Areal interpolation</h2>
 <p>The four areal interpolation methods shown here are explained in more detail in our recent (2019) conference paper <a href="https://mssanz.org.au/modsim2019/K8/kallio.pdf">here</a>. The following figure is from the publication, visualizing the different methods:</p>
 <div class="figure">
-<img src="http://markokallio.fi/modsim_fig1_density.png" alt="Figure 1. Conceptual presentation of the areal interpolation methods and their result. Panel A presents the catchment areas (A1) and ancillary variable (A2) derived from a Digital Elevation Model (A0). Panel B shows the result of applying Areal Interpolation (B1), Dasymetric Mapping (B2), Pycnophylactic Interpolation (B3) and combined Pycnophylactic-Dasymetric Interpolation (B4) to input runoff data (B0)."><p class="caption">Figure 1. Conceptual presentation of the areal interpolation methods and their result. Panel A presents the catchment areas (A1) and ancillary variable (A2) derived from a Digital Elevation Model (A0). Panel B shows the result of applying Areal Interpolation (B1), Dasymetric Mapping (B2), Pycnophylactic Interpolation (B3) and combined Pycnophylactic-Dasymetric Interpolation (B4) to input runoff data (B0).</p>
+<img src="http://markokallio.fi/modsim_fig1_density.png" alt=""><p class="caption">Figure 1. Conceptual presentation of the areal interpolation methods and their result. Panel A presents the catchment areas (A1) and ancillary variable (A2) derived from a Digital Elevation Model (A0). Panel B shows the result of applying Areal Interpolation (B1), Dasymetric Mapping (B2), Pycnophylactic Interpolation (B3) and combined Pycnophylactic-Dasymetric Interpolation (B4) to input runoff data (B0).</p>
 </div>
 <div id="area-weighted-interpolation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#area-weighted-interpolation" class="anchor"></a>Area Weighted Interpolation</h3>
 <p>Hydrostreamer implements several different areal interpolation methods, all of which can be accessed using the <strong>interpolate_runoff</strong> function. The simplest form implemented in hydrostreamer is Area Weighted Interpolation (AWI), which divides runoff from source zones to target river reaches .</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">AWI</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>, <span class="no">basins</span>, <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">AWI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>, <span class="va">basins</span>, riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
-<span class="no">AWI</span>
+<span class="va">AWI</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Hydrostreamer</span>
 <span class="co">#&gt; No. objects: 41</span>
@@ -222,9 +227,10 @@
 <span class="co">#&gt;  8      83 &lt;tibble [396~         83 (((107.565 12.4325, 107.565 12.43, 107.56 1~</span>
 <span class="co">#&gt;  9      85 &lt;tibble [396~         85 (((107.5825 12.36, 107.58 12.36, 107.58 12.~</span>
 <span class="co">#&gt; 10      88 &lt;tibble [396~         88 (((107.4625 12.355, 107.46 12.355, 107.46 1~</span>
-<span class="co">#&gt; # ... with 31 more rows</span></pre></body></html></div>
+<span class="co">#&gt; # ... with 31 more rows</span></code></pre></div>
 <p>The output contains the columns from basins, added with riverID and runoff timeseries converted to volume (cubic meters per second).</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">AWI</span>$<span class="no">runoff_ts</span>$<span class="no">`56`</span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">AWI</span><span class="op">$</span><span class="va">runoff_ts</span><span class="op">$</span><span class="va">`56`</span>
 <span class="co">#&gt; # A tibble: 396 x 2</span>
 <span class="co">#&gt;    Date            LORA</span>
 <span class="co">#&gt;    &lt;date&gt;        [m3/s]</span>
@@ -240,8 +246,8 @@
 <span class="co">#&gt; 10 1980-10-01 2.9908853</span>
 <span class="co">#&gt; # ... with 386 more rows</span>
 
-<span class="no">AWI</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">AWI</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">AWI</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">AWI</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">AWI</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">AWI</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 </div>
 <div id="dasymetric-mapping" class="section level3">
@@ -249,86 +255,92 @@
 <a href="#dasymetric-mapping" class="anchor"></a>Dasymetric Mapping</h3>
 <p>We can also refine the estimates using a dasymetric variable. Here I assume that more runoff is generated at higher elevations than lower, which may or may not be a good assumptions. It is, however, easy to extract from the DEM.</p>
 <p>In dasymetric mapping (DM), the output of area weighted interpolation is further refined by scaling it using an ancillary variable - in this case elevation.</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="no">elevation_values</span> <span class="kw">&lt;-</span> <span class="kw pkg">raster</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html">extract</a></span>(<span class="no">dem</span>, <span class="no">basins</span>)
-<span class="no">basins</span>$<span class="no">elevation</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">elevation_values</span>, <span class="no">mean</span>)
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">elevation_values</span> <span class="op">&lt;-</span> <span class="fu">raster</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/raster/man/extract.html">extract</a></span><span class="op">(</span><span class="va">dem</span>, <span class="va">basins</span><span class="op">)</span>
+<span class="va">basins</span><span class="op">$</span><span class="va">elevation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">elevation_values</span>, <span class="va">mean</span><span class="op">)</span>
 
-<span class="no">DM</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>, <span class="no">basins</span>, <span class="kw">dasymetric</span> <span class="kw">=</span> <span class="st">"elevation"</span>,
-                         <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<span class="va">DM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>, <span class="va">basins</span>, dasymetric <span class="op">=</span> <span class="st">"elevation"</span>,
+                         riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
 
-<span class="no">DM</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">DM</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">DM</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">DM</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">DM</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">DM</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
 <div id="pycnophylactic-interpolation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#pycnophylactic-interpolation" class="anchor"></a>Pycnophylactic Interpolation</h3>
 <p>A third possibility is to use Pycnophylactic Interpolation (PP).</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">source_runoff</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">source_runoff</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) {
-  <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>)
-})
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">source_runoff</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">source_runoff</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span>
+<span class="op">}</span><span class="op">)</span>
 
-<span class="no">PP</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>, <span class="no">basins</span>, <span class="kw">pycnophylactic</span> <span class="kw">=</span> <span class="st">"mean_runoff"</span>,
-                         <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<span class="va">PP</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>, <span class="va">basins</span>, pycnophylactic <span class="op">=</span> <span class="st">"mean_runoff"</span>,
+                         riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_touches assumes that they are planar</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_touches assumes that they are planar</span>
 
-<span class="no">PP</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">PP</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">PP</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">PP</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">PP</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">PP</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
 </div>
 <div id="combined-pycnophylactic---dasymetric-interpolation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#combined-pycnophylactic---dasymetric-interpolation" class="anchor"></a>Combined Pycnophylactic - Dasymetric Interpolation</h3>
 <p>The fourth option is to use a combination of PP and DM. In this case, PP is first performed instead of AWI, followed by the same scaling process with the dasymetric variable.</p>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="no">PPDM</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>, <span class="no">basins</span>,
-                         <span class="kw">dasymetric</span> <span class="kw">=</span> <span class="st">"elevation"</span>,
-                         <span class="kw">pycnophylactic</span> <span class="kw">=</span> <span class="st">"mean_runoff"</span>,
-                         <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">PPDM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>, <span class="va">basins</span>, 
+                         dasymetric <span class="op">=</span> <span class="st">"elevation"</span>,
+                         pycnophylactic <span class="op">=</span> <span class="st">"mean_runoff"</span>,
+                         riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_touches assumes that they are planar</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_touches assumes that they are planar</span>
-<span class="no">PPDM</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">PPDM</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">PPDM</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">PPDM</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">PPDM</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">PPDM</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 </div>
 <div id="area-to-line-interpolation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#area-to-line-interpolation" class="anchor"></a>Area-to-Line interpolation</h3>
 <p>All of the above examples are using catchment areas as the target units where runoff is estimated. However, existing vector-based river network data may not come specified with the DEM they were created with, or the processing steps are not clearly defined. In such cases, delieating the catchment areas for each segment may be difficult or outright impossible. For such cases, hydrostreamer provides the possibility to do interpolation from the source areas to linestrings. In such case, interpolation is based on the length of the linestring instead of the polygon area.</p>
-<div class="sourceCode" id="cb10"><html><body><pre class="r"><span class="no">A2L</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>, <span class="no">river</span>,
-                          <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">A2L</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>, <span class="va">river</span>,
+                          riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
 
-<span class="no">A2L</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">A2L</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">A2L</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">A2L</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">A2L</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">A2L</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
-<div class="sourceCode" id="cb11"><html><body><pre class="r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
 <span class="co"># DASYMETRIC MAPPING WITH LINES</span>
-<span class="no">river</span> <span class="kw">&lt;-</span> <span class="kw pkg">dplyr</span><span class="kw ns">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span>(<span class="no">river</span>, <span class="no">SEGMENT_ID</span> <span class="kw">%in%</span> <span class="no">basins</span>$<span class="no">SEGMENT_ID</span>) <span class="kw">%&gt;%</span>
-  <span class="kw pkg">dplyr</span><span class="kw ns">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="kw">elevation</span> <span class="kw">=</span> <span class="no">basins</span>$<span class="no">elevation</span>)
-<span class="no">A2LDM</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>, <span class="no">river</span>,
-                            <span class="kw">dasymetric</span> <span class="kw">=</span> <span class="st">"elevation"</span>,
-                          <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<span class="va">river</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">river</span>, <span class="va">SEGMENT_ID</span> <span class="op">%in%</span> <span class="va">basins</span><span class="op">$</span><span class="va">SEGMENT_ID</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>elevation <span class="op">=</span> <span class="va">basins</span><span class="op">$</span><span class="va">elevation</span><span class="op">)</span>
+<span class="va">A2LDM</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>, <span class="va">river</span>,
+                            dasymetric <span class="op">=</span> <span class="st">"elevation"</span>,
+                          riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
 
-<span class="no">A2LDM</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">A2LDM</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">A2LDM</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">A2LDM</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">A2LDM</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">A2LDM</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-8-2.png" width="700"></p>
 </div>
 <div id="using-both-lines-and-basins" class="section level3">
 <h3 class="hasAnchor">
 <a href="#using-both-lines-and-basins" class="anchor"></a>Using both lines and basins</h3>
 <p>The last example shown here is using both linestrings, and their respective catchment areas. The advantage here is that we can represent the rivers as they are in the network - as connected lines - and still use the catchment areas as a more accurate representation of the runoff produced in the catchment of the segment. In addition, using the lines allows us to use the constant river routing algorithm in the next step instead of only instantaneous routing.</p>
-<div class="sourceCode" id="cb12"><html><body><pre class="r"><span class="no">RB</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span>(<span class="no">source_runoff</span>,
-                         <span class="no">river</span>,
-                         <span class="kw">basins</span> <span class="kw">=</span> <span class="no">basins</span>,
-                         <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">RB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpolate_runoff.html">interpolate_runoff</a></span><span class="op">(</span><span class="va">source_runoff</span>,
+                         <span class="va">river</span>,
+                         basins <span class="op">=</span> <span class="va">basins</span>,
+                         riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
 <span class="co">#&gt; although coordinates are longitude/latitude, st_intersects assumes that they are planar</span>
 
-<span class="no">RB</span>$<span class="no">mean_runoff</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span>(<span class="no">RB</span>$<span class="no">runoff_ts</span>, <span class="kw">function</span>(<span class="no">x</span>) <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">x</span>$<span class="no">LORA</span>))
-<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">RB</span>[,<span class="st">"mean_runoff"</span>])</pre></body></html></div>
+<span class="va">RB</span><span class="op">$</span><span class="va">mean_runoff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">RB</span><span class="op">$</span><span class="va">runoff_ts</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">$</span><span class="va">LORA</span><span class="op">)</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">RB</span><span class="op">[</span>,<span class="st">"mean_runoff"</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 </div>
 </div>
@@ -339,20 +351,21 @@
 <p>Each routing method is accessible through the function <em>accumulate_runoff()</em>. Since the catchment provided here is small, and the timestep in runoff is one month, we’ll just use instantaneous routing here. There would be negligible difference between constant velocity and instantaneous routing in this case.</p>
 <p>However, we cannot use the catchments-only downscaled runoff here directly because there is no routing information. Since we can derive the routing information for the river lines, we can use that same routing info for the catchments also.</p>
 <p>Note that running <em>river_network()</em> is not explicitly necessary, since the routing algorithm does it automatically if it has not been run in advance.</p>
-<div class="sourceCode" id="cb13"><html><body><pre class="r"><span class="no">routed_river</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/river_network.html">river_network</a></span>(<span class="no">river</span>, <span class="kw">riverID</span> <span class="kw">=</span> <span class="st">"SEGMENT_ID"</span>)
-<span class="no">routed_river</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Hydrostreamer</span>
-<span class="co">#&gt; No. objects: 41</span>
-<span class="co">#&gt; </span>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">routed_river</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/river_network.html">river_network</a></span><span class="op">(</span><span class="va">river</span>, riverID <span class="op">=</span> <span class="st">"SEGMENT_ID"</span><span class="op">)</span>
+<span class="va">routed_river</span>
 <span class="co">#&gt; Simple feature collection with 41 features and 6 fields</span>
 <span class="co">#&gt; geometry type:  LINESTRING</span>
 <span class="co">#&gt; dimension:      XY</span>
 <span class="co">#&gt; bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975</span>
 <span class="co">#&gt; geographic CRS: WGS 84</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Hydrostreamer</span>
+<span class="co">#&gt; No. objects: 41</span>
+<span class="co">#&gt; </span>
 <span class="co">#&gt; # A tibble: 41 x 7</span>
 <span class="co">#&gt;    riverID NEXT  PREVIOUS UP_SEGMENTS SEGMENT_ID                      geom</span>
-<span class="co">#&gt;      &lt;dbl&gt; &lt;nam&gt; &lt;named &gt;       &lt;dbl&gt;      &lt;dbl&gt;          &lt;LINESTRING [°]&gt;</span>
+<span class="co">#&gt;  *   &lt;dbl&gt; &lt;nam&gt; &lt;named &gt;       &lt;dbl&gt;      &lt;dbl&gt;          &lt;LINESTRING [°]&gt;</span>
 <span class="co">#&gt;  1      56 &lt;dbl~ &lt;dbl [1~           0         56 (107.4125 12.2975, 107.4~</span>
 <span class="co">#&gt;  2      65 &lt;dbl~ &lt;dbl [1~           0         65 (107.4425 12.3425, 107.4~</span>
 <span class="co">#&gt;  3      67 &lt;dbl~ &lt;dbl [1~           0         67 (107.5475 12.3625, 107.5~</span>
@@ -365,13 +378,14 @@
 <span class="co">#&gt; 10      88 &lt;dbl~ &lt;dbl [1~           0         88 (107.4525 12.4575, 107.4~</span>
 <span class="co">#&gt; # ... with 31 more rows, and 1 more variable: elevation &lt;dbl&gt;</span>
 
-<span class="no">PPDM</span>$<span class="no">NEXT</span> <span class="kw">&lt;-</span> <span class="no">routed_river</span>$<span class="no">NEXT</span>
-<span class="no">PPDM</span>$<span class="no">PREVIOUS</span> <span class="kw">&lt;-</span> <span class="no">routed_river</span>$<span class="no">PREVIOUS</span>
-<span class="no">PPDM</span>$<span class="no">UP_SEGMENTS</span> <span class="kw">&lt;-</span> <span class="no">routed_river</span>$<span class="no">UP_SEGMENTS</span></pre></body></html></div>
-<div class="sourceCode" id="cb14"><html><body><pre class="r"><span class="no">catchment_discharge</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/accumulate_runoff.html">accumulate_runoff</a></span>(<span class="no">PPDM</span>, <span class="kw">method</span> <span class="kw">=</span> <span class="st">"instant"</span>)
-<span class="no">river_discharge</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/accumulate_runoff.html">accumulate_runoff</a></span>(<span class="no">RB</span>, <span class="kw">method</span> <span class="kw">=</span> <span class="st">"instant"</span>)
+<span class="va">PPDM</span><span class="op">$</span><span class="va">NEXT</span> <span class="op">&lt;-</span> <span class="va">routed_river</span><span class="op">$</span><span class="va">NEXT</span>
+<span class="va">PPDM</span><span class="op">$</span><span class="va">PREVIOUS</span> <span class="op">&lt;-</span> <span class="va">routed_river</span><span class="op">$</span><span class="va">PREVIOUS</span>
+<span class="va">PPDM</span><span class="op">$</span><span class="va">UP_SEGMENTS</span> <span class="op">&lt;-</span> <span class="va">routed_river</span><span class="op">$</span><span class="va">UP_SEGMENTS</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">catchment_discharge</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accumulate_runoff.html">accumulate_runoff</a></span><span class="op">(</span><span class="va">PPDM</span>, routing_method <span class="op">=</span> <span class="st">"instant"</span><span class="op">)</span>
+<span class="va">river_discharge</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/accumulate_runoff.html">accumulate_runoff</a></span><span class="op">(</span><span class="va">RB</span>, routing_method <span class="op">=</span> <span class="st">"instant"</span><span class="op">)</span>
 
-<span class="no">river_discharge</span>
+<span class="va">river_discharge</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Hydrostreamer</span>
 <span class="co">#&gt; No. objects: 41</span>
@@ -399,13 +413,14 @@
 <span class="co">#&gt;  9      85 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         85</span>
 <span class="co">#&gt; 10      88 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         88</span>
 <span class="co">#&gt; # ... with 31 more rows, and 3 more variables: geom &lt;LINESTRING [°]&gt;,</span>
-<span class="co">#&gt; #   elevation &lt;dbl&gt;, mean_runoff &lt;dbl&gt;</span></pre></body></html></div>
+<span class="co">#&gt; #   elevation &lt;dbl&gt;, mean_runoff &lt;dbl&gt;</span></code></pre></div>
 <p>The algorithm adds a new list column discharge_ts, containing the routed discharge estimates.</p>
 <p>We can also plot the estimated discharge from the two approaches at segment 200 by accessing the new list column <em>discharge_ts</em>.</p>
-<div class="sourceCode" id="cb15"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span>(<span class="no">catchment_discharge</span>$<span class="no">discharge_ts</span>$<span class="no">`200`</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">'l'</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span>(<span class="no">river_discharge</span>$<span class="no">discharge_ts</span>$<span class="no">`200`</span>, <span class="kw">col</span><span class="kw">=</span><span class="st">'red'</span>)
-<span class="fu"><a href="https://rdrr.io/r/graphics/title.html">title</a></span>(<span class="kw">main</span> <span class="kw">=</span> <span class="st">"PPDM discharge in black, and Area-to-Line discharge in red."</span>,
-      <span class="kw">sub</span> <span class="kw">=</span> <span class="st">"Unit = m3/s, riverID = `200`"</span>)</pre></body></html></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/raster/man/plot.html">plot</a></span><span class="op">(</span><span class="va">catchment_discharge</span><span class="op">$</span><span class="va">discharge_ts</span><span class="op">$</span><span class="va">`200`</span>, type <span class="op">=</span> <span class="st">'l'</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html">lines</a></span><span class="op">(</span><span class="va">river_discharge</span><span class="op">$</span><span class="va">discharge_ts</span><span class="op">$</span><span class="va">`200`</span>, col<span class="op">=</span><span class="st">'red'</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/title.html">title</a></span><span class="op">(</span>main <span class="op">=</span> <span class="st">"PPDM discharge in black, and Area-to-Line discharge in red."</span>,
+      sub <span class="op">=</span> <span class="st">"Unit = m3/s, riverID = `200`"</span><span class="op">)</span></code></pre></div>
 <p><img src="hydrostreamer_simple_tutorial_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
 <p>As seen from the plots, in this catchment the difference between PPDM and Area-to-Line Interpolation is very small. In fact, we’ve found that as the basin size increases, the difference becomes increasingly small. This is particularly true for discharge at a monthly timestep. Larger difference can be expected with a daily timestep and with constant flow velocity routing.</p>
 </div>
@@ -433,7 +448,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

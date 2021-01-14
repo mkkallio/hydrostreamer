@@ -72,7 +72,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -132,7 +132,7 @@
     <p>Computes river hierarchies from a routed river network.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>river_hierarchy</span>(<span class='no'>river</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"strahler"</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"riverID"</span>)</pre>
+    <pre class="usage"><span class='fu'>river_hierarchy</span><span class='op'>(</span><span class='va'>river</span>, type <span class='op'>=</span> <span class='st'>"strahler"</span>, riverID <span class='op'>=</span> <span class='st'>"riverID"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -160,20 +160,22 @@ stream order implemented.</p></td>
   hierarchy.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>hydrostreamer</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>dplyr</span>)
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mkkallio.github.io/hydrostreamer/'>hydrostreamer</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span>
 
 <span class='co'># load data</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>river</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>river</span><span class='op'>)</span>
 
 <span class='co'># without prior routing</span>
-<span class='no'>river</span> <span class='kw'>&lt;-</span> <span class='fu'>river_hierarchy</span>(<span class='no'>river</span>, <span class='kw'>riverID</span><span class='kw'>=</span><span class='st'>"ID"</span>)
+<span class='va'>river</span> <span class='op'>&lt;-</span> <span class='fu'>river_hierarchy</span><span class='op'>(</span><span class='va'>river</span>, riverID<span class='op'>=</span><span class='st'>"ID"</span><span class='op'>)</span>
 
 <span class='co'># with routed network</span>
-<span class='no'>routed_river</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='river_network.html'>river_network</a></span>(<span class='no'>river</span>, <span class='kw'>riverID</span> <span class='kw'>=</span> <span class='st'>"ID"</span>) <span class='kw'>%&gt;%</span>
-    <span class='fu'>river_hierarchy</span>()
-}</div></pre>
+<span class='va'>routed_river</span> <span class='op'>&lt;-</span> <span class='fu'><a href='river_network.html'>river_network</a></span><span class='op'>(</span><span class='va'>river</span>, riverID <span class='op'>=</span> <span class='st'>"ID"</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+    <span class='fu'>river_hierarchy</span><span class='op'>(</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -189,7 +191,7 @@ stream order implemented.</p></td>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -74,7 +74,7 @@ each runoff/downscaled/discharge timeseries in an HS* object." />
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -136,15 +136,15 @@ functions. The functions provided are run either individually for, or across,
 each runoff/downscaled/discharge timeseries in an HS* object.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>ensemble_summary</span>(
-  <span class='no'>HS</span>,
-  <span class='kw'>summarise_over_timeseries</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>aggregate_monthly</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>funs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"min"</span>, <span class='st'>"mean"</span>, <span class='st'>"median"</span>, <span class='st'>"max"</span>),
-  <span class='kw'>drop</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='no'>...</span>,
-  <span class='kw'>verbose</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>ensemble_summary</span><span class='op'>(</span>
+  <span class='va'>HS</span>,
+  summarise_over_timeseries <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  aggregate_monthly <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  funs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"min"</span>, <span class='st'>"mean"</span>, <span class='st'>"median"</span>, <span class='st'>"max"</span><span class='op'>)</span>,
+  drop <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>,
+  verbose <span class='op'>=</span> <span class='cn'>FALSE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -155,14 +155,14 @@ each runoff/downscaled/discharge timeseries in an HS* object.</p>
     </tr>
     <tr>
       <th>summarise_over_timeseries</th>
-      <td><p>Apply function(s) to each column-wise (to
+      <td><p>Apply function(s) column-wise (to
 each timeseries separately, <code>TRUE</code>), or row-wise for each date in 
 timeseries(<code>FALSE</code>, default).</p></td>
     </tr>
     <tr>
       <th>aggregate_monthly</th>
-      <td><p>Apply results to the 12 months of the year. Defaults
-to <code>FALSE</code>.</p></td>
+      <td><p>Return results as averages for the 12 months of the
+year? Defaults to <code>FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>funs</th>
@@ -208,7 +208,7 @@ a single numerical value.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

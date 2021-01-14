@@ -73,7 +73,8 @@ add_control <- function(HS, timeseries, unit, riverIDs,
         test <- (is.null(length(statpos)) || length(statpos) == 0)
         if(test) {
             warning(paste0("riverID ", riverIDs[[i]], " does not exist in 
-                           HS - skipping station at ",riverIDs[i]))
+                           HS - skipping control point at riverID ",
+                           riverIDs[i]))
                            
             next
         }

@@ -2,7 +2,7 @@ Package: hydrostreamer
 Type: Package
 Title: A Package for Interpolating Distributed Runoff Rroducts on to 
   Explicit River Segments
-Version: 1.0.0
+Version: 1.0.1
 Author: Marko Kallio
 Authors@R: c(person("Marko", "Kallio", email = "marko@markokallio.fi", 
                   role = c("aut", "cre"), 

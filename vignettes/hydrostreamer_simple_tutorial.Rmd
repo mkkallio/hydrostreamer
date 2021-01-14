@@ -224,8 +224,8 @@ PPDM$UP_SEGMENTS <- routed_river$UP_SEGMENTS
 
 
 ```{r message=FALSE, warning=FALSE}
-catchment_discharge <- accumulate_runoff(PPDM, method = "instant")
-river_discharge <- accumulate_runoff(RB, method = "instant")
+catchment_discharge <- accumulate_runoff(PPDM, routing_method = "instant")
+river_discharge <- accumulate_runoff(RB, routing_method = "instant")
 
 river_discharge
 ```

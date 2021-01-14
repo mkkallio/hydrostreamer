@@ -34,40 +34,33 @@ add_HS <- function(HS,
     }
     
     # test which elements of from are included in HS
-    common_elements <- sf::st_equals(from, HS, sparse = FALSE)
+    common_elements <- sf::st_equals(HS, from)
     
-    test <- colSums(common_elements)
-    if(!all(test == 1)) {
+    test <- sapply(common_elements, length)
+    if(!all(test > 0)) {
         stop("Not all cells in HS included in the object to be ",
-             "combined. Returning original with no added timeseries!!")
+             "combined.")
     }
     
     # add timeseries from runoff_ts in 'from' to runoff_ts in 'HS'
     # for all elements in common (same ID)
-    for (i in 1:nrow(common_elements)) {
-        gid <- which(common_elements[i,])
+    for (i in seq_along(common_elements)) {
+        gid <- common_elements[[i]]
         if (length(gid) == 0) next
         
-        fr <- from$runoff_ts[[i]]
+        fr <- from$runoff_ts[[gid]]
         runoff_names <- colnames(fr)
         
-        test <- any(runoff_names[-1] %in% colnames(HS$runoff_ts[[gid]]))
+        test <- any(runoff_names[-1] %in% colnames(HS$runoff_ts[[i]]))
         if(test) warning("Runoff timeseries to be combined contain same
                          names - possible duplicated timeseries!")
         
-        new_tibble <- dplyr::left_join(HS$runoff_ts[[gid]], 
+        new_tibble <- dplyr::left_join(HS$runoff_ts[[i]], 
                                         fr,
                                         by="Date")
-        HS$runoff_ts[[gid]] <- new_tibble
+        HS$runoff_ts[[i]] <- new_tibble
     } 
-    
-    n_ts_new <- lapply(HS$runoff_ts, ncol) %>% 
-        unlist()
-    
-    HS <- HS %>% 
-        dplyr::mutate(n_ts = n_ts_new-1)
-    
-    
+
     HS <- reorder_cols(HS)
     HS <- assign_class(HS, c("HS"))
     return(HS)

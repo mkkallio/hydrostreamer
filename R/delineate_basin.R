@@ -58,18 +58,15 @@ delineate_basin <- function(outlets,
     rp <- raster::cellFromXY(drain.dir, sf::st_coordinates(outlets))
     outlets$cell <- rp
     outlets <- outlets[!is.na(outlets$cell),]
-    #ID <- outlets %>% dplyr::select_(riverID) %>% sf::st_set_geometry(NULL) %>% 
-    #    unlist()
     ID <- outlets %>% dplyr::pull(riverID)
-    #tempID <- 1:nrow(outlets)
-    ny <- nrow(drain.dir)
+    ny <- nrow(drain.dir) 
     nx <- ncol(drain.dir)
     nseeds <- nrow(outlets)
     drdir <- raster::values(drain.dir)
     drdir[is.na(drdir)] <- 0
     delbas <- vector("numeric", raster::ncell(drain.dir))
-    #delbas[outlets$cell] <- ID
-    delbas[outlets$cell] <- 1:nseeds
+    delbas[outlets$cell] <- ID
+    # delbas[outlets$cell] <- 1:nseeds
     if (verbose) message(paste0("Delineating ", nseeds, " basins.."))
     
     delbas <- delineatecpp(outlets$cell-1,

@@ -5,22 +5,19 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A package for interpolating distributed runoff products on to 
-  explicit river segments • hydrostreamer</title>
+<title>A Package for Interpolating Distributed Runoff Rroducts on to 
+  Explicit River Segments • hydrostreamer</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="A package for interpolating distributed runoff products on to 
-  explicit river segments">
-<meta property="og:description" content="hydrostreamer provides functions to downscale distributed runoff 
-  data on to an explicitly represented river network. Downscaling is done by the 
-  spatial relationship between an areal unit of runoff and an overlaid river 
-  network. Value of the runoff unit is divided among intersecting river segments
-  using weighted interpolation. hydrostreamer provides several methods for the 
-  assignment. Simple river routing algorithms are also provided to estimate 
-  discharge at arbitrary segment.">
+<script src="pkgdown.js"></script><meta property="og:title" content="A Package for Interpolating Distributed Runoff Rroducts on to 
+  Explicit River Segments">
+<meta property="og:description" content="This package provides functions to interpolate multiple 
+  distributed runoff data on to an explicitly represented river network, 
+  route runoff down the network, and optimise predictions against observed 
+  streamflow.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -39,7 +36,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -89,9 +86,9 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="hydrostreamer-050" class="section level1">
+<div id="hydrostreamer-101" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#hydrostreamer-050" class="anchor"></a>hydrostreamer 0.5.0</h1></div>
+<a href="#hydrostreamer-101" class="anchor"></a>hydrostreamer 1.0.1</h1></div>
 
 <p><strong>hydrostreamer</strong> is an R package designed to allow swift investigation of surface water resources from existing distributed runoff datasets with arbitrary areal representations (regular or irregular polygons).</p>
 <p>Hydrostreamer workflow generally consists of three steps:</p>
@@ -106,8 +103,10 @@
 <a href="#more-information" class="anchor"></a>More information</h2>
 <p><strong>hydrostreamer</strong> has featured in the following publications and conference presentations:</p>
 <ul>
-<li>Model description paper under preparation</li>
-<li>MODSIM 2019: Kallio et al, Downscaling runoff products using areal interpolation: a combined pycnophylactic-dasymetric method. DOI: 10.36334/modsim.2019.k8.kallio</li>
+<li>Model description paper is under review at Geoscientific Model Development: Kallio, M., Guillaume, J. H. A., Virkki, V., Kummu, M., and Virrantaus, K.: <a href="https://doi.org/10.5194/gmd-2020-276">Hydrostreamer v1.0 – improved streamflow predictions for local applications from an ensemble of downscaled global runoff products</a>, Geosci. Model Dev. Discuss. <br><span class="math display"><em>p</em><em>r</em><em>e</em><em>p</em><em>r</em><em>i</em><em>n</em><em>t</em></span><br>, <a href="https://doi.org/10.5194/gmd-2020-276" class="uri">https://doi.org/10.5194/gmd-2020-276</a>, in review, 2020.</li>
+<li>Nauditt, A., Stahl, K., Rodríguez, E., Birkel, C., Formiga-Johnsson, R. M., Kallio, M., Hann, H., Ribbe, L., Baez-Villanueva, O. M., and Thurner, J.: <a href="https://doi.org/10.5194/nhess-2020-360">Tropical drought risk: estimates combining gridded vulnerability and hazard data</a>, Nat. Hazards Earth Syst. Sci. Discuss. <br><span class="math display"><em>p</em><em>r</em><em>e</em><em>p</em><em>r</em><em>i</em><em>n</em><em>t</em></span><br>, <a href="https://doi.org/10.5194/nhess-2020-360" class="uri">https://doi.org/10.5194/nhess-2020-360</a>, in review, 2020.</li>
+<li>MODSIM 2019: Kallio et al, <a href="10.36334/modsim.2019.k8.kallio">Downscaling runoff products using areal interpolation: a combined pycnophylactic-dasymetric method</a>
+</li>
 <li>EGU 2018: Kallio et al, <a href="https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network">Spatial allocation of low resolution runoff model outputs to high resolution stream network</a>
 </li>
 <li>AGU 2018: Kallio et al, <a href="https://www.researchgate.net/publication/330213179_Generating_improved_estimates_of_streamflow_using_model_averaging_of_downscaled_runoff_products_under_uncertainty">Generating improved estimates of streamflow using model averaging of downscaled runoff products under uncertainty</a>
@@ -122,87 +121,88 @@
 <h2 class="hasAnchor">
 <a href="#installing" class="anchor"></a>Installing</h2>
 <p><strong>hydrostreamer</strong> is not yet on CRAN, so to install, and needs to be installed from Github.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="co"># devtools::install_github("mkkallio/hydrostreamer")</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># devtools::install_github("mkkallio/hydrostreamer")</span></span></code></pre></div>
 </div>
 <div id="basic-usage" class="section level2">
 <h2 class="hasAnchor">
 <a href="#basic-usage" class="anchor"></a>Basic usage</h2>
 <p>Hydrostreamer includes some example data for demonstration purposes. First, load example data to R:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">library</span>(hydrostreamer)</a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="kw">library</span>(raster)</a>
-<a class="sourceLine" id="cb2-3" title="3"><span class="kw">library</span>(lubridate)</a>
-<a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="kw">data</span>(example_rivers)</a>
-<a class="sourceLine" id="cb2-6" title="6"><span class="kw">data</span>(example_basins)</a>
-<a class="sourceLine" id="cb2-7" title="7">runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>, <span class="st">"runoff.tif"</span>, <span class="dt">package =</span> <span class="st">"hydrostreamer"</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">library</span>(hydrostreamer)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">library</span>(raster)</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">library</span>(lubridate)</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">library</span>(sf)</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">data</span>(example_rivers)</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">data</span>(example_basins)</span>
+<span id="cb2-8"><a href="#cb2-8"></a>runoff &lt;-<span class="st"> </span><span class="kw">brick</span>(<span class="kw">system.file</span>(<span class="st">"extdata"</span>, <span class="st">"runoff.tif"</span>, <span class="dt">package =</span> <span class="st">"hydrostreamer"</span>))</span></code></pre></div>
 <div id="1-convert-raster-timeseries-to-a-hs-object" class="section level3">
 <h3 class="hasAnchor">
 <a href="#1-convert-raster-timeseries-to-a-hs-object" class="anchor"></a>1. Convert raster timeseries to a <strong>HS</strong> object</h3>
 <p>The first step in hydrostreamer is converting runoff into a <em>HS</em> object. For a runoff input in a raster format, use <em>raster_to_HS()</em> function. For input we need the raster, starting date of the timeseries and the granularity of input timesteps.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">source_runoff &lt;-<span class="st"> </span><span class="kw">raster_to_HS</span>(runoff, </a>
-<a class="sourceLine" id="cb3-2" title="2">                   <span class="dt">date =</span> <span class="kw">ymd</span>(<span class="st">"1980-01-01"</span>), </a>
-<a class="sourceLine" id="cb3-3" title="3">                   <span class="dt">timestep =</span> <span class="st">"month"</span>, </a>
-<a class="sourceLine" id="cb3-4" title="4">                   <span class="dt">unit =</span> <span class="st">"mm/s"</span>,</a>
-<a class="sourceLine" id="cb3-5" title="5">                   <span class="dt">aoi =</span> <span class="kw">st_union</span>(basins),</a>
-<a class="sourceLine" id="cb3-6" title="6">                   <span class="dt">names =</span> <span class="st">"LORA"</span>)</a>
-<a class="sourceLine" id="cb3-7" title="7">source_runoff</a>
-<a class="sourceLine" id="cb3-8" title="8"></a>
-<a class="sourceLine" id="cb3-9" title="9"><span class="co">## </span></a>
-<a class="sourceLine" id="cb3-10" title="10"><span class="co">## Hydrostreamer</span></a>
-<a class="sourceLine" id="cb3-11" title="11"><span class="co">## No. objects: 4</span></a>
-<a class="sourceLine" id="cb3-12" title="12"><span class="co">## No. runoff timeseries: 1</span></a>
-<a class="sourceLine" id="cb3-13" title="13"><span class="co">##   Included runoff timeseries: LORA</span></a>
-<a class="sourceLine" id="cb3-14" title="14"><span class="co">## </span></a>
-<a class="sourceLine" id="cb3-15" title="15"><span class="co">## Simple feature collection with 4 features and 2 fields</span></a>
-<a class="sourceLine" id="cb3-16" title="16"><span class="co">## geometry type:  POLYGON</span></a>
-<a class="sourceLine" id="cb3-17" title="17"><span class="co">## dimension:      XY</span></a>
-<a class="sourceLine" id="cb3-18" title="18"><span class="co">## bbox:           xmin: 107.275 ymin: 12.25 xmax: 107.625 ymax: 12.995</span></a>
-<a class="sourceLine" id="cb3-19" title="19"><span class="co">## CRS:            +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0</span></a>
-<a class="sourceLine" id="cb3-20" title="20"><span class="co">## # A tibble: 4 x 3</span></a>
-<a class="sourceLine" id="cb3-21" title="21"><span class="co">##   zoneID runoff_ts                                                      geometry</span></a>
-<a class="sourceLine" id="cb3-22" title="22"><span class="co">##    &lt;int&gt; &lt;named list&gt;                                              &lt;POLYGON [°]&gt;</span></a>
-<a class="sourceLine" id="cb3-23" title="23"><span class="co">## 1      1 &lt;tibble [396 x~ ((107.5 12.995, 107.5 12.5, 107.31 12.5, 107.31 12.505~</span></a>
-<a class="sourceLine" id="cb3-24" title="24"><span class="co">## 2      2 &lt;tibble [396 x~ ((107.625 12.5, 107.615 12.5, 107.5 12.5, 107.5 12.995~</span></a>
-<a class="sourceLine" id="cb3-25" title="25"><span class="co">## 3      3 &lt;tibble [396 x~ ((107.31 12.5, 107.5 12.5, 107.5 12.325, 107.495 12.32~</span></a>
-<a class="sourceLine" id="cb3-26" title="26"><span class="co">## 4      4 &lt;tibble [396 x~ ((107.5 12.5, 107.615 12.5, 107.615 12.485, 107.62 12.~</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>source_runoff &lt;-<span class="st"> </span><span class="kw">raster_to_HS</span>(runoff, </span>
+<span id="cb3-2"><a href="#cb3-2"></a>                   <span class="dt">date =</span> <span class="kw">ymd</span>(<span class="st">"1980-01-01"</span>), </span>
+<span id="cb3-3"><a href="#cb3-3"></a>                   <span class="dt">timestep =</span> <span class="st">"month"</span>, </span>
+<span id="cb3-4"><a href="#cb3-4"></a>                   <span class="dt">unit =</span> <span class="st">"mm/s"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5"></a>                   <span class="dt">aoi =</span> <span class="kw">st_union</span>(basins),</span>
+<span id="cb3-6"><a href="#cb3-6"></a>                   <span class="dt">names =</span> <span class="st">"LORA"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7"></a>source_runoff</span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">## </span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co">## Hydrostreamer</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">## No. objects: 4</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="co">## No. runoff timeseries: 1</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="co">##   Included runoff timeseries: LORA</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="co">## </span></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co">## Simple feature collection with 4 features and 2 fields</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="co">## geometry type:  POLYGON</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="co">## dimension:      XY</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">## bbox:           xmin: 107.275 ymin: 12.25 xmax: 107.625 ymax: 12.995</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="co">## CRS:            +proj=longlat +datum=WGS84 +no_defs</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="co">## # A tibble: 4 x 3</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="co">##   zoneID runoff_ts                                                      geometry</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="co">##    &lt;int&gt; &lt;named list&gt;                                              &lt;POLYGON [°]&gt;</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a><span class="co">## 1      1 &lt;tibble [396 x~ ((107.5 12.995, 107.5 12.5, 107.31 12.5, 107.31 12.505~</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="co">## 2      2 &lt;tibble [396 x~ ((107.625 12.5, 107.615 12.5, 107.5 12.5, 107.5 12.995~</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a><span class="co">## 3      3 &lt;tibble [396 x~ ((107.31 12.5, 107.5 12.5, 107.5 12.325, 107.495 12.32~</span></span>
+<span id="cb3-26"><a href="#cb3-26"></a><span class="co">## 4      4 &lt;tibble [396 x~ ((107.5 12.5, 107.615 12.5, 107.615 12.485, 107.62 12.~</span></span></code></pre></div>
 <p>The output of the function is an sf object with each raster cell as their own object, and two attributes: an ID and a list column with timeseries of values for each of the raster cell.</p>
 </div>
 <div id="2-interpolate" class="section level3">
 <h3 class="hasAnchor">
 <a href="#2-interpolate" class="anchor"></a>2. Interpolate</h3>
 <p>Next, we interpolate the values in the source zones to individual river reaches in the river network.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">interpolated_runoff &lt;-<span class="st"> </span><span class="kw">interpolate_runoff</span>(source_runoff, river, </a>
-<a class="sourceLine" id="cb4-2" title="2">                                          <span class="dt">riverID =</span> <span class="st">"SEGMENT_ID"</span>)</a>
-<a class="sourceLine" id="cb4-3" title="3"></a>
-<a class="sourceLine" id="cb4-4" title="4"><span class="co">## although coordinates are longitude/latitude, st_intersects assumes that they are planar</span></a>
-<a class="sourceLine" id="cb4-5" title="5"></a>
-<a class="sourceLine" id="cb4-6" title="6">interpolated_runoff</a>
-<a class="sourceLine" id="cb4-7" title="7"></a>
-<a class="sourceLine" id="cb4-8" title="8"><span class="co">## </span></a>
-<a class="sourceLine" id="cb4-9" title="9"><span class="co">## Hydrostreamer</span></a>
-<a class="sourceLine" id="cb4-10" title="10"><span class="co">## No. objects: 41</span></a>
-<a class="sourceLine" id="cb4-11" title="11"><span class="co">## No. runoff timeseries: 1</span></a>
-<a class="sourceLine" id="cb4-12" title="12"><span class="co">##   Included runoff timeseries: LORA</span></a>
-<a class="sourceLine" id="cb4-13" title="13"><span class="co">## </span></a>
-<a class="sourceLine" id="cb4-14" title="14"><span class="co">## Simple feature collection with 41 features and 3 fields</span></a>
-<a class="sourceLine" id="cb4-15" title="15"><span class="co">## geometry type:  LINESTRING</span></a>
-<a class="sourceLine" id="cb4-16" title="16"><span class="co">## dimension:      XY</span></a>
-<a class="sourceLine" id="cb4-17" title="17"><span class="co">## bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975</span></a>
-<a class="sourceLine" id="cb4-18" title="18"><span class="co">## geographic CRS: WGS 84</span></a>
-<a class="sourceLine" id="cb4-19" title="19"><span class="co">## # A tibble: 41 x 4</span></a>
-<a class="sourceLine" id="cb4-20" title="20"><span class="co">##    riverID runoff_ts     SEGMENT_ID                                         geom</span></a>
-<a class="sourceLine" id="cb4-21" title="21"><span class="co">##      &lt;dbl&gt; &lt;named list&gt;       &lt;dbl&gt;                             &lt;LINESTRING [°]&gt;</span></a>
-<a class="sourceLine" id="cb4-22" title="22"><span class="co">##  1      56 &lt;tibble [396~         56 (107.4125 12.2975, 107.4075 12.3025, 107.40~</span></a>
-<a class="sourceLine" id="cb4-23" title="23"><span class="co">##  2      65 &lt;tibble [396~         65 (107.4425 12.3425, 107.4375 12.3475, 107.43~</span></a>
-<a class="sourceLine" id="cb4-24" title="24"><span class="co">##  3      67 &lt;tibble [396~         67 (107.5475 12.3625, 107.5475 12.3675, 107.54~</span></a>
-<a class="sourceLine" id="cb4-25" title="25"><span class="co">##  4      69 &lt;tibble [396~         69 (107.3525 12.3675, 107.3575 12.3675, 107.36~</span></a>
-<a class="sourceLine" id="cb4-26" title="26"><span class="co">##  5      70 &lt;tibble [396~         70 (107.3675 12.3725, 107.3725 12.3775, 107.37~</span></a>
-<a class="sourceLine" id="cb4-27" title="27"><span class="co">##  6      77 &lt;tibble [396~         77 (107.5175 12.4125, 107.5175 12.4175, 107.51~</span></a>
-<a class="sourceLine" id="cb4-28" title="28"><span class="co">##  7      79 &lt;tibble [396~         79 (107.5625 12.4275, 107.5575 12.4325, 107.55~</span></a>
-<a class="sourceLine" id="cb4-29" title="29"><span class="co">##  8      83 &lt;tibble [396~         83 (107.5575 12.4375, 107.5625 12.4425, 107.56~</span></a>
-<a class="sourceLine" id="cb4-30" title="30"><span class="co">##  9      85 &lt;tibble [396~         85 (107.5925 12.4475, 107.5875 12.4525, 107.58~</span></a>
-<a class="sourceLine" id="cb4-31" title="31"><span class="co">## 10      88 &lt;tibble [396~         88 (107.4525 12.4575, 107.4475 12.4625, 107.44~</span></a>
-<a class="sourceLine" id="cb4-32" title="32"><span class="co">## # ... with 31 more rows</span></a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>interpolated_runoff &lt;-<span class="st"> </span><span class="kw">interpolate_runoff</span>(source_runoff, river, </span>
+<span id="cb4-2"><a href="#cb4-2"></a>                                          <span class="dt">riverID =</span> <span class="st">"SEGMENT_ID"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="co">## although coordinates are longitude/latitude, st_intersects assumes that they are planar</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a></span>
+<span id="cb4-6"><a href="#cb4-6"></a>interpolated_runoff</span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co">## </span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co">## Hydrostreamer</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="co">## No. objects: 41</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co">## No. runoff timeseries: 1</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="co">##   Included runoff timeseries: LORA</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="co">## </span></span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="co">## Simple feature collection with 41 features and 3 fields</span></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="co">## geometry type:  LINESTRING</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="co">## dimension:      XY</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="co">## bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="co">## geographic CRS: WGS 84</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="co">## # A tibble: 41 x 4</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="co">##    riverID runoff_ts     SEGMENT_ID                                         geom</span></span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="co">##      &lt;dbl&gt; &lt;named list&gt;       &lt;dbl&gt;                             &lt;LINESTRING [°]&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="co">##  1      56 &lt;tibble [396~         56 (107.4125 12.2975, 107.4075 12.3025, 107.40~</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="co">##  2      65 &lt;tibble [396~         65 (107.4425 12.3425, 107.4375 12.3475, 107.43~</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a><span class="co">##  3      67 &lt;tibble [396~         67 (107.5475 12.3625, 107.5475 12.3675, 107.54~</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a><span class="co">##  4      69 &lt;tibble [396~         69 (107.3525 12.3675, 107.3575 12.3675, 107.36~</span></span>
+<span id="cb4-26"><a href="#cb4-26"></a><span class="co">##  5      70 &lt;tibble [396~         70 (107.3675 12.3725, 107.3725 12.3775, 107.37~</span></span>
+<span id="cb4-27"><a href="#cb4-27"></a><span class="co">##  6      77 &lt;tibble [396~         77 (107.5175 12.4125, 107.5175 12.4175, 107.51~</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a><span class="co">##  7      79 &lt;tibble [396~         79 (107.5625 12.4275, 107.5575 12.4325, 107.55~</span></span>
+<span id="cb4-29"><a href="#cb4-29"></a><span class="co">##  8      83 &lt;tibble [396~         83 (107.5575 12.4375, 107.5625 12.4425, 107.56~</span></span>
+<span id="cb4-30"><a href="#cb4-30"></a><span class="co">##  9      85 &lt;tibble [396~         85 (107.5925 12.4475, 107.5875 12.4525, 107.58~</span></span>
+<span id="cb4-31"><a href="#cb4-31"></a><span class="co">## 10      88 &lt;tibble [396~         88 (107.4525 12.4575, 107.4475 12.4625, 107.44~</span></span>
+<span id="cb4-32"><a href="#cb4-32"></a><span class="co">## # ... with 31 more rows</span></span></code></pre></div>
 <p>The warning received here is from the sf package because the coordinate system in the example dataset is in geographic coordinate system. The warning goes away if we first project the dataset to an appropriate coordinate reference system.</p>
 <p>The output changes so that zoneID identifying the source of runoff becomes riverID. runoff_ts now contains timeseries of the interpolated runoff at each individual river segment.</p>
 </div>
@@ -210,55 +210,52 @@
 <h3 class="hasAnchor">
 <a href="#3-apply-river-routing" class="anchor"></a>3. Apply river routing</h3>
 <p>Next, we route runoff down the river network in order to estimate discharge at each segment. Since the example data has a monthly timestep, and the river network is a small one, we use the simplest routing algorithm available: instantaneous routing. In this routing method, all runoff is assumed to flow through the entire network at the timestep it is created.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">streamflow &lt;-<span class="st"> </span><span class="kw">accumulate_runoff</span>(interpolated_runoff, <span class="dt">method =</span> <span class="st">"instant"</span>)</a>
-<a class="sourceLine" id="cb5-2" title="2">streamflow</a>
-<a class="sourceLine" id="cb5-3" title="3"></a>
-<a class="sourceLine" id="cb5-4" title="4"><span class="co">## </span></a>
-<a class="sourceLine" id="cb5-5" title="5"><span class="co">## Hydrostreamer</span></a>
-<a class="sourceLine" id="cb5-6" title="6"><span class="co">## No. objects: 41</span></a>
-<a class="sourceLine" id="cb5-7" title="7"><span class="co">## No. runoff timeseries: 1</span></a>
-<a class="sourceLine" id="cb5-8" title="8"><span class="co">##   Included runoff timeseries: LORA</span></a>
-<a class="sourceLine" id="cb5-9" title="9"><span class="co">## No. discharge timeseries: 1</span></a>
-<a class="sourceLine" id="cb5-10" title="10"><span class="co">##   Included discharge timeseries: LORA</span></a>
-<a class="sourceLine" id="cb5-11" title="11"><span class="co">## </span></a>
-<a class="sourceLine" id="cb5-12" title="12"><span class="co">## Simple feature collection with 41 features and 7 fields</span></a>
-<a class="sourceLine" id="cb5-13" title="13"><span class="co">## geometry type:  LINESTRING</span></a>
-<a class="sourceLine" id="cb5-14" title="14"><span class="co">## dimension:      XY</span></a>
-<a class="sourceLine" id="cb5-15" title="15"><span class="co">## bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975</span></a>
-<a class="sourceLine" id="cb5-16" title="16"><span class="co">## geographic CRS: WGS 84</span></a>
-<a class="sourceLine" id="cb5-17" title="17"><span class="co">## # A tibble: 41 x 8</span></a>
-<a class="sourceLine" id="cb5-18" title="18"><span class="co">##    riverID NEXT  PREVIOUS runoff_ts discharge_ts UP_SEGMENTS SEGMENT_ID</span></a>
-<a class="sourceLine" id="cb5-19" title="19"><span class="co">##      &lt;dbl&gt; &lt;nam&gt; &lt;named &gt; &lt;named l&gt; &lt;named list&gt;       &lt;dbl&gt;      &lt;dbl&gt;</span></a>
-<a class="sourceLine" id="cb5-20" title="20"><span class="co">##  1      56 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         56</span></a>
-<a class="sourceLine" id="cb5-21" title="21"><span class="co">##  2      65 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         65</span></a>
-<a class="sourceLine" id="cb5-22" title="22"><span class="co">##  3      67 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         67</span></a>
-<a class="sourceLine" id="cb5-23" title="23"><span class="co">##  4      69 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         69</span></a>
-<a class="sourceLine" id="cb5-24" title="24"><span class="co">##  5      70 &lt;dbl~ &lt;dbl [2~ &lt;tibble ~ &lt;tibble [39~           2         70</span></a>
-<a class="sourceLine" id="cb5-25" title="25"><span class="co">##  6      77 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         77</span></a>
-<a class="sourceLine" id="cb5-26" title="26"><span class="co">##  7      79 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         79</span></a>
-<a class="sourceLine" id="cb5-27" title="27"><span class="co">##  8      83 &lt;dbl~ &lt;dbl [2~ &lt;tibble ~ &lt;tibble [39~           2         83</span></a>
-<a class="sourceLine" id="cb5-28" title="28"><span class="co">##  9      85 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         85</span></a>
-<a class="sourceLine" id="cb5-29" title="29"><span class="co">## 10      88 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         88</span></a>
-<a class="sourceLine" id="cb5-30" title="30"><span class="co">## # ... with 31 more rows, and 1 more variable: geom &lt;LINESTRING [°]&gt;</span></a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>streamflow &lt;-<span class="st"> </span><span class="kw">accumulate_runoff</span>(interpolated_runoff, <span class="dt">routing_method =</span> <span class="st">"instant"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>streamflow</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co">## </span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="co">## Hydrostreamer</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co">## No. objects: 41</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">## No. runoff timeseries: 1</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">##   Included runoff timeseries: LORA</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="co">## No. discharge timeseries: 1</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co">##   Included discharge timeseries: LORA</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="co">## </span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">## Simple feature collection with 41 features and 7 fields</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co">## geometry type:  LINESTRING</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="co">## dimension:      XY</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="co">## bbox:           xmin: 107.3325 ymin: 12.2975 xmax: 107.6075 ymax: 12.9975</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co">## geographic CRS: WGS 84</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="co">## # A tibble: 41 x 8</span></span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="co">##    riverID NEXT  PREVIOUS runoff_ts discharge_ts UP_SEGMENTS SEGMENT_ID</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a><span class="co">##      &lt;dbl&gt; &lt;nam&gt; &lt;named &gt; &lt;named l&gt; &lt;named list&gt;       &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a><span class="co">##  1      56 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         56</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a><span class="co">##  2      65 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         65</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a><span class="co">##  3      67 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         67</span></span>
+<span id="cb5-23"><a href="#cb5-23"></a><span class="co">##  4      69 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         69</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a><span class="co">##  5      70 &lt;dbl~ &lt;dbl [2~ &lt;tibble ~ &lt;tibble [39~           2         70</span></span>
+<span id="cb5-25"><a href="#cb5-25"></a><span class="co">##  6      77 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         77</span></span>
+<span id="cb5-26"><a href="#cb5-26"></a><span class="co">##  7      79 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         79</span></span>
+<span id="cb5-27"><a href="#cb5-27"></a><span class="co">##  8      83 &lt;dbl~ &lt;dbl [2~ &lt;tibble ~ &lt;tibble [39~           2         83</span></span>
+<span id="cb5-28"><a href="#cb5-28"></a><span class="co">##  9      85 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         85</span></span>
+<span id="cb5-29"><a href="#cb5-29"></a><span class="co">## 10      88 &lt;dbl~ &lt;dbl [1~ &lt;tibble ~ &lt;tibble [39~           0         88</span></span>
+<span id="cb5-30"><a href="#cb5-30"></a><span class="co">## # ... with 31 more rows, and 1 more variable: geom &lt;LINESTRING [°]&gt;</span></span></code></pre></div>
 <p>We see that there are now additional columns. NEXT and PREVIOUS give the routing information for the routing algorithm. discharge_ts is a list column which contains timeseries of the estimated runoff, and UP_SEGMENTS was created with the routing information, giving the number of river reaches upstream of each individual reach in the network.</p>
 </div>
 <div id="these-functions-are-pipable" class="section level3">
 <h3 class="hasAnchor">
 <a href="#these-functions-are-pipable" class="anchor"></a>These functions are pipable</h3>
 <p>The function usage has been developed so that they are all pipable.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">streamflow &lt;-<span class="st"> </span><span class="kw">raster_to_HS</span>(runoff, </a>
-<a class="sourceLine" id="cb6-2" title="2">                           <span class="dt">date=</span><span class="kw">ymd</span>(<span class="st">"1980-01-01"</span>), </a>
-<a class="sourceLine" id="cb6-3" title="3">                           <span class="dt">timestep=</span><span class="st">"month"</span>, </a>
-<a class="sourceLine" id="cb6-4" title="4">                           <span class="dt">unit =</span> <span class="st">"mm/s"</span>,</a>
-<a class="sourceLine" id="cb6-5" title="5">                           <span class="dt">aoi=</span><span class="kw">st_union</span>(basins),</a>
-<a class="sourceLine" id="cb6-6" title="6">                           <span class="dt">names=</span><span class="st">"LORA"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-7" title="7"><span class="st">    </span><span class="kw">interpolate_runoff</span>(river, <span class="dt">riverID =</span> <span class="st">"SEGMENT_ID"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-8" title="8"><span class="st">    </span><span class="kw">accumulate_runoff</span>()</a>
-<a class="sourceLine" id="cb6-9" title="9"></a>
-<a class="sourceLine" id="cb6-10" title="10"><span class="co">## although coordinates are longitude/latitude, st_intersects assumes that they are planar</span></a>
-<a class="sourceLine" id="cb6-11" title="11"></a>
-<a class="sourceLine" id="cb6-12" title="12"><span class="co">## Warning in if (method == "instant") {: the condition has length &gt; 1 and only the</span></a>
-<a class="sourceLine" id="cb6-13" title="13"><span class="co">## first element will be used</span></a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>streamflow &lt;-<span class="st"> </span><span class="kw">raster_to_HS</span>(runoff, </span>
+<span id="cb6-2"><a href="#cb6-2"></a>                           <span class="dt">date=</span><span class="kw">ymd</span>(<span class="st">"1980-01-01"</span>), </span>
+<span id="cb6-3"><a href="#cb6-3"></a>                           <span class="dt">timestep=</span><span class="st">"month"</span>, </span>
+<span id="cb6-4"><a href="#cb6-4"></a>                           <span class="dt">unit =</span> <span class="st">"mm/s"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5"></a>                           <span class="dt">aoi=</span><span class="kw">st_union</span>(basins),</span>
+<span id="cb6-6"><a href="#cb6-6"></a>                           <span class="dt">names=</span><span class="st">"LORA"</span>) <span class="op">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="st">    </span><span class="kw">interpolate_runoff</span>(river, <span class="dt">riverID =</span> <span class="st">"SEGMENT_ID"</span>) <span class="op">%&gt;%</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="st">    </span><span class="kw">accumulate_runoff</span>()</span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co">## although coordinates are longitude/latitude, st_intersects assumes that they are planar</span></span></code></pre></div>
 <p>For a more thorough tutorial, see the included vignette.</p>
 </div>
 </div>
@@ -266,7 +263,7 @@
 <h2 class="hasAnchor">
 <a href="#license" class="anchor"></a>License</h2>
 <p>The MIT License (MIT)</p>
-<p>Copyright (c) 2018-2020 Marko K. Kallio</p>
+<p>Copyright (c) 2018 Marko K. Kallio</p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
@@ -315,7 +312,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

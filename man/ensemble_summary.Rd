@@ -17,12 +17,12 @@ ensemble_summary(
 \arguments{
 \item{HS}{\code{HS} object, or a list of data frames with column \code{Date}.}
 
-\item{summarise_over_timeseries}{Apply function(s) to each column-wise (to
+\item{summarise_over_timeseries}{Apply function(s) column-wise (to
 each timeseries separately, \code{TRUE}), or row-wise for each date in 
 timeseries(\code{FALSE}, default).}
 
-\item{aggregate_monthly}{Apply results to the 12 months of the year. Defaults
-to \code{FALSE}.}
+\item{aggregate_monthly}{Return results as averages for the 12 months of the
+year? Defaults to \code{FALSE}.}
 
 \item{funs}{Functions to evaluate. By default, computes \code{min, mean, 
 median and max}.}

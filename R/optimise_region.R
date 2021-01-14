@@ -137,20 +137,31 @@ optimise_region <- function(HS,
         statdown <- downstream(HS, upstations$riverID[station]) %>% 
             tibble::add_column(.type = FALSE)
         
-        # downstream river segments should not have any runoff to avoid
-        # counting it many times
-        statdown$runoff_ts <- lapply(statdown$runoff_ts, function(x) {
-            x[,-1] <- units::set_units(0, "m3/s")
-            return(x)
-        })
+        ## check if the station has a downstream segment or not?
+        test <- nrow(statdown)
+        if(test == 1) {
+            statriver <- statup
+        } else if(test > 1) {
+            # downstream river segments should not have any runoff to avoid
+            # counting it many times
+            statdown$runoff_ts <- lapply(statdown$runoff_ts, function(x) {
+                x[,-1] <- units::set_units(0, "m3/s")
+                return(x)
+            })
+            
+            statriver <- rbind(statup, statdown[-1,])
+        } else {
+            stop("Error in station positions / routing")
+        }
         
-        statriver <- rbind(statup, statdown[-1,])
+        # remove those river segments which have already been optimized
         statriver <- statriver[!statriver$riverID %in% optimizedIDs$riverID,]
+        statriver$discharge_ts <- NULL
         
         # route
         statriver <- accumulate_runoff(statriver, 
-                                       method = routing,
-                                       ...)
+                                       routing_method = routing)#,
+                                       # ...)
         
         stationrow <- which(statriver$riverID == upstations$riverID[station])
         flow <- dplyr::left_join(statriver$discharge_ts[[ stationrow ]],
@@ -191,18 +202,18 @@ optimise_region <- function(HS,
         }
         
         # ----------------------------------------------------------------------
-        # Forecast combination entire timeseries or monthly or annual or best
+        # Forecast combination entire timeseries or monthly or annual
         if(combination %in% c("timeseries", "ts")) {
             
-            comb <- hydrostreamer:::combine_timeseries(flow, 
+            comb <- combine_timeseries(flow, 
                                        optim_method, 
                                        sampling,
                                        train,
                                        bias_correction,
                                        log,
                                        warned_overfit,
-                                       warned_train,
-                                       ...)
+                                       warned_train)#,
+                                       # ...)
             warned_overfit <- comb$warned_overfit
             warned_train <- comb$warned_train
             
@@ -249,7 +260,7 @@ optimise_region <- function(HS,
         # the optimized weights, and route to get discharge. If there were no
         # regionalization controls (the station is an upstream one), just
         # combine.
-        if(region_control) {
+        # if(region_control) {
             statriver <- combine_runoff(dplyr::select(statriver, -discharge_ts), 
                                         list(Optimized = weights),
                                         intercept = intercept,
@@ -257,16 +268,16 @@ optimise_region <- function(HS,
                                         drop = drop,
                                         monthly = mon)
             statriver <- accumulate_runoff(statriver, 
-                                           method = routing,
-                                           ...)
-        } else {
-            statriver <- combine_runoff(statriver, 
-                                        list(Optimized = weights),
-                                        intercept = intercept,
-                                        bias = rep(0,12),
-                                        drop = drop,
-                                        monthly = mon)
-        }
+                                           routing_method = routing)#,
+                                           # ...)
+        # } else {
+        #     statriver <- combine_runoff(statriver, 
+        #                                 list(Optimized = weights),
+        #                                 intercept = intercept,
+        #                                 bias = rep(0,12),
+        #                                 drop = drop,
+        #                                 monthly = mon)
+        # }
         
         # update HS 
         statriver$Optimisation_info[[stationrow]] <- comb
@@ -289,9 +300,9 @@ optimise_region <- function(HS,
         # create a boundary conditions
         test <- sum(!updateind) > 0
         if(test) {
-                boundary <- hydrostreamer:::spread_listc(statriver$discharge_ts[
-                    !updateind])
-                HS <- add_control(HS, boundary[["Optimized"]], "m3/s", 
+                boundary <- spread_listc(statriver$discharge_ts[
+                    !updateind])[["Optimized"]]
+                HS <- add_control(HS, boundary, "m3/s", 
                                   statriver$riverID[!updateind],
                                   "add", "discharge")
         }
@@ -314,14 +325,24 @@ optimise_region <- function(HS,
             # mean combination first so that we dont need to route everything
             # and then take mean. instead, route the mean directly
             statriver <- dplyr::select(statriver, -discharge_ts)
-            statriver <- ensemble_summary(statriver, 
-                                          summarise_over_timeseries = FALSE,
-                                          aggregate_monthly = FALSE,
-                                          funs = "mean",
-                                          drop=drop)
+            nmods <- ncol(statriver$runoff_ts[[1]])-1
+            weights <- rep(1/nmods, nmods)
+            
+            statriver <- combine_runoff(statriver, 
+                                        list(Ensemble_mean = weights),
+                                        intercept = intercept,
+                                        bias = rep(0,12),
+                                        drop = drop,
+                                        monthly = mon)
+            
+            # statriver <- ensemble_summary(statriver, 
+            #                               summarise_over_timeseries = FALSE,
+            #                               aggregate_monthly = FALSE,
+            #                               funs = "mean",
+            #                               drop=drop)
             # route
             statriver <- accumulate_runoff(statriver, 
-                                           method = routing,
+                                           routing_method = routing,
                                            ...)
             
             # update HS 

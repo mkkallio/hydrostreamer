@@ -71,7 +71,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">hydrostreamer</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0.1</span>
       </span>
     </div>
 
@@ -126,190 +126,16 @@
       <small>Source: <a href='https://github.com/mkkallio/hydrostreamer/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div id="hydrostreamer-050" class="section level1">
-<h1 class="page-header" data-toc-text="0.5.0">
-<a href="#hydrostreamer-050" class="anchor"></a>hydrostreamer 0.5.0</h1>
-<p>Another jump in the version number due to added functionality. This is a sort of restart in spirit for the package. Expect code written for the earlier versions not working with this one. Some highlights below:</p>
-<div id="new-features" class="section level2">
-<h2 class="hasAnchor">
-<a href="#new-features" class="anchor"></a>New features</h2>
+    <div id="hydrostreamer-101" class="section level1">
+<h1 class="page-header" data-toc-text="1.0.1">
+<a href="#hydrostreamer-101" class="anchor"></a>hydrostreamer 1.0.1</h1>
+<p>This update mostly fixes a few bugs from the previous version 1.0.0</p>
 <ul>
-<li><p><code><a href="../reference/compute_HSweights.html">compute_HSweights()</a></code> is redesigned to support Dasymetric mapping and for simpler usage.</p></li>
-<li><p>In addition to a contiguous timeseries or calendar month combinations, calendar year combinations have been added.</p></li>
+<li>Routing algorithm input parameter name changed from <em>method</em> to <em>routing_method</em> to avoid a conflict with method parameter in <code><a href="https://rdrr.io/r/stats/optim.html">stats::optim()</a></code> in case user-defined function was used for optimisation with <code><a href="../reference/optimise_region.html">hydrostreamer::optimise_region()</a></code>.</li>
+<li>Fixed logic error in <code><a href="../reference/optimise_region.html">optimise_region()</a></code> which was caused by mishandling of dates and resulted in poor performance in a cascade of optimisation points</li>
+<li>fixed <code><a href="../reference/Extract_timeseries.html">observations()</a></code> to correctly fetch the observation timeseries.</li>
+<li>updated github README appropriately to the current version</li>
 </ul>
-</div>
-<div id="minor-fixes-and-enhancements" class="section level2">
-<h2 class="hasAnchor">
-<a href="#minor-fixes-and-enhancements" class="anchor"></a>Minor fixes and enhancements</h2>
-<ul>
-<li><p><code><a href="../reference/flow_gof.html">flow_gof()</a></code> is now faster for very large number of timeseries to evaluate.</p></li>
-<li><p>Two new combination options have been added; Granger-Ramanathan type A and type B (Ordinary Least Squares combination with no intercept (A), and OLS with no intercept and weights sum to unity (B)), as defined in Arsenault, et al. “A Comparative Analysis of 9 Multi-Model Averaging Approaches in Hydrological Continuous Streamflow Simulation.” Journal of Hydrology 529 (October 2015): 754–67. <a href="https://doi.org/10.1016/j.jhydrol.2015.09.001" class="uri">https://doi.org/10.1016/j.jhydrol.2015.09.001</a>.</p></li>
-<li><p>Combinations are now implemented in hydrostreamer itself: <code>ForecastComb</code> package is no longer a dependency</p></li>
-</ul>
-</div>
-</div>
-    <div id="hydrostreamer-040" class="section level1">
-<h1 class="page-header" data-toc-text="0.4.0">
-<a href="#hydrostreamer-040" class="anchor"></a>hydrostreamer 0.4.0</h1>
-<p>Large update which brings the package to version 0.4.0. Changes made to nearly all functions.</p>
-<ul>
-<li><p>The outputs from main functions are not ‘sf’ objects, with the runoff and discharge timeseries provided in list columns. This should enhance the usability of the package.</p></li>
-<li><p>New function <code><a href="../reference/create_river.html">create_river()</a></code> is provided. The minimum input is now changed to a runoff timeseries and a river network, OR a DEM. The function create a river network from a supplied DEM. However, RSAGA is requred for this to function. Thanks go to Vili Virkki for adding this!</p></li>
-<li><p>New example data added.</p></li>
-<li><p>Vignette updated. New vignettes planned going deeper in the different aspects of hydrostreamer</p></li>
-<li><p>The workflow is now pipeable.</p></li>
-</ul>
-</div>
-    <div id="hydrostreamer-032" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.2">
-<a href="#hydrostreamer-032" class="anchor"></a>hydrostreamer 0.3.2</h1>
-<p>Fixed many issues, including:</p>
-<ul>
-<li><p>added <code>ForecastComb</code> in imports</p></li>
-<li><p>fixed <code><a href="../reference/delineate_basin.html">delineate_basin()</a></code></p></li>
-<li><p>Hopefully fixed the conflict issue between <code>raster</code> and <code>hydroGOF</code> packages.The issue appears to have been caused by <code>hydroGOF</code> importing <code>hydroTSM</code> importing <code>gstat</code> importing <code>spacetime</code>, which redefines class <code>RasterStack</code>. Sometimes manifests itself when loading an .RData file with a raster in it, causing automatic attachment of <code>raster</code>.</p></li>
-<li><p>Some other smaller fixes.</p></li>
-</ul>
-</div>
-    <div id="hydrostreamer-031" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.1">
-<a href="#hydrostreamer-031" class="anchor"></a>hydrostreamer 0.3.1</h1>
-<p>Small update with mostly bugfixes.</p>
-<ul>
-<li><p>Fixed <a href="https://github.com/mkkallio/hydrostreamer/issues/2">issue</a> where Strahler based weighting of river segments did not work.</p></li>
-<li><p>Fixed an issue involving packages <code>hydroGOF</code> and <code>raster</code>, causing <code><a href="../reference/optimise_point.html">optimise_point()</a></code> to fail if <code>raster</code> was loaded.</p></li>
-<li><p><code>HSgrid</code>, <code>HSweights</code>, <code>HSrunoff</code> and <code>HSflow</code> no longer lose their <code>list</code> class.</p></li>
-</ul>
-</div>
-    <div id="hydrostreamer-030" class="section level1">
-<h1 class="page-header" data-toc-text="0.3.0">
-<a href="#hydrostreamer-030" class="anchor"></a>hydrostreamer 0.3.0</h1>
-<p>A major overhaul of the downscaling system and a number of additional features included. This update changes names of many functions and their outputs and thus introduces breaking changes. The overhaul, however, makes the package much more usable. Many of the changes are made to make further development of the package easier. This is a fairly experimental package with a number of bugs to be expected, but the main workflow works correctly.</p>
-<div id="changes-include-among-smaller-changes" class="section level2">
-<h2 class="hasAnchor">
-<a href="#changes-include-among-smaller-changes" class="anchor"></a>Changes include, among smaller changes:</h2>
-<ul>
-<li><p>date handling introduced, instead of sequential timestep numbers.</p></li>
-<li><p>Package now supports multiple input runoff timeseries, and the central functions support processing them all in one command.</p></li>
-<li>
-<p>function names changed:</p>
-<ul>
-<li>
-<code>polygrid_timeseries()</code> –&gt; <code>raster_to_HSgrid()</code>
-</li>
-<li>
-<code>compute_weights()</code> –&gt; <code><a href="../reference/compute_HSweights.html">compute_HSweights()</a></code>
-</li>
-<li>
-<code>compute_segment_runoff()</code> –&gt; <code><a href="../reference/downscale_runoff.html">downscale_runoff()</a></code>
-</li>
-<li>
-<code>accumulate_flow()</code> –&gt; <code><a href="../reference/accumulate_runoff.html">accumulate_runoff()</a></code>
-</li>
-<li>
-<code>flow_network()</code> –&gt; <code><a href="../reference/river_network.html">river_network()</a></code>
-</li>
-</ul>
-</li>
-<li>
-<p>New S3 object classes added:</p>
-<ul>
-<li>
-<code>HSgrid</code> to store input runoff information</li>
-<li>
-<code>HSweights</code> remains the same as in previous versions</li>
-<li>
-<code>HSrunoff</code> for the downscaled runoff timeseries</li>
-<li>
-<code>HSflow</code> to store discharge information after applying river routing</li>
-<li>
-<code>HSobs</code> to store observation data</li>
-<li>
-<code>HSoptim</code> to hold optimization information</li>
-</ul>
-</li>
-<li>
-<p>Added two new routing functions:</p>
-<ul>
-<li>
-<code>accumulate_runoff.muskingum()</code> - Muskingum routing</li>
-<li>
-<code>accumulate_runoff.simple()</code> - Simple lag routing</li>
-</ul>
-</li>
-<li>
-<p>Added forecast combination capabilities. It is now possible to get optimized flow estimates by</p>
-<ul>
-<li>
-<code><a href="../reference/optimise_point.html">optimise_point()</a></code> for optimising in point locations</li>
-<li>
-<code><a href="../reference/optimise_region.html">optimise_region()</a></code>for regionalizing weights obtained in point locations</li>
-</ul>
-</li>
-<li><p>Added <code><a href="../reference/ensemble_summary.html">ensemble_summary()</a></code> function for summarising HS* objects</p></li>
-<li><p>Added <code>HSwrite</code> for easy expor of HS* objects to GeoPackage format.</p></li>
-</ul>
-</div>
-<div id="future-developments" class="section level2">
-<h2 class="hasAnchor">
-<a href="#future-developments" class="anchor"></a>Future developments</h2>
-<p>The current update contains minimal documentation and examples. In the immediate future, we’ll</p>
-<ul>
-<li><p>Work with bringing all documentation up-to-date</p></li>
-<li><p>Add further regionalization options</p></li>
-<li><p>Provide a number of vignettes exploring the capabilities of <code>hydrostreamer</code></p></li>
-<li><p>Provide river network generation functions, so that river network input can be replaced with a DEM input.</p></li>
-</ul>
-</div>
-</div>
-    <div id="hydrostreamer-022" class="section level1">
-<h1 class="page-header" data-toc-text="0.2.2">
-<a href="#hydrostreamer-022" class="anchor"></a>hydrostreamer 0.2.2</h1>
-<ul>
-<li><p><code>compute_weights()</code> now calls the correct function when delineating basins from drainage directions.</p></li>
-<li><p><code>compute_segment_runoff()</code> has been partially re-implemented in Fortran, making it much faster</p></li>
-<li><p><code><a href="../reference/river_voronoi.html">river_voronoi()</a></code> is changed in the way it ensures no nodes are overlapping when tesselating Voronoi diagram. Should be faster now.</p></li>
-</ul>
-</div>
-    <div id="hydrostreamer-021" class="section level1">
-<h1 class="page-header" data-toc-text="0.2.1">
-<a href="#hydrostreamer-021" class="anchor"></a>hydrostreamer 0.2.1</h1>
-<ul>
-<li><p><code>flow_network()</code> now works correctly even if the last features in the river network did not have any downstream segments.</p></li>
-<li><p><code><a href="../reference/delineate_basin.html">delineate_basin()</a></code> is now re-implemented partly in Fortran, yielding a very large speed boost compared to the previous R native implementation.</p></li>
-</ul>
-</div>
-    <div id="hydrostreamer-020" class="section level1">
-<h1 class="page-header" data-toc-text="0.2.0">
-<a href="#hydrostreamer-020" class="anchor"></a>hydrostreamer 0.2.0</h1>
-<div id="minor-improvements-and-fixes" class="section level2">
-<h2 class="hasAnchor">
-<a href="#minor-improvements-and-fixes" class="anchor"></a>Minor improvements and fixes</h2>
-<ul>
-<li><p>Column order in objects output by all function have been changed so that columns are always in the same order, starting from ID’s. See individual function reference to find the order.</p></li>
-<li><p>Names of the ID’s have been made uniform: in the output, columns with river segment ID’s are now always “riverID”, and grids “gridID”.</p></li>
-<li><p>Documentation has been (mostly) rewritten, and an error in the vignette has been corrected. Examples have been added to almost all functions.</p></li>
-<li><p>Functions have been moved to their own .R files which include the function and methods, if any.</p></li>
-<li><p>Added simple checks for input arguments for all functions.</p></li>
-<li><p>Added<code>verbose</code> (TRUE/FALSE) option to all functions to control wherther to print progress indication. By default, functions do not.</p></li>
-</ul>
-</div>
-<div id="breaking-changes" class="section level2">
-<h2 class="hasAnchor">
-<a href="#breaking-changes" class="anchor"></a>Breaking changes</h2>
-<ul>
-<li>
-<code>compute_weights()</code> now always outputs an object of class <em>HSweights</em>. As a result, line-based weighting now outputs the original river network, not one which has been split at runoff polygon borders.</li>
-</ul>
-</div>
-<div id="new-functions" class="section level2">
-<h2 class="hasAnchor">
-<a href="#new-functions" class="anchor"></a>New functions</h2>
-<ul>
-<li><p><code>switch_grid()</code> can be used to safely switch the runoff input in a <em>HSweights</em> object without needing to recompute weights every time. The replacement has to include all features in the grid being replaced, with identical ID’s.</p></li>
-<li><p><code><a href="../reference/upstream.html">upstream()</a></code> can be used to identify all river segments which are upstream from a certain segment.</p></li>
-</ul>
-</div>
 </div>
   </div>
 
@@ -328,7 +154,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

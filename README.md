@@ -1,4 +1,4 @@
-hydrostreamer 0.5.0
+hydrostreamer 1.0.1
 ===================
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214523.svg)](https://doi.org/10.5281/zenodo.1214523)
@@ -25,10 +25,25 @@ More information
 **hydrostreamer** has featured in the following publications and
 conference presentations:
 
--   Model description paper under preparation
--   MODSIM 2019: Kallio et al, Downscaling runoff products using areal
-    interpolation: a combined pycnophylactic-dasymetric method. DOI:
-    10.36334/modsim.2019.k8.kallio
+-   Model description paper is under review at Geoscientific Model
+    Development: Kallio, M., Guillaume, J. H. A., Virkki, V., Kummu, M.,
+    and Virrantaus, K.: [Hydrostreamer v1.0 – improved streamflow
+    predictions for local applications from an ensemble of downscaled
+    global runoff products](https://doi.org/10.5194/gmd-2020-276),
+    Geosci. Model Dev. Discuss.,
+    <a href="https://doi.org/10.5194/gmd-2020-276" class="uri">https://doi.org/10.5194/gmd-2020-276</a>,
+    in review, 2020.
+-   Nauditt, A., Stahl, K., Rodríguez, E., Birkel, C.,
+    Formiga-Johnsson, R. M., Kallio, M., Hann, H., Ribbe, L.,
+    Baez-Villanueva, O. M., and Thurner, J.: [Tropical drought risk:
+    estimates combining gridded vulnerability and hazard
+    data](https://doi.org/10.5194/nhess-2020-360), Nat. Hazards Earth
+    Syst. Sci. Discuss.,
+    <a href="https://doi.org/10.5194/nhess-2020-360" class="uri">https://doi.org/10.5194/nhess-2020-360</a>,
+    in review, 2020.
+-   MODSIM 2019: Kallio et al, [Downscaling runoff products using areal
+    interpolation: a combined pycnophylactic-dasymetric
+    method](10.36334/modsim.2019.k8.kallio)
 -   EGU 2018: Kallio et al, [Spatial allocation of low resolution runoff
     model outputs to high resolution stream
     network](https://www.researchgate.net/publication/325066501_Spatial_allocation_of_low_resolution_runoff_model_outputs_to_high_resolution_stream_network)
@@ -60,6 +75,7 @@ First, load example data to R:
     library(hydrostreamer)
     library(raster)
     library(lubridate)
+    library(sf)
 
     data(example_rivers)
     data(example_basins)
@@ -90,7 +106,7 @@ granularity of input timesteps.
     ## geometry type:  POLYGON
     ## dimension:      XY
     ## bbox:           xmin: 107.275 ymin: 12.25 xmax: 107.625 ymax: 12.995
-    ## CRS:            +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0
+    ## CRS:            +proj=longlat +datum=WGS84 +no_defs
     ## # A tibble: 4 x 3
     ##   zoneID runoff_ts                                                      geometry
     ##    <int> <named list>                                              <POLYGON [°]>
@@ -159,7 +175,7 @@ routing algorithm available: instantaneous routing. In this routing
 method, all runoff is assumed to flow through the entire network at the
 timestep it is created.
 
-    streamflow <- accumulate_runoff(interpolated_runoff, method = "instant")
+    streamflow <- accumulate_runoff(interpolated_runoff, routing_method = "instant")
     streamflow
 
     ## 
@@ -211,9 +227,6 @@ The function usage has been developed so that they are all pipable.
 
     ## although coordinates are longitude/latitude, st_intersects assumes that they are planar
 
-    ## Warning in if (method == "instant") {: the condition has length > 1 and only the
-    ## first element will be used
-
 For a more thorough tutorial, see the included vignette.
 
 License
@@ -221,7 +234,7 @@ License
 
 The MIT License (MIT)
 
-Copyright (c) 2018-2020 Marko K. Kallio
+Copyright (c) 2018 Marko K. Kallio
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the

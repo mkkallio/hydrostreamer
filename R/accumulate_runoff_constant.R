@@ -21,7 +21,7 @@ accumulate_runoff_constant <- function(HS,
     PREVIOUS <- NULL
     UP_SEGMENTS <- NULL
     
-    route <- "forward"
+    route <- "forward" # the only option currently available
     
     test <- inherits(HS, "HS")
     if(!test) stop("HS must be of class HS")
@@ -105,13 +105,13 @@ accumulate_runoff_constant <- function(HS,
     temp <- dplyr::select(HS, riverID, NEXT, PREVIOUS) %>%
         tibble::add_column(duration = duration) %>%
         sf::st_drop_geometry()
- 
-        for(i in order) {
-            downstream[[i]] <- downstream(temp, temp$riverID[i]) %>%
-                dplyr::mutate(cumulative = cumsum(duration))
-        }
- 
-   
+    
+    for(i in order) {
+        downstream[[i]] <- downstream(temp, temp$riverID[i]) %>%
+            dplyr::mutate(cumulative = cumsum(duration))
+    }
+    
+    
     downstreamind <- lapply(downstream, function(x) match(x$riverID, 
                                                           names(flow)))
     
@@ -206,22 +206,24 @@ accumulate_runoff_constant <- function(HS,
     if (verbose) pb <- txtProgressBar(min = 0, max = max, style = 3)
     prog <- 0
     
+    
     if(route == "forward") {
         
         # ----------------------------------------------------------------------
         # record contribution
        
         record <- record_forward(downstream, 
-                                                 downstreamind, 
-                                                 interval)
+                                 downstreamind, 
+                                 interval)
         
         # ----------------------------------------------------------------------
         # route
-        tsinds <- (pad_n+1):(nrow(inflowmat)-pad_n)
+        # tsinds <- (pad_n+1):(nrow(inflowmat)-pad_n)
         for(pred in 1:preds) {
             
-            outflow <- constantroute(inflowmat[,,pred], record, pad_n, nseg)
-            outflowmat[,,pred] <- outflow
+            outflowmat[,,pred] <- constantroute(inflowmat[,,pred], record, 
+                                                pad_n, nseg)
+
             if(verbose) setTxtProgressBar(pb, pred)
         }
     }
@@ -229,24 +231,23 @@ accumulate_runoff_constant <- function(HS,
     
     # apply discharge boundary
     if(dboundary) {
-        for(seg in 1:nseg) {
-            test <- seg %in% boundary_discharge
-            if(test) {
-                type <- HS$control_type[[seg]][1]
-                
-                inds <- dates_padded %in% HS$control_ts[[seg]]$Date
-                cts <- units::drop_units(dplyr::pull(HS$control_ts[[seg]], 2))
-                
-                if(type == "add") {
-                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] + cts
-                } else if(type == "subtract") {
-                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] - cts
-                } else if(type == "multiply") {
-                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] * cts
-                } else if(type == "set") {
-                    outflowmat[inds,seg,] <- 0
-                    outflowmat[inds,seg,] <- outflowmat[inds,seg,] + cts
-                } 
+        for(seg in boundary_discharge) {
+            type <- HS$control_type[[seg]][1]
+            
+            inds <- which(dates_padded %in% HS$control_ts[[seg]]$Date)-pad_n
+            cts <- units::drop_units(dplyr::pull(HS$control_ts[[seg]], 2))
+            
+            if(type == "add") {
+                outflowmat[inds,seg,] <- outflowmat[inds,seg,] + cts
+            } else if(type == "subtract") {
+                outflowmat[inds,seg,] <- outflowmat[inds,seg,] - cts
+            } else if(type == "multiply") {
+                outflowmat[inds,seg,] <- outflowmat[inds,seg,] * cts
+            } else if(type == "set") {
+                outflowmat[inds,seg,] <- 0
+                outflowmat[inds,seg,] <- outflowmat[inds,seg,] + cts
+            } else {
+                stop("Error in boundary operation type.")
             }
         }
     }
@@ -257,12 +258,12 @@ accumulate_runoff_constant <- function(HS,
     # ROUTE REVERSE
     # NOT IMPLEMENTED YET
     if(route == "reverse") {
-        # ----------------------------------------------------------------------
-        # record contribution
+
     }
     
+    
     # --------------------------------------------------------------------------
-    # output
+    # prepare output
     
     outflowmat <- units::as_units(outflowmat, "m3 s-1")
     for(seg in 1:nseg) {
@@ -270,7 +271,7 @@ accumulate_runoff_constant <- function(HS,
         nas <- is.na(out)
         #out[,-1] <- outflowmat[(pad_n+1):(tsteps),seg,]
         for(i in 1:preds) {
-            out[,i+1] <- outflowmat[1:nrow(out),seg,i]
+            out[,i+1] <- outflowmat[1:nrow(out), seg, i]
         }
         out[nas] <- NA
         out <- dplyr::as_tibble(out)

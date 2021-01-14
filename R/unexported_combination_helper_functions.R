@@ -324,6 +324,7 @@ combinations <- function(flowmat, type="CLS", ...) {
     predmat <- flowmat[,-c(1, ncols)] %>% as.matrix
     models <- colnames(predmat)
     intercept <- 0
+    dates <- dplyr::pull(flowmat, "Date")
     
     test <- is.function(type)
     if(test) {
@@ -349,6 +350,7 @@ combinations <- function(flowmat, type="CLS", ...) {
                      fn = type,
                      gr = args$gr,
                      obs, predmat,
+                     dates,
                      method = args$method,
                      lower = args$lower,
                      upper = args$upper,
