@@ -7,32 +7,20 @@ hydrostreamer 1.0.1
 of surface water resources from existing distributed runoff datasets
 with arbitrary areal representations (regular or irregular polygons).
 
-Hydrostreamer workflow generally consists of three steps:
+If used in a publication, please cite the following model description
+paper: Kallio, M., Guillaume, J. H. A., Virkki, V., Kummu, M., and
+Virrantaus, K.: [Hydrostreamer v1.0 – improved streamflow predictions
+for local applications from an ensemble of downscaled global runoff
+products](https://doi.org/10.5194/gmd-2020-276), Geosci. Model Dev.
+Discuss.,
+<a href="https://doi.org/10.5194/gmd-2020-276" class="uri">https://doi.org/10.5194/gmd-2020-276</a>,
+in review, 2020.
 
-1.  Areal interpolation of runoff to explicit river segments
-2.  Routing down the river network to estimate discharge
-3.  Model averaging, if streamflow observations are available.
-
-At the bare minimum, discharge can be estimated using only a single
-distributed runoff product and a river network. To include model
-averaging to the step, one further needs additional runoff datasets to
-provide multiple estimates of discharge, and a reference timeseries to
-perfgorm model averaging against.
-
-More information
-----------------
-
-**hydrostreamer** has featured in the following publications and
-conference presentations:
+In addition, **hydrostreamer** has featured in the following
+publications and conference presentations:
 
 -   Model description paper is under review at Geoscientific Model
-    Development: Kallio, M., Guillaume, J. H. A., Virkki, V., Kummu, M.,
-    and Virrantaus, K.: [Hydrostreamer v1.0 – improved streamflow
-    predictions for local applications from an ensemble of downscaled
-    global runoff products](https://doi.org/10.5194/gmd-2020-276),
-    Geosci. Model Dev. Discuss.,
-    <a href="https://doi.org/10.5194/gmd-2020-276" class="uri">https://doi.org/10.5194/gmd-2020-276</a>,
-    in review, 2020.
+    Development:
 -   Nauditt, A., Stahl, K., Rodríguez, E., Birkel, C.,
     Formiga-Johnsson, R. M., Kallio, M., Hann, H., Ribbe, L.,
     Baez-Villanueva, O. M., and Thurner, J.: [Tropical drought risk:
@@ -57,6 +45,21 @@ conference presentations:
 -   EGU 2019: Nauditt et al, [Evaluating drought risk in data scarce
     tropical
     catchments](https://meetingorganizer.copernicus.org/EGU2019/EGU2019-18370.pdf)
+
+Quickstart guide
+----------------
+
+Hydrostreamer workflow generally consists of three steps:
+
+1.  Areal interpolation of runoff to explicit river segments
+2.  Routing down the river network to estimate discharge
+3.  Model averaging, if streamflow observations are available.
+
+At the bare minimum, discharge can be estimated using only a single
+distributed runoff product and a river network. To include model
+averaging to the step, one further needs additional runoff datasets to
+provide multiple estimates of discharge, and a reference timeseries to
+perfgorm model averaging against.
 
 Installing
 ----------
@@ -227,14 +230,16 @@ The function usage has been developed so that they are all pipable.
 
     ## although coordinates are longitude/latitude, st_intersects assumes that they are planar
 
-For a more thorough tutorial, see the included vignette.
+For a more thorough tutorial, see the included vignett e.g. from the
+documentation site:
+<a href="https://mkkallio.github.io/hydrostreamer/" class="uri">https://mkkallio.github.io/hydrostreamer/</a>
 
 License
 -------
 
 The MIT License (MIT)
 
-Copyright (c) 2018 Marko K. Kallio
+Copyright (c) 2018-2021 Marko K. Kallio
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the
