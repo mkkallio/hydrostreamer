@@ -1,6 +1,6 @@
 Package: hydrostreamer
 Type: Package
-Title: A Package for Interpolating Distributed Runoff Rroducts on to 
+Title: A Package for Interpolating Distributed Runoff Products on to 
   Explicit River Segments
 Version: 1.0.1
 Author: Marko Kallio
