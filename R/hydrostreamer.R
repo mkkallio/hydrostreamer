@@ -16,6 +16,7 @@
 #' @importFrom stats lm
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats optim
+#' @importFrom rlang :=
 #' @useDynLib hydrostreamer, .registration = TRUE
 #' @docType package
 #' @name hydrostreamer

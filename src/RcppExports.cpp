@@ -35,10 +35,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// do_musk
+NumericVector do_musk(NumericVector infl, NumericVector outfl, NumericVector cel, double w, double s, double l);
+RcppExport SEXP _hydrostreamer_do_musk(SEXP inflSEXP, SEXP outflSEXP, SEXP celSEXP, SEXP wSEXP, SEXP sSEXP, SEXP lSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type infl(inflSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type outfl(outflSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cel(celSEXP);
+    Rcpp::traits::input_parameter< double >::type w(wSEXP);
+    Rcpp::traits::input_parameter< double >::type s(sSEXP);
+    Rcpp::traits::input_parameter< double >::type l(lSEXP);
+    rcpp_result_gen = Rcpp::wrap(do_musk(infl, outfl, cel, w, s, l));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_hydrostreamer_constantroute", (DL_FUNC) &_hydrostreamer_constantroute, 4},
     {"_hydrostreamer_delineatecpp", (DL_FUNC) &_hydrostreamer_delineatecpp, 6},
+    {"_hydrostreamer_do_musk", (DL_FUNC) &_hydrostreamer_do_musk, 6},
     {NULL, NULL, 0}
 };
 

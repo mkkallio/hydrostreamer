@@ -162,7 +162,7 @@ plot(PPDM[,"mean_runoff"])
 
 ### Area-to-Line interpolation
 
-All of the above examples are using catchment areas as the target units where runoff is estimated. However, existing vector-based river network data may not come specified with the DEM they were created with, or the processing steps are not clearly defined. In such cases, delieating the catchment areas for each segment may be difficult or outright impossible. For such cases, hydrostreamer provides the possibility to do interpolation from the source areas to linestrings. In such case, interpolation is based on the length of the linestring instead of the polygon area.
+All of the above examples are using catchment areas as the target units where runoff is estimated. However, existing vector-based river network data may not come specified with the DEM they were created with, or the processing steps are not clearly defined. In such cases, delineating the catchment areas for each segment may be difficult or outright impossible. For such cases, hydrostreamer provides the possibility to do interpolation from the source areas to linestrings. In such case, interpolation is based on the length of the linestring instead of the polygon area.
 
 ```{r}
 A2L <- interpolate_runoff(source_runoff, river,

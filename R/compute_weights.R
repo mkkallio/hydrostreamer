@@ -220,7 +220,7 @@ compute_HSweights <- function(HS,
                                         .before=1)
         }
         
-        if(!is.null(weights)){
+        if(!is.null(weights)) {
             test <- hasName(river, weights)
             if(!test) stop("No column ", weights, " found in river input.")
         }

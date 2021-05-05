@@ -9,3 +9,7 @@ delineatecpp <- function(seeds, basID, drdir, delbas, nx, ny) {
     .Call(`_hydrostreamer_delineatecpp`, seeds, basID, drdir, delbas, nx, ny)
 }
 
+do_musk <- function(infl, outfl, cel, w, s, l) {
+    .Call(`_hydrostreamer_do_musk`, infl, outfl, cel, w, s, l)
+}
+

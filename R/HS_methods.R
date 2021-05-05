@@ -109,40 +109,48 @@ plot.HS <- function(x, ...) {
 
 
 # 
-# tsplot <- function(HS, 
-#                    riverID, 
+# tsplot <- function(HS,
+#                    riverID,
 #                    what = "discharge",
-#                    date_begin = NULL, 
+#                    series = NULL,
+#                    date_begin = NULL,
 #                    date_end = NULL) {
-#     
+# 
 #     test <- requireNamespace("ggplot2")
 #     if(!test) stop("ggplot2 not found: Use install.packages('ggplot2') first.")
-#     
+# 
 #     if(hasName(HS, "observation_ts")) {
-#         obs <- observations(HS, riverID)[[1]]
+#         obs <- observations(HS, riverID)[[1]] %>% 
+#             mutate(observations = units::drop_units(observations))
 #     } else obs <- NULL
-#     
+# 
 #     if(what == "discharge") {
 #         preds <- discharge(HS, riverID)[[1]] %>%
-#             tidyr::gather(Pred, Prediction, -Date) 
+#             tidyr::gather(Pred, Prediction, -Date)%>% 
+#             mutate(Prediction = units::drop_units(Prediction))
 #         what <- "Discharge"
 #     } else if(what == "runoff") {
 #         preds <- runoff(HS, riverID)[[1]] %>%
-#             tidyr::gather(Pred, Prediction, -Date)
+#             tidyr::gather(Pred, Prediction, -Date) %>% 
+#             mutate(Prediction = units::drop_units(Prediction))
 #         obs <- NULL
 #         what = "Runoff"
 #     }
 #     
+#     if(!is.null(series)) {
+#         preds <- filter(preds, Pred == series)
+#     }
+# 
 #     # plot preds
 #     plot <- ggplot2::ggplot() +
 #         ggplot2::geom_line(data = preds,
-#                         aes(Date,Prediction, color="1 Prediction", group=Pred), 
-#                         size=1) 
-#     
+#                         aes(Date,Prediction, color="1 Prediction", group=Pred),
+#                         size=1)
+# 
 #     # plot observations if any
 #     if(!is.null(obs)) {
-#         plot <- plot + 
-#             ggplot2::geom_line(data=obs, aes(Date, observations, 
+#         plot <- plot +
+#             ggplot2::geom_line(data=obs, aes(Date, observations,
 #                                color="2 Station observations"),
 #                                size=1)
 #     }
@@ -151,25 +159,25 @@ plot.HS <- function(x, ...) {
 #     plot <- plot +
 #         ggplot2::scale_color_manual(values = c('grey85','red'),
 #                                     name = "Timeseries") +
-#         ggplot2::labs(x="", y="m3/s", 
+#         ggplot2::labs(x="", y="m3/s",
 #                       title = paste0(what, " timeseries"),
 #              subtitle = paste0("at river segment ", riverID)) +
-#         ggplot2::theme_bw() 
-#     
+#         ggplot2::theme_bw()
+# 
 #     # limit x axis based on dates
 #     if(!is.null(date_begin)) {
 #         begin <- as.Date(date_begin)
 #     } else {
 #         begin <- as.Date(min(c(obs$Date,preds$Date)))
-#     } 
+#     }
 #     if(!is.null(date_end)) {
 #         end <- as.Date(date_end)
 #     } else {
 #         end <- as.Date(max(c(obs$Date,preds$Date)))
-#     } 
-#     plot <- plot + 
+#     }
+#     plot <- plot +
 #         ggplot2::scale_x_date(limits = c(begin, end))
-#     
+# 
 #     # draw plot
 #     suppressWarnings(plot)
 # }
@@ -236,7 +244,7 @@ observations <- function(HS, riverID = NULL) {
                         riverID[test]))
         }
     }
-    out <- get_ts(HS, riverID, what="observation_ts")
+    out <- get_ts(HS, riverID, what="observation")
     return(out)
 }
 

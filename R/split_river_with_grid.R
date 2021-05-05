@@ -41,17 +41,39 @@ split_river_with_grid <- function(river,
                                   zoneID = "zoneID") {
     
     ID <- NULL
+    geometry <- NULL
     
-    #if("HS" %in% class(HS)) HS <- HS$grid
-    grid <- HS %>% dplyr::select(!!zoneID)
+    grid <- dplyr::select(HS, zoneID = !!zoneID)
     
     river <- suppressMessages(suppressWarnings(sf::st_intersection(river, 
                                                                    grid)))
     
-    #add unique IDs
-    if( any(names(river) == riverID) ) {
-        river <- river %>% dplyr::rename(riverID = !!riverID)
+    river$line_length <- sf::st_length(river)
+    river$line_length_corr <- river$line_length
+    ### handle river segments at the boundaries
+    gridint <- suppressMessages(
+        suppressWarnings(
+            sf::st_intersection(river, 
+                                sf::st_geometry(
+                                    sf::st_cast(
+                                        sf::st_cast(grid, 
+                                                    "MULTILINESTRING"),
+                                        "LINESTRING")))))
+    ind <- sf::st_is(gridint, "LINESTRING")
+    if(sum(ind) != 0) {
+        gridint <- gridint[ind,]
+        gridint <- dplyr::distinct(gridint, !!riverID, geometry)
+        ids <- unique(gridint$riverID)
+        for(i in ids) {
+            ind_riv <- river$riverID == i
+            ind_grid <- gridint$riverID == i
+            l <- sf::st_length(gridint[ind_grid,])
+            river$line_length_corr[ind_riv] <- river$line_length[ind_riv] - l/2
+        }
     }
+
+    
+    #add unique IDs
     river$ID <- 1:NROW(river)
     river <- river %>% dplyr::select(ID, riverID, zoneID, dplyr::everything())
     

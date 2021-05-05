@@ -12,6 +12,9 @@
 #' @param name Name of the runoff timeseries. If multiple runoff timeseries
 #'  are added to the same \code{HS} object using \code{\link{add_HS}}, 
 #'  each timeseries must have a unique name, or else they are replaced.
+#' @param handle_negative How to handle egative runoff values (not supported in
+#'   hydrostreamer): "zero" sets negative runoff to 0, "error" stops execution
+#'   and returns an error.
 #'  @inheritParams raster_to_HS
 #'  
 #' @return Returns a \code{HS} object with columns
@@ -25,7 +28,8 @@ create_HS <- function(zones,
                       runoff, 
                       unit,
                       zoneID = "zoneID", 
-                      name="runoff_1") {
+                      name = "runoff_1",
+                      handle_negative = "zero") {
     
     Date <- NULL
     
@@ -50,6 +54,15 @@ create_HS <- function(zones,
     test <- unit != "mm/s"
     if(test) convert <- TRUE else convert <- FALSE
     
+    test <- any(runoff < 0, na.rm = TRUE)
+    if(handle_negative == "zero") {
+        runoff[runoff < 0] <- 0
+        warning("Negative runoff values set to 0.")
+    } else if(handle_negative == "error") {
+        stop("Negative runoff values not permitted.")
+    } else {
+        stop("Don't know how to process handle_negative = ", handle_negative)
+    }
     
     #---------------------------------------------------------------------------
     # create a list column
@@ -60,6 +73,7 @@ create_HS <- function(zones,
     for(i in 2:ncol(runoff)) {
         temp <- runoff[,c(1,i)]
         colnames(temp) <- c("Date", name)
+        
         if(convert) {
             temp[,2] <- convert_unit(dplyr::pull(temp,2), unit, "mm/s", "m^3/s")
         } else {

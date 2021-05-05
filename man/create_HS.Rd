@@ -4,7 +4,14 @@
 \alias{create_HS}
 \title{Constructs a \code{HS} object from given input}
 \usage{
-create_HS(zones, runoff, unit, zoneID = "zoneID", name = "runoff_1")
+create_HS(
+  zones,
+  runoff,
+  unit,
+  zoneID = "zoneID",
+  name = "runoff_1",
+  handle_negative = "zero"
+)
 }
 \arguments{
 \item{zones}{An \code{sf POLYGON} object}
@@ -18,7 +25,11 @@ correspond to specific polygons in \code{grid}.}
 
 \item{name}{Name of the runoff timeseries. If multiple runoff timeseries
 are added to the same \code{HS} object using \code{\link{add_HS}}, 
-each timeseries must have a unique name, or else they are replaced.
+each timeseries must have a unique name, or else they are replaced.}
+
+\item{handle_negative}{How to handle egative runoff values (not supported in
+ hydrostreamer): "zero" sets negative runoff to 0, "error" stops execution
+ and returns an error.
 @inheritParams raster_to_HS}
 }
 \value{

@@ -48,11 +48,12 @@ compute_river_weights <- function(river,
     ID <- NULL
     zoneID <- NULL
     runoff_ts <- NULL
+    line_length_corr <- NULL
 
     if(!any(colnames(river) == riverID)) stop("riverID column '", 
                                            riverID, 
                                            "' does not exist in river input")
-    if(!riverID == "riverID") river <- dplyr::rename(river, 
+    if(riverID != "riverID") river <- dplyr::rename(river, 
                                                      riverID = riverID)  
     
     if("runoff_ts" %in% colnames(grid)) grid <- dplyr::select(grid, -runoff_ts)
@@ -87,19 +88,28 @@ compute_river_weights <- function(river,
     ##############
     # get weights
     
+    if(split) {
+        len <- dplyr::pull(river, line_length_corr)
+        if(inherits(len, "units")) len <- units::drop_units(len)
+    } else {
+        len <- sf::st_length(river)
+        len[units::drop_units(len) < 1] <- units::set_units(1, "m")
+    }
+        
     if(dasymetric) {
         # get the dasymetric variable/segment weights
         dasymetric_var <- sf::st_set_geometry(river, NULL) %>%
             dplyr::pull(seg_weights)
         
         weight <- apply(riverIntsc,1, compute_dasymetric_weights, 
-                        sf::st_length(river), dasymetric_var) %>%
+                        len, dasymetric_var) %>%
             apply(1, FUN=sum) %>% 
             unlist()
         
     } else {
+        
         weight <- apply(riverIntsc,1, compute_segment_weights, 
-                        sf::st_length(river)) %>% 
+                        len) %>% 
             apply(1, FUN=sum) %>% 
             unlist()
     }
