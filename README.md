@@ -1,7 +1,7 @@
 hydrostreamer 1.0.1
 ===================
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1214523.svg)](https://doi.org/10.5281/zenodo.1214523)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4739223.svg)](https://doi.org/10.5281/zenodo.4739223)
 
 **hydrostreamer** is an R package designed to allow swift investigation
 of surface water resources from existing distributed runoff datasets
