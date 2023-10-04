@@ -274,7 +274,7 @@ accumulate_runoff_constant <- function(HS,
             out[,i+1] <- outflowmat[1:nrow(out), seg, i]
         }
         out[nas] <- NA
-        out <- dplyr::as_tibble(out)
+        out <- dplyr::as_tibble(out, .name_repair = "minimal")
         flow[[seg]] <- out
     }
     

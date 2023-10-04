@@ -200,7 +200,7 @@ combine_monthly <- function(flow,
     # combine and sort the optimized timeseries
     opt_ts <- lapply(tempcombs, function(x) x$Optimized_ts)
     opt_ts <- do.call("bind_rows", opt_ts) %>%
-        tibble::as_tibble() %>%
+        tibble::as_tibble(.name_repair = "minimal") %>%
         dplyr::arrange(Date) 
     
     
@@ -274,7 +274,7 @@ combine_annual <- function(flow,
     }
     
 
-    output <- combine_timeseries(tibble::as_tibble(flow), 
+    output <- combine_timeseries(tibble::as_tibble(flow, .name_repair = "minimal"), 
                                  optim_method, 
                                  sampling,
                                  train,

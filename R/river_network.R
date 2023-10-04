@@ -39,7 +39,7 @@ river_network <- function(river,
                           na_value = NULL,
                           force = FALSE,
                           riverID = "riverID", 
-                          verbose=FALSE) {
+                          verbose = FALSE) {
     
     PREVIOUS <- NULL
     NEXT <- NULL
@@ -225,7 +225,7 @@ river_network <- function(river,
     river$UP_SEGMENTS <- nup
     river <- dplyr::select(river, riverID, NEXT, PREVIOUS, 
                            UP_SEGMENTS, dplyr::everything()) %>%
-        tibble::as_tibble(river) %>%
+        tibble::as_tibble(.name_repair = "minimal") %>%
         sf::st_as_sf()
     
     

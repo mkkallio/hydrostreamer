@@ -55,7 +55,7 @@ downscale_runoff <- function(HSweights,
     output <- HSweights$target %>% 
         dplyr::arrange(riverID) %>% 
         tibble::add_column(runoff_ts = listc) %>%
-        tibble::as_tibble() %>%
+        tibble::as_tibble(.name_repair = "minimal") %>%
         sf::st_as_sf()
     
     output <- reorder_cols(output)
@@ -137,7 +137,7 @@ downscale_with_weights <- function(HSweights,
         }
 
         QTS <- units::set_units(QTS, "m3/s")
-        QTS <- dplyr::as_tibble(QTS)
+        QTS <- dplyr::as_tibble(QTS, .name_repair = "minimal")
         colnames(QTS) <- rIDs
         QTS$Date <- unidates
         QTS <- dplyr::select(QTS, Date, dplyr::everything()) 

@@ -196,7 +196,7 @@ accumulate_runoff_instant <- function(HS,
   output <- HS 
   output$discharge_ts <- discharge
   output <- output %>%
-    tibble::as_tibble() %>%
+    tibble::as_tibble(.name_repair = "minimal") %>%
     sf::st_as_sf()
   
   if (verbose) close(pb)

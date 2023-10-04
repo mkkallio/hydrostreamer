@@ -58,7 +58,7 @@ ensemble_summary.list <- function(HS,
         if (summarise_over_timeseries) {
             if (aggregate_monthly) {
                 data <- data %>%
-                    tibble::as_tibble() %>%
+                    tibble::as_tibble(.name_repair = "minimal") %>%
                     dplyr::mutate(Month = lubridate::month(Date)) %>%
                     dplyr::group_by(Month) %>%
                     dplyr::select(-Date) %>%
@@ -70,7 +70,7 @@ ensemble_summary.list <- function(HS,
                     dplyr::select(Month, Prediction, Stat, Value)
             } else {
                 data <- data %>%
-                    tibble::as_tibble() %>%
+                    tibble::as_tibble(.name_repair = "minimal") %>%
                     dplyr::select(-Date) %>%
                     dplyr::summarise_all(.funs=funs, ...) %>%
                     tidyr::gather(Pred, Value) %>%
@@ -86,14 +86,14 @@ ensemble_summary.list <- function(HS,
             
             if (aggregate_monthly) {
                 data <- data %>%
-                    tibble::as_tibble() %>%
+                    tibble::as_tibble(.name_repair = "minimal") %>%
                     dplyr::mutate(Month = lubridate::month(Date)) %>%
                     dplyr::group_by(Month) %>%
                     dplyr::select(-Date,-Prediction) %>%
                     dplyr::summarise_all(.funs=funs) 
             } else {
                 data <- data %>%
-                    tibble::as_tibble() %>%
+                    tibble::as_tibble(.name_repair = "minimal") %>%
                     dplyr::group_by(Date) %>%
                     dplyr::select(-Prediction) %>%
                     dplyr::summarise_all(.funs=funs) 

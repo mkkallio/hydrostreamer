@@ -38,6 +38,7 @@ create_HS <- function(zones,
     
     test <- "Date" %in% colnames(runoff)
     if(!test) stop("runoff input must have a column named 'Date'.")
+    date_ind <- which(names(runoff) == "Date")
     
     test <- zoneID %in% colnames(zones)
     if(!test) stop("zoneID column ", zoneID, " not found in zones")
@@ -54,20 +55,22 @@ create_HS <- function(zones,
     test <- unit != "mm/s"
     if(test) convert <- TRUE else convert <- FALSE
     
-    test <- any(runoff < 0, na.rm = TRUE)
-    if(handle_negative == "zero") {
-        runoff[runoff < 0] <- 0
-        warning("Negative runoff values set to 0.")
-    } else if(handle_negative == "error") {
-        stop("Negative runoff values not permitted.")
-    } else {
-        stop("Don't know how to process handle_negative = ", handle_negative)
+    test <- any(runoff[,-date_ind] < 0, na.rm = TRUE)
+    if(test) {
+        if(handle_negative == "zero") {
+            runoff[runoff < 0] <- 0
+            warning("Negative runoff values set to 0.")
+        } else if(handle_negative == "error") {
+            stop("Negative runoff values not permitted.")
+        } else {
+            stop("Don't know how to process handle_negative = ", handle_negative)
+        }
     }
     
     #---------------------------------------------------------------------------
     # create a list column
     listc <- list()
-    runoff <- tibble::as_tibble(runoff) %>%
+    runoff <- tibble::as_tibble(runoff, .name_repair = "minimal") %>%
         dplyr::select("Date", dplyr::everything())
     
     for(i in 2:ncol(runoff)) {
@@ -88,7 +91,7 @@ create_HS <- function(zones,
 
     output <- zones %>% 
         tibble::add_column(runoff_ts = listc) %>%
-        tibble::as_tibble() %>%
+        tibble::as_tibble(.name_repair = "minimal") %>%
         sf::st_as_sf() 
     
     output <- reorder_cols(output)

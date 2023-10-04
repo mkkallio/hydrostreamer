@@ -62,7 +62,7 @@ flow_gof <- function(HS, verbose = FALSE) {
             #t() %>%
             as.data.frame() %>%
             tibble::rownames_to_column() %>%
-            tibble::as_tibble() %>%
+            tibble::as_tibble(.name_repair = "minimal") %>%
             dplyr::rename(Prediction = rowname) %>%
             dplyr::mutate(Station=HS$observation_station[ riverIDs[stat] ]) %>%
             dplyr::select(Prediction, Station, dplyr::everything())

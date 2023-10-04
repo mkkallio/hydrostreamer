@@ -77,7 +77,7 @@ split_river_with_grid <- function(river,
     river$ID <- 1:NROW(river)
     river <- river %>% dplyr::select(ID, riverID, zoneID, dplyr::everything())
     
-    river <- tibble::as_tibble(river) %>%
+    river <- tibble::as_tibble(river, .name_repair = "minimal") %>%
         sf::st_as_sf()
     
     return(river)

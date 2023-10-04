@@ -125,7 +125,7 @@ compute_river_weights <- function(river,
     
     river <- tibble::add_column(river, weights = weight) %>%
         dplyr::select(ID, riverID, zoneID, weights) %>%
-        tibble::as_tibble(river) %>%
+        tibble::as_tibble(.name_repair = "minimal") %>%
         sf::st_as_sf()
     
     return(river)
