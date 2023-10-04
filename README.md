@@ -11,10 +11,9 @@ If used in a publication, please cite the following model description
 paper: Kallio, M., Guillaume, J. H. A., Virkki, V., Kummu, M., and
 Virrantaus, K.: [Hydrostreamer v1.0 – improved streamflow predictions
 for local applications from an ensemble of downscaled global runoff
-products](https://doi.org/10.5194/gmd-2020-276), Geosci. Model Dev.
+products](https://doi.org/10.5194/gmd-14-5155-2021), Geosci. Model Dev.
 Discuss.,
-<a href="https://doi.org/10.5194/gmd-2020-276" class="uri">https://doi.org/10.5194/gmd-2020-276</a>,
-in review, 2020.
+<a href="https://doi.org/10.5194/gmd-14-5155-2021" class="uri">https://doi.org/10.5194/gmd-14-5155-2021</a>, 2021.
 
 In addition, **hydrostreamer** has featured in the following
 publications and conference presentations:
